@@ -389,47 +389,47 @@ package IdealGasMedia
   //***** PACKAGE Acetone*****
 
   package Acetone
-    extends IdealGasMedium(final mediumName = "Acetone", final singleState = false, data=FreeFluids.MediaCommon.MediaData.Acetone); 
+    extends IdealGasMedium(final mediumName = "Acetone", final singleState = false, data=FreeFluids.MediaCommon.MediaDataAL.Acetone); 
   end Acetone;
 
   //***** PACKAGE Air*****
 
   package Air
-    extends IdealGasMedium(final mediumName = "Air", final singleState = false, data=FreeFluids.MediaCommon.MediaData.Air); 
+    extends IdealGasMedium(final mediumName = "Air", final singleState = false, data=FreeFluids.MediaCommon.MediaDataAL.Air); 
   end Air;
 
   package Ammonia
-    extends IdealGasMedium(final mediumName = "Ammonia", final singleState = false, data = FreeFluids.MediaCommon.MediaData.Ammonia);
+    extends IdealGasMedium(final mediumName = "Ammonia", final singleState = false, data = FreeFluids.MediaCommon.MediaDataAL.Ammonia);
   end Ammonia;
 
   //***** PACKAGE n-Butanol*****
   
-  package n_Butanol
-    extends IdealGasMedium(final mediumName = "n-Butanol", final singleState = false, data = FreeFluids.MediaCommon.MediaData.n_Butanol);
-  end n_Butanol;
+  package Butanol_n
+    extends IdealGasMedium(final mediumName = "n-Butanol", final singleState = false, data = FreeFluids.MediaCommon.MediaDataAL.Butanol_n);
+  end Butanol_n;
 
   //***** PACKAGE Carbon dioxide*****
 
   package CO2
-    extends IdealGasMedium(final mediumName = "Carbon dioxide", final singleState = false, data=FreeFluids.MediaCommon.MediaData.CO2); 
+    extends IdealGasMedium(final mediumName = "Carbon dioxide", final singleState = false, data=FreeFluids.MediaCommon.MediaDataAL.CO2); 
   end CO2;
 
   //***** PACKAGE Nitrogen*****
 
   package N2
-    extends IdealGasMedium(final mediumName = "Nitrogen", final singleState = false, data=FreeFluids.MediaCommon.MediaData.N2); 
+    extends IdealGasMedium(final mediumName = "Nitrogen", final singleState = false, data=FreeFluids.MediaCommon.MediaDataMZ.N2); 
   end N2;
 
   //***** PACKAGE Nitrogen*****
 
   package O2
-    extends IdealGasMedium(final mediumName = "Oxygen", final singleState = false, data=FreeFluids.MediaCommon.MediaData.O2); 
+    extends IdealGasMedium(final mediumName = "Oxygen", final singleState = false, data=FreeFluids.MediaCommon.MediaDataMZ.O2); 
   end O2;
   
 //***** PACKAGE Water*****
 
   package Water
-    extends IdealGasMedium(final mediumName = "Water", final singleState = false, data=FreeFluids.MediaCommon.MediaData.Water); 
+    extends IdealGasMedium(final mediumName = "Water", final singleState = false, data=FreeFluids.MediaCommon.MediaDataMZ.Water); 
   end Water;
 
   package Tests

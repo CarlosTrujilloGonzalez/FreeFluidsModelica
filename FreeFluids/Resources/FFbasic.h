@@ -91,11 +91,11 @@ typedef struct {int id,type,numMono,unifacPSRKSubg[10][2],unifacDortSubg[10][2];
 //Data for cubic EOS. Critical properties used are reported in order to better fix the EOS
 typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,VdWV,c,k1,k2,k3,k4;}FF_CubicEOSdata;
 //Cubic EOS parameters once given composition and T
-typedef struct {double a,Theta,b,c,u,w,dTheta,d2Theta;}FF_CubicParam;
+typedef struct {double a,Theta,b,c,u,w,dTheta,d2Theta,Tc,Pc,Zc;}FF_CubicParam;
 //Data for SAFT type EOS. Critical properties used are reported in order to better fix the EOS
 typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,sigma,m,epsilon,lr,la,chi,kAB,epsilonAB,mu,xp,Q;int nPos,nNeg,nAcid;}FF_SaftEOSdata;
 //Data for Schmidt-Wagner type EOS
-typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,tRef,rhoRef,n[60],t[60],a[8],e[8],b[8],g[8],af[5],bf[5],
+typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,tRef,rhoRef,n[60],t[60],a[16],e[16],b[16],g[16],af[5],bf[5],
                 Af[5],Bf[5],Cf[5],Df[5],betaf[5];int d[60],c[55],nPol,nExp,nSpec,nFinal;}FF_SWEOSdata;
 //Data for physical properties correlation formulas
 typedef struct {int id,form;double coef[14],limI,limS;}FF_Correlation;
@@ -103,10 +103,10 @@ typedef struct {int id,form;double coef[14],limI,limS;}FF_Correlation;
 typedef struct {double x,y;}FF_SinglePointData;
 
 //Data for a pure substance, including substructures for basic data, EOS and physical properties
-typedef struct {char name[30],CAS[22],description[150];int id,model,UnifStdSubg[20][2],UnifPSRKSubg[20][2],UnifDortSubg[20][2],UnifNistSubg[20][2];
-                double refT,refP;FF_BaseProp baseProp;FF_SinglePointData RI,cp0,vp,hVsat,lCp,lDens,lVisc,lThC,lSurfT,lIsothComp,gVisc,gThC,sDens,sCp;
+typedef struct {char name[50],CAS[22],description[150];int id,model,UnifStdSubg[20][2],UnifPSRKSubg[20][2],UnifDortSubg[20][2],UnifNistSubg[20][2];
+                double refT,refP,refH,refS;FF_BaseProp baseProp;FF_SinglePointData RI,cp0,vp,hVsat,lCp,lDens,lVisc,lThC,lSurfT,lIsothComp,gVisc,gThC,sDens,sCp;
                 FF_CubicEOSdata cubicData;FF_SaftEOSdata saftData;FF_SWEOSdata swData;FF_Correlation cp0Corr,vpCorr,btCorr,hVsatCorr,lCpCorr,
-                lTfromHCorr,lDensCorr,lViscCorr,lThCCorr,lSurfTCorr,lIsothCompCorr,gDensCorr,gTfromDcorr,gViscCorr,gThCCorr,sDensCorr,sCpCorr;}FF_SubstanceData;
+                lTfromHCorr,lDensCorr,lViscCorr,lThCCorr,lSurfTCorr,lBulkModRCorr,gDensCorr,gTfromDcorr,gViscCorr,gThCCorr,sDensCorr,sCpCorr;}FF_SubstanceData;
 
 //UNIFAC data for a mixture. Used to speed-up calculations
 //Prepared for 20 substances and 30 subgroups. FV must be filled with the free volume of each substance if EntropicFV model is to be used
