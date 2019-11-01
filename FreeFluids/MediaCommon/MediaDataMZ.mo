@@ -103,15 +103,6 @@ within FreeFluids.MediaCommon;
     gSatDensCorr = 101, gSatDensCoef = {4.590290e+02, -2.688940e+00, -4.205650e+00, -1.081900e+01, -5.909060e+01, 3.444940e+02}, gSatDensLimI = 1.731500e+02, gSatDensLimS = 3.431500e+02,
     gViscCorr = 111, gViscCoef = {8.286300e-07, 3.980000e-08, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.431500e+02, gViscLimS = 3.931500e+02,
     gThCondCorr = 121, gThCondCoef = {-8.700000e-03, 7.410000e-05, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.431500e+02, gThCondLimS = 3.931500e+02); 
-
-  constant FreeFluids.MediaCommon.DataRecord Reafree4703(
-    name = "Reafree4703", description = "", CAS = "-", family = 0, MW = 1.000000e+03, molarMass=1.0, Tc = 1.000000e+03, Pc = 0.000000e+00, Vc = 0.000000e+00, Zc = 0.000000e+00, w = 0.000000e+00, Tb = 0.000000e+00,
-    VpCorr = 20, VpCoef = {1.000000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, VpLimI = 3.230000e+02, VpLimS = 5.030000e+02,
-    BtCorr = 130, BtCoef = {1.000000e+03, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, BtLimI = 3.230000e+02, BtLimS = 5.030000e+02,
-    lDensCorr = 40, lDensCoef = {1.050000e+03, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lDensLimI = 3.230000e+02, lDensLimS = 5.030000e+02,
-    lCpCorr = 17, lCpCoef = {-8.537491e+03, 6.690735e+01, -1.468611e-01, 1.111586e-04, 0.000000e+00, 0.000000e+00}, lCpLimI = 3.230000e+02, lCpLimS = 5.030000e+02,
-    lViscCorr = 30, lViscCoef = {2.239059e+03, -2.100993e+05, -3.001068e+02, 5.820428e+09, -3.000000e+00, 0.000000e+00}, lViscLimI = 4.330000e+02, lViscLimS = 4.730000e+02,
-    lThCondCorr = 50, lThCondCoef = {1.000000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 3.230000e+02, lThCondLimS = 5.030000e+02);
     
     constant  FreeFluids.MediaCommon.DataRecord ShellS2(name="Shell S2", MW = 3.600000e+02, molarMass=0.36, Tc = 1.000000e+03, VpCorr = 23, VpCoef = {2.168690e+01, 6.552780e+03, 1.675470e+01, 0.0, 0.0, 0.0}, VpLimI = 2.730000e+02, VpLimS = 6.280000e+02, BtCorr = 130, BtCoef = {1.888270e+02, 1.000000e+02, -1.731020e-01, 4.765400e-02, 4.794380e-05, 0.0}, BtLimI = 3.130000e+02, BtLimS = 6.280000e+02, lDensCorr = 40, lDensCoef = {7.374610e+02, 2.323960e+00, -1.018510e-02, 1.507730e-05, -8.163430e-09, 0.0}, lDensLimI = 2.730000e+02, lDensLimS = 6.130000e+02, lCpCorr = 17, lCpCoef = {9.102910e+02, 2.713260e+00, 3.245940e-03, -4.885660e-06, 2.689070e-09, 0.0}, lCpLimI = 2.730000e+02, lCpLimS = 6.130000e+02, lTfromHsatCorr = 140, lTfromHsatCoef = {2.466690e+01, 8.381320e-04, -5.270540e-10, 2.754040e-16, -6.340110e-23, 0.0}, lTfromHsatLimI = 2.730000e+02, lTfromHsatLimS = 6.130000e+02, lViscCorr = 30, lViscCoef = {-1.581700e+02, 1.000000e+04, 2.153310e+01, -1.153330e-05, 2.000000e+00, 0.0}, lViscLimI = 2.730000e+02, lViscLimS = 6.130000e+02, lThCondCorr = 50, lThCondCoef = {1.682120e-01, -1.705060e-04, 2.637920e-07, -2.901120e-10, 1.063780e-13, 0.0}, lThCondLimI = 2.730000e+02, lThCondLimS = 6.130000e+02);
     
