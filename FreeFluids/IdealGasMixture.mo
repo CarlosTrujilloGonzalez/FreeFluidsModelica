@@ -463,13 +463,11 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
   //***** PACKAGE Air*****
 
   package Air
-    extends IdealGasMix(final mediumName = "Air", final singleState = false, data = {FreeFluids.MediaCommon.MediaData.N2, FreeFluids.MediaCommon.MediaData.O2}, fixedX = true, reference_X = {0.768, 0.232});
+    extends IdealGasMix(final mediumName = "Air", final singleState = false, data = {FreeFluids.MediaCommon.MediaDataMZ.N2, FreeFluids.MediaCommon.MediaDataMZ.O2}, fixedX = true, reference_X = {0.768, 0.232});
   end Air;
   
   package FlueGas
-    extends IdealGasMix(final mediumName = "Combustion gas", final singleState = false, data = {FreeFluids.MediaCommon.MediaData.Water, FreeFluids.MediaCommon.MediaData.N2, FreeFluids.MediaCommon.MediaData.O2,FreeFluids.MediaCommon.MediaData.CO2}, fixedX = true, reference_X = {0.12, 0.71, 0.03, 0.14});
-    //FreeFluids.MediaCommon.MediaData.Water, FreeFluids.MediaCommon.MediaData.N2, FreeFluids.MediaCommon.MediaData.O2,FreeFluids.MediaCommon.MediaData.CO2
-    //0.12, 0.71, 0.03, 0.14
+    extends IdealGasMix(final mediumName = "Combustion gas", final singleState = false, data = {FreeFluids.MediaCommon.MediaDataMZ.Water, FreeFluids.MediaCommon.MediaDataMZ.N2, FreeFluids.MediaCommon.MediaDataMZ.O2,FreeFluids.MediaCommon.MediaDataAL.CO2}, fixedX = true, reference_X = {0.12, 0.71, 0.03, 0.14});
   end FlueGas;
   
   package Tests

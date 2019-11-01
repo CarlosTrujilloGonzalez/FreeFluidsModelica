@@ -1,0 +1,9 @@
+Version 1.1.0
+- The MediaData record in the MediaCommon package has been updated.
+- MediaData records for more substances. Now in two files: MediaDataAL.mo and MediaDataMZ.mo, in order to better edit a high number of substances.
+- The TMedia package now uses the standard way, defined in Modelica.Media.PartialTwoPhaseMedium, for substance data storage: the FluidConstants fluidConstants[] record.
+- The TMedia can now use different enthalpy/entropy references: "IIR", "NBE", "ASHRAE" or  user defined.
+- Pressure corrections (applicable or not, depending on the value of the constant Boolean highPressure) added for: 
+	liquid enthalpy, entropy, heat capacity, viscosity and thermal conductivity.
+- Correction of the inverse function solver in order not to produce errors by the calculation at the critical point.
+

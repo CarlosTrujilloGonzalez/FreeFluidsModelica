@@ -51,7 +51,9 @@ int nPoints=1;
 
 
 
-void *FF_createSubstanceData(const char *name, int thermoModel, double refT, double refP) {
+void *FF_createSubstanceData(const char *name, int thermoModel, int refState, double refT, double refP) {
+  double T,P,V,answerL[3],answerG[3],H,S;
+  char option,state;
   FF_SubstanceData *data = (FF_SubstanceData*) calloc(1,sizeof(FF_SubstanceData));
   if (!data) {
     ModelicaError("Memory allocation error\n");
@@ -74,9 +76,52 @@ void *FF_createSubstanceData(const char *name, int thermoModel, double refT, dou
     fclose(file);
   }
   else ModelicaError("unable to charge the substance data\n");
-  data->model=thermoModel;
-  data->refT=refT;
-  data->refP=refP;
+
+  if (thermoModel==1) data->model=FF_CubicType;
+  else if (thermoModel==2) data->model=FF_SAFTtype;
+  else if (thermoModel==3) data->model=FF_SWtype;
+  else ModelicaError("thermoModel out of range\n");
+
+  if(!(((thermoModel==1)&&(data->cubicData.eos>0))||((thermoModel==2)&&(data->saftData.eos>0))||((thermoModel==3)&&(data->swData.eos>0)))) ModelicaError("Not valid EOS supplied\n");
+
+  //reference enthalpy and entropy calculation
+  if(refState==1){//ASHRAE
+      T=233.15;
+      FF_VpEOSs(&T,data,&P);
+  }
+  else if(refState==2){//IIR
+      T=273.15;
+      FF_VpEOSs(&T,data,&P);
+  }
+  else if(refState==3){//NBP
+      P=101325;
+      FF_TbEOSs(&P,data,&T);
+  }
+  else {//User defined as default
+      T=refT;
+      P=refP;
+  }
+
+  if((refState==1)||(refState==2)||(refState==3)){
+      option='l';
+      FF_VfromTPeosS(&T,&P,data,&option,answerL,answerG,&state);
+      V=answerL[0];
+  }
+  else{
+      option='s';
+      FF_VfromTPeosS(&T,&P,data,&option,answerL,answerG,&state);
+      if(state=='L') V=answerL[0];
+      else V=answerG[0];
+  }
+  data->refT=0.0;//ideal gas calculation from 0K
+  data->refP=101325;//ideal gas entropy referenced to 1 atm
+  FF_HSfromTVPeosS(&T,&V,&P,data,&data->refH,&data->refS);
+  if(refState==2){//IIR
+      data->refH=data->refH-2.0e2*data->baseProp.MW;
+      data->refS=data->refS-1*data->baseProp.MW;
+  }
+
+
   return data;
 }
 
@@ -86,234 +131,484 @@ void FF_destroySubstanceData(void *object) {
   free(data);
 }
 
+typedef struct{double a,av,avv,at,att,avt;} FF_HelmholtzDerivatives;
+typedef struct{double cp,h,s;} FF_IdealThermoProp;
+
+
 //Basic functions
 //---------------
 //Saturation pressure
 void FF_saturationPressure(void *object,double T, double *Vp){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  //ModelicaFormatError("saft eos:%i\n",data->saftData.eos);
-  int eosType;
-  if ((T>=data->baseProp.Tc)&&(data->baseProp.Tc>0)) *Vp=1e15;
-  else if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-	FF_VpEOS(&eosType,&T,&data->cubicData,Vp);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-	eosType=FF_SAFTtype;
-	FF_VpEOS(&eosType,&T,&data->saftData,Vp);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-	eosType=FF_SWtype;
-	FF_VpEOS(&eosType,&T,&data->swData,Vp);
-  }
-  else ModelicaError("unable to compute vapor pressure with the selected EOS\n");
+  if((data->model==FF_CubicType)&&(data->cubicData.Tc>0)&&(T>=data->cubicData.Tc)) *Vp=1e15;
+  else if((data->model==FF_SAFTtype)&&(data->saftData.Tc>0)&&(T>=data->saftData.Tc)) *Vp=1e15;
+  else if((data->model==FF_SWtype)&&(data->swData.Tc>0)&&(T>=data->swData.Tc)) *Vp=1e15;
+  else if((data->model==FF_SWtype)&&(data->vpCorr.form>0)) FF_PhysPropCorr(data->vpCorr.form,data->vpCorr.coef,data->swData.MW,T,Vp);
+  else FF_VpEOSs(&T,data,Vp);
 }
+
 
 //Saturation temperature
 void FF_saturationTemperature(void *object,double P, double *Tb){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  int eosType;
-  if (P>=data->baseProp.Pc) *Tb=data->baseProp.Tc;
-  else if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-	FF_TbEOS(&eosType,&P,&data->cubicData,Tb);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-	eosType=FF_SAFTtype;
-	FF_TbEOS(&eosType,&P,&data->saftData,Tb);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-        eosType=FF_SWtype;
-	FF_TbEOS(&eosType,&P,&data->swData,Tb);
-  }
-  else ModelicaError("unable to compute boiling temperature with the selected EOS\n");
+  if((data->model==FF_CubicType)&&(data->cubicData.Pc>0)&&(P>=data->cubicData.Pc)) *Tb=data->cubicData.Tc;
+  else if((data->model==FF_SAFTtype)&&(data->saftData.Pc>0)&&(P>=data->saftData.Pc)) *Tb=data->saftData.Tc;
+  else if((data->model==FF_SWtype)&&(data->swData.Pc>0)&&(P>=data->swData.Pc)) *Tb=data->swData.Tc;
+  else if((data->model==FF_SWtype)&&(data->btCorr.form>0)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->swData.MW,P,Tb);
+  FF_TbEOSs(&P,data,Tb);
 }
 
-//Pressure from d,T by vp and lDens correlations
-void FF_liquidPressureCorr_dT(void *object, double d, double T, double *P){
-  FF_SubstanceData *data = (FF_SubstanceData *)object;
-  if ((T<data->baseProp.Tc)&&(data->baseProp.Pc>0)&&(data->baseProp.w>0)){//this grants the density correction by pressure
-    double dSat,Vp,Tr,N,Zc;
-    if ((data->lDensCorr.form>0)&&(T>=data->lDensCorr.limI)&&(T<=data->lDensCorr.limS)) FF_PhysPropCorr(data->lDensCorr.form,data->lDensCorr.coef,data->baseProp.MW,T,&dSat);
-    else if (data->lDens.y>0) FF_LiqDensSatRackett(&data->baseProp,&data->lDens.x,&data->lDens.y,&T,&dSat);
-    else ModelicaError("unable to compute the saturated liquid density");
-    FF_saturationPressure(data,T,&Vp);
-    Tr=T/data->baseProp.Tc;
-    N=(1-0.89*data->baseProp.w)*exp(6.9547-76.2853*Tr+191.306*Tr*Tr-203.5472*pow(Tr,3)+82.763*pow(Tr,4));
-    if (data->baseProp.Zc==0) Zc=0.29056-0.08775*data->baseProp.w;
-    else Zc=data->baseProp.Zc;
-    *P=(pow(d/dSat,9)-1)* data->baseProp.Pc/(9*Zc*N)+Vp;
-  }
-  else ModelicaError("T over Tc, or not enough critical data to compute Chueh-Prausnitz correction");
-}
 
 //Pressure from d,T by EOS
 void FF_pressureEOS_dT(void *object, double d, double T, double *P){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  int eosType;
   double V=data->baseProp.MW/(d*1e3);
-  if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-	FF_PfromTVeos(&eosType,&T,&V,&data->cubicData,P);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-	eosType=FF_SAFTtype;
-	FF_PfromTVeos(&eosType,&T,&V,&data->saftData,P);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-	eosType=FF_SWtype;
-	FF_PfromTVeos(&eosType,&T,&V,&data->swData,P);
-  }
-  else ModelicaError("unable to compute the pressure from d and T with the selected EOS\n");
+  FF_PfromTVeosS(&T,&V,data,P);
 }
 
 //Densities from T,P by EOS
 void FF_densitiesEOS_pT(void *object, double P, double T, int phase, double *ld, double *gd){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  int eosType;
   double answerL[3],answerG[3];
   char option,state;
   if (phase==1) option='g';
   else if (phase==0) option='b';
   else if (phase==2) option='l';
   else ModelicaError("Phase requested for density calculation not adequate");
-  if ((data->cubicData.eos>0)&&((data->model==1)||(data->model==11))){
-    //añadir un else if para calcular PR in situ si no había datos
-	//************************************************************
-	eosType=FF_CubicType;
-	FF_VfromTPeos(&eosType,&T,&P,&data->cubicData,&option,answerL,answerG,&state);
-  }
-  else if ((data->saftData.eos>0)&&((data->model==2)||(data->model==12))){
-	eosType=FF_SAFTtype;
-	FF_VfromTPeos(&eosType,&T,&P,&data->saftData,&option,answerL,answerG,&state);
-  }
-  else if ((data->swData.eos>0)&&((data->model==3)||(data->model==13))){
-	eosType=FF_SWtype;
-	FF_VfromTPeos(&eosType,&T,&P,&data->swData,&option,answerL,answerG,&state);
-  }
-  else ModelicaError("unable to compute the densities with the given EOS");
-  if (answerL[0]>0) *ld=data->baseProp.MW/answerL[0]/1e3;
+  FF_VfromTPeosS(&T,&P,data,&option,answerL,answerG,&state);
+  if (!(phase==1)) *ld=data->baseProp.MW/answerL[0]/1e3;
   else *ld=0;
-  if (answerG[0]>0) *gd=data->baseProp.MW/answerG[0]/1e3;
+  if (!(phase==2)) *gd=data->baseProp.MW/answerG[0]/1e3;
   else *gd=0;
 }
 
-
-//Bubble enthalpy, from a SaturationProperties record (p and T)
-void FF_bubbleEnthalpy(void *object, double P, double T,double *lh){
-  FF_SubstanceData *data = (FF_SubstanceData *)object;
-  double ld,gd;
-  FF_ThermoProperties th;
-  int eosType;
-  FF_densitiesEOS_pT(data,P,T,2,&ld,&gd);//we get the liquid density by EOS
-  th.T=T;
-  th.P=P;
-  th.V=data->baseProp.MW/ld/1e3;
-  if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-    FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-    eosType=FF_SAFTtype;
-	FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-	eosType=FF_SWtype;
-	FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  *lh=th.H/data->baseProp.MW*1e3;
+void FF_satProp_T(void *object, double T, double p, int phase, double *nMols, double *d, double deriv[6], double ideal[3]){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_CubicParam param;
+    FF_ThermoProperties th0;
+    *nMols=1/MW;
+    if (phase==1){
+        if((data->model==FF_SWtype)&&(data->gDensCorr.form>0)){
+            FF_PhysPropCorr(data->gDensCorr.form,data->gDensCorr.coef,data->baseProp.MW,T,d);
+            th0.V=MW/ *d;
+        }
+        else{
+            option='g';
+            FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+            th0.V=answerG[0];
+            *d=MW/answerG[0];
+        }
+    }
+    else if(phase==2){
+        if((data->model==FF_SWtype)&&(data->lDensCorr.form>0)){
+            FF_PhysPropCorr(data->lDensCorr.form,data->lDensCorr.coef,data->baseProp.MW,T,d);
+            th0.V=MW/ *d;
+        }
+        else{
+            option='l';
+            FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+            th0.V=answerL[0];
+            *d=MW/answerL[0];
+        }
+    }
+    th0.T=T;
+    if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+    else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+    ideal[0]=th0.Cp;
+    ideal[1]=th0.H-data->refH;
+    ideal[2]=th0.S-data->refS;
+    if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&th0.V,&data->swData,deriv);
+    else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&th0.V,&data->saftData,deriv);
+    else{
+        FF_FixedParamCubic(&data->cubicData,&param);
+        FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+        FF_ArrDerCubic(&T,&th0.V,&param,deriv);
+    }
 }
 
-//Dew enthalpy from a SaturationProperties record (p and T)
-void FF_dewEnthalpy(void *object, double P, double T,double *gh){
-  FF_SubstanceData *data = (FF_SubstanceData *)object;
-  double ld,gd,lh,hv;
-  FF_ThermoProperties th;
-  int eosType;
-    FF_densitiesEOS_pT(data,P,T,1,&ld,&gd);//we get the gas density
-    th.T=T;
-    th.P=P;
-    th.V=data->baseProp.MW/gd/1e3;
-    if ((data->cubicData.eos>0)&&(data->model==1)){
-          eosType=FF_CubicType;
-          FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-    }
-    else if ((data->saftData.eos>0)&&(data->model==2)){
-          eosType=FF_SAFTtype;
-          FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-    }
-    else if ((data->swData.eos>0)&&(data->model==3)){
-          eosType=FF_SWtype;
-          FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-    }
-    *gh=th.H/data->baseProp.MW*1e3;
+void FF_solveEOS_TpOrig(void *object, double T, double p, double *nMols, double *ld, double *gd, double lDer[6], double gDer[6], double lIdeal[3], double gIdeal[3]){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_CubicParam param;
+    FF_ThermoProperties th0;
+    *nMols=1/MW;
+    //Volume calculation
+    if (T>=data->baseProp.Tc) option='g';
+    else if (p>data->baseProp.Pc) option='l';
+    else option='s';
+    FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+    th0.T=T;
+    if(state=='L'){
+        th0.V=answerL[0];
+        *ld=MW/answerL[0];
+        *gd=0;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        lIdeal[0]=th0.Cp;
+        lIdeal[1]=th0.H-data->refH;
+        lIdeal[2]=th0.S-data->refS;
 
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&answerL[0],&data->swData,lDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&answerL[0],&data->saftData,lDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&answerL[0],&param,lDer);
+        }
+    }
+    else if(state=='G'){
+        th0.V=answerG[0];
+        *gd=MW/answerG[0];
+        *ld=0;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        gIdeal[0]=th0.Cp;
+        gIdeal[1]=th0.H-data->refH;
+        gIdeal[2]=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&answerG[0],&data->swData,gDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&answerG[0],&data->saftData,gDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&answerG[0],&param,gDer);
+        }
+    }
+}
+
+void FF_solveEOS_Tp(void *object, double T, double p, double *nMols, double *ld, double *gd, void *lDeriva, void *gDeriva, void *lId, void *gId){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    FF_HelmholtzDerivatives *lDer=(FF_HelmholtzDerivatives *)lDeriva;
+    FF_HelmholtzDerivatives *gDer=(FF_HelmholtzDerivatives *)gDeriva;
+    FF_IdealThermoProp *lIdeal=(FF_IdealThermoProp *)lId;
+    FF_IdealThermoProp *gIdeal=(FF_IdealThermoProp *)gId;
+    /*
+    double lDeriv[6],gDeriv[6];
+    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_CubicParam param;
+    FF_ThermoProperties th0;
+    *nMols=1/MW;
+    //Volume calculation
+    if (T>=data->baseProp.Tc) option='g';
+    else if (p>data->baseProp.Pc) option='l';
+    else option='s';
+    FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+    th0.T=T;
+    if(state=='L'){
+        th0.V=answerL[0];
+        *ld=MW/answerL[0];
+        *gd=0;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        lIdeal->cp=th0.Cp;
+        lIdeal->h=th0.H-data->refH;
+        lIdeal->s=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&answerL[0],&data->swData,lDeriv);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&answerL[0],&data->saftData,lDeriv);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&answerL[0],&param,lDeriv);
+        }
+        lDer->a=lDeriv[0];
+        lDer->av=lDeriv[1];
+        lDer->avv=lDeriv[2];
+        lDer->at=lDeriv[3];
+        lDer->att=lDeriv[4];
+        lDer->avt=lDeriv[5];
+    }
+    else if(state=='G'){
+        th0.V=answerG[0];
+        *gd=MW/answerG[0];
+        *ld=0;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        gIdeal->cp=th0.Cp;
+        gIdeal->cp=th0.H-data->refH;
+        gIdeal->cp=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&answerG[0],&data->swData,gDeriv);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&answerG[0],&data->saftData,gDeriv);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&answerG[0],&param,gDeriv);
+        }
+        gDer->a=gDeriv[0];
+        gDer->av=gDeriv[1];
+        gDer->avv=gDeriv[2];
+        gDer->at=gDeriv[3];
+        gDer->att=gDeriv[4];
+        gDer->avt=gDeriv[5];
+    }*/
+}
+
+void FF_solveEOS_Td(void *object, double T, double d, double *nMols, double *p, double *ld, double *gd, double lDer[6], double gDer[6], double lIdeal[3], double gIdeal[3]){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double V;
+    double Vp;
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_CubicParam param;
+    FF_ThermoProperties th0;
+    *nMols=1/MW;
+    V=MW/d;
+    //Volume calculation
+    if (T>data->baseProp.Tc) state='G';
+    else{
+        FF_VpEOSs(&T,data,&Vp);
+        option='b';
+        FF_VfromTPeosS(&T,&Vp,data,&option,answerL,answerG,&state);
+        if(V<=answerL[0]) state='L';
+        else if (V>=answerG[0]) state='G';
+        else state='B';
+    }
+    if (state=='L'){
+        *ld=d;
+        *gd=0.0;
+        FF_PfromTVeosS(&T,&V,data,p);
+    }
+    else if (state=='G'){
+        *gd=d;
+        *ld=0.0;
+        FF_PfromTVeosS(&T,&V,data,p);
+    }
+    else{
+        *ld=MW/answerL[0];
+        *gd=MW/answerG[0];
+        *p=Vp;
+    }
+
+    th0.T=T;
+    if(!(state=='G')){
+        th0.V=MW/ *ld;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        lIdeal[0]=th0.Cp;
+        lIdeal[1]=th0.H-data->refH;
+        lIdeal[2]=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&th0.V,&data->swData,lDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&th0.V,&data->saftData,lDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&th0.V,&param,lDer);
+            }
+    }
+    if(!(state=='L')){
+        th0.V=MW/ *gd;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        gIdeal[0]=th0.Cp;
+        gIdeal[1]=th0.H-data->refH;
+        gIdeal[2]=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&th0.V,&data->swData,gDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&th0.V,&data->saftData,gDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
+            FF_ArrDerCubic(&T,&th0.V,&param,gDer);
+        }
+    }
+}
+
+void FF_solveEOS_ph(void *object, double p, double h, double *nMols, double *T, double *ld, double *gd, double *gf, double lDer[6], double gDer[6], double lIdeal[3], double gIdeal[3]){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double Tb;
+    double Hraw,Hl,Hh,Sl,Sh,Ht,Cp0;
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_CubicParam param;
+    FF_ThermoProperties th0;
+    *nMols=1/MW;
+    Hraw=h*MW + data->refH;
+    th0.P=p;
+    if(p>data->baseProp.Pc) Tb=data->baseProp.Tc;
+    else if((data->model==FF_SWtype)&&(data->btCorr.form>0)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->baseProp.MW,p,&Tb);
+    else FF_TbEOSs(&p,data,&Tb);
+    option='b';
+    if((data->model==FF_SWtype)&&(data->lDensCorr.form>0)&&(data->gDensCorr.form>0)){//if we can use the saturated densities correlations
+        FF_PhysPropCorr(data->lDensCorr.form,data->lDensCorr.coef,data->baseProp.MW,Tb,ld);
+        FF_PhysPropCorr(data->gDensCorr.form,data->gDensCorr.coef,data->baseProp.MW,Tb,gd);
+        answerL[0]=MW/ *ld;
+        answerG[0]=MW/ *gd;
+    }
+    else  FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
+    FF_HSfromTVPeosS(&Tb,&answerL[0],&p,data,&Hl,&Sl);
+    FF_HSfromTVPeosS(&Tb,&answerG[0],&p,data,&Hh,&Sh);
+    //printf("Tb:%f Hraw:%f Hh:%f Hl:%f\n",Tb,Hraw,Hh,Hl);
+
+    if((Hraw>=Hl)&&(Hraw<=Hh)){
+        *T=Tb;
+        *ld=MW/answerL[0];
+        *gd=MW/answerG[0];
+        *gf=(Hraw-Hl)/(Hh-Hl);
+    }
+
+    else if (Hraw>Hh){
+        *gf=1.0;
+        *ld=0.0;
+        option='g';
+        while (fabs((Hraw-Hh)/Hraw)>0.0001){
+            FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+            Tb=Tb+(Hraw-Hh)/(1.5*MW*Cp0);
+            FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tb,&answerG[0],&p,data,&Hh,&Sh);
+            //printf("Tb:%f Hraw:%f, Hh:%f Cp0:%f\n",Tb,Hraw,Hh,Cp0);
+        }
+        *T=Tb;
+        *gd=MW/answerG[0];
+    }
+    else{
+        *gf=0.0;
+        *gd=0.0;
+        option='l';
+        while (fabs((Hraw-Hl)/Hraw)>0.0001){
+            FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+            Tb=Tb+(Hraw-Hl)/(1.5*MW*Cp0);
+            FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tb,&answerL[0],&p,data,&Hl,&Sl);
+            //printf("Tb:%f Hraw:%f, Hl:%f Cp0:%f\n",Tb,Hraw,Hl,Cp0);
+        }
+        *T=Tb;
+        *ld=MW/answerL[0];
+    }
+    th0.T=*T;
+    if(!(*gf==1.0)){
+        th0.V=MW/ *ld;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        lIdeal[0]=th0.Cp;
+        lIdeal[1]=th0.H-data->refH;
+        lIdeal[2]=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(T,&th0.V,&data->swData,lDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(T,&th0.V,&data->saftData,lDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(T,&data->cubicData,&param);
+            FF_ArrDerCubic(T,&th0.V,&param,lDer);
+            }
+    }
+    if(!(*gf==0.0)){
+        th0.V=MW/ *gd;
+        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
+        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
+        gIdeal[0]=th0.Cp;
+        gIdeal[1]=th0.H-data->refH;
+        gIdeal[2]=th0.S-data->refS;
+
+        if(data->model==FF_SWtype) FF_ArrDerSWTV(T,&th0.V,&data->swData,gDer);
+        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(T,&th0.V,&data->saftData,gDer);
+        else{
+            FF_FixedParamCubic(&data->cubicData,&param);
+            FF_ThetaDerivCubic(T,&data->cubicData,&param);
+            FF_ArrDerCubic(T,&th0.V,&param,gDer);
+        }
+    }
+
+
+}
+
+void FF_hsEOS_Tdp(void *object, double T, double ld, double gd, double gf, double p, double *h, double *s){
+    FF_SubstanceData *data = (FF_SubstanceData *)object;
+    double Vl,Vg,Hl,Hg,Sl,Sg;
+    if (gf<1.0){
+        Vl=data->baseProp.MW/ld/1e3;
+        FF_HSfromTVPeosS(&T,&Vl,&p,data,&Hl,&Sl);
+    }
+    if (gf>0.0){
+        Vg=data->baseProp.MW/gd/1e3;
+        FF_HSfromTVPeosS(&T,&Vg,&p,data,&Hg,&Sg);
+    }
+    *h=((Hl*(1-gf)+Hg*gf))*1e3/data->baseProp.MW-data->refH;
+    *s=((Sl*(1-gf)+Sg*gf))*1e3/data->baseProp.MW-data->refS;
 }
 
 //Thermodynamic properties from a thermodynamic record of T and densities
 void FF_thermoPropertiesEOS_Td(void *object, double T, double ld, double gd, double gf, double *h, double *u, double *s, double *cp, double *cv, double *dP_dT, double *dP_dV, double *ss, double *jt, double *it){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  int eosType;
   FF_ThermoProperties thl,thg;
-  if (gf<1){
+  if (gf<1.0){
       thl.T=T;
       thl.V=data->baseProp.MW/ld/1e3;
-      if ((data->cubicData.eos>0)&&(data->model==1)){
-        eosType=FF_CubicType;
-        FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thl);
-      }
-      else if ((data->saftData.eos>0)&&(data->model==2)){
-        eosType=FF_SAFTtype;
-        FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thl);
-      }
-      else if ((data->swData.eos>0)&&(data->model==3)){
-        eosType=FF_SWtype;
-        FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thl);
-      }
+      FF_ThermoEOSs(data,&thl);
   }
-  if (gf>0){
+  if (gf>0.0){
       thg.T=T;
       thg.V=data->baseProp.MW/gd/1e3;
-      if ((data->cubicData.eos>0)&&(data->model==1)){
-            eosType=FF_CubicType;
-            FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thg);
-      }
-      else if ((data->saftData.eos>0)&&(data->model==2)){
-            eosType=FF_SAFTtype;
-            FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thg);
-      }
-      else if ((data->swData.eos>0)&&(data->model==3)){
-            eosType=FF_SWtype;
-            FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &thg);
-      }
+      FF_ThermoEOSs(data,&thg);
   }
-  *h=(thl.H*(1-gf)+thg.H*gf)*1e3/data->baseProp.MW;
-  *u=(thl.U*(1-gf)+thg.U*gf)*1e3/data->baseProp.MW;
-  *s=(thl.S*(1-gf)+thg.S*gf)*1e3/data->baseProp.MW;
+  *h=((thl.H*(1-gf)+thg.H*gf))*1e3/data->baseProp.MW-data->refH;
+  *u=*h-thl.P*((1-gf)*thl.V+gf*thg.V);
+  //*u=(thl.U*(1-gf)+thg.U*gf)*1e3/data->baseProp.MW;
+  *s=((thl.S*(1-gf)+thg.S*gf))*1e3/data->baseProp.MW-data->refS;
   if (gf==0.0){
-	*cp=thl.Cp*1e3/data->baseProp.MW;
-	*cv=thl.Cv*1e3/data->baseProp.MW;
+        *cp=thl.Cp*1e3/data->baseProp.MW;
+        *cv=thl.Cv*1e3/data->baseProp.MW;
     *ss=thl.SS;
     *dP_dV=thl.dP_dV*data->baseProp.MW/1e3;
-	*dP_dT=thl.dP_dT;
+        *dP_dT=thl.dP_dT;
   }
   else if (gf==1.0){
-	*cp=thg.Cp*1e3/data->baseProp.MW;
-	*cv=thg.Cv*1e3/data->baseProp.MW;
+        *cp=thg.Cp*1e3/data->baseProp.MW;
+        *cv=thg.Cv*1e3/data->baseProp.MW;
     *ss=thg.SS;
     *dP_dV=thg.dP_dV*data->baseProp.MW/1e3;
-	*dP_dT=thg.dP_dT;
+        *dP_dT=thg.dP_dT;
   }
   else{
-	*cp=0.0;
-	*cv=0.0;
-	*ss=0.0;
-	*dP_dV=0.0;
-	*dP_dT=0.0;
+        *cp=0.0;
+        *cv=0.0;
+        *ss=0.0;
+        *dP_dV=0.0;
+        *dP_dT=0.0;
   }
 }
 
-//Specific enthalpy from a thermodynamic record
+
+//Bubble enthalpy, from a SaturationProperties record (p and T)
+void FF_bubbleEnthalpy(void *object, double p, double T,double *lh){
+  FF_SubstanceData *data = (FF_SubstanceData *)object;
+  double MW;
+  char option,state;
+  double answerL[3],answerG[3];
+  double ls;
+  MW=data->baseProp.MW*0.001;
+  option='l';
+  FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+  FF_HSfromTVPeosS(&T,&answerL[0],&p,data,lh,&ls);
+  *lh=(*lh-data->refH)/MW;
+}
+
+//Dew enthalpy from a SaturationProperties record (p and T)
+void FF_dewEnthalpy(void *object, double p, double T,double *gh){
+  FF_SubstanceData *data = (FF_SubstanceData *)object;
+  double MW;
+  char option,state;
+  double answerL[3],answerG[3];
+  double gs;
+  MW=data->baseProp.MW*0.001;
+  option='g';
+  FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+  FF_HSfromTVPeosS(&T,&answerG[0],&p,data,gh,&gs);
+  *gh=(*gh-data->refH)/MW;
+}
+
+
+//Specific enthalpy from T and d
 void FF_specificEnthalpy(void *object, double T, double ld, double gd, double gf, double *h){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
   int eosType;
@@ -401,53 +696,31 @@ void FF_specificHeatCapacityCp(void *object, double P, double T, double ld, doub
 }
 
 //Bubble entropy, from a SaturationProperties record (p and T)
-void FF_bubbleEntropy(void *object, double P, double T,double *ls){
+void FF_bubbleEntropy(void *object, double p, double T,double *ls){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  double ld,gd;
-  FF_ThermoProperties th;
-  int eosType;
-  FF_densitiesEOS_pT(data,P,T,2,&ld,&gd);
-  th.T=T;
-  th.P=P;
-  th.V=data->baseProp.MW/ld/1e3;
-  if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-	FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-	eosType=FF_SAFTtype;
-	FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-	eosType=FF_SWtype;
-	FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  *ls=th.S/data->baseProp.MW*1e3;
+  double MW;
+  char option,state;
+  double answerL[3],answerG[3];
+  double lh;
+  MW=data->baseProp.MW*0.001;
+  option='l';
+  FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+  FF_HSfromTVPeosS(&T,&answerL[0],&p,data,&lh,ls);
+  *ls=(*ls-data->refS)/MW;
 }
 
 //Dew entropy from a SaturationProperties record (p and T)
-void FF_dewEntropy(void *object, double P, double T,double *gs){
+void FF_dewEntropy(void *object, double p, double T,double *gs){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  double ld,gd;
-  FF_ThermoProperties th;
-  int eosType;
-  FF_densitiesEOS_pT(data,P,T,1,&ld,&gd);
-  th.T=T;
-  th.P=P;
-  th.V=data->baseProp.MW/gd/1e3;
-  if ((data->cubicData.eos>0)&&(data->model==1)){
-	eosType=FF_CubicType;
-	FF_ThermoEOS(&eosType,&data->cubicData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->saftData.eos>0)&&(data->model==2)){
-	eosType=FF_SAFTtype;
-	FF_ThermoEOS(&eosType,&data->saftData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  else if ((data->swData.eos>0)&&(data->model==3)){
-	eosType=FF_SWtype;
-	FF_ThermoEOS(&eosType,&data->swData,&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP, &th);
-  }
-  *gs=th.S/data->baseProp.MW*1e3;
+  double MW;
+  char option,state;
+  double answerL[3],answerG[3];
+  double gh;
+  MW=data->baseProp.MW*0.001;
+  option='g';
+  FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+  FF_HSfromTVPeosS(&T,&answerG[0],&p,data,&gh,gs);
+  *gs=(*gs-data->refS)/MW;
 }
 
 //Spefific entropy
@@ -544,6 +817,33 @@ void FF_surfaceTension(void *object, double T, double P, double gf, double *sigm
   }
   else ModelicaError("unable to compute surface tension without liquid\n");  
 }
+
+typedef struct {double a,b,c,d;} FF_RecordProvaExternal;
+
+void FF_FuncioProvaExternal(void *st, void *st2){
+   FF_RecordProvaExternal *rec=(FF_RecordProvaExternal*) st;
+   FF_RecordProvaExternal *rec2=(FF_RecordProvaExternal*) st2;
+   rec->a=1;
+   rec->b=2;
+   rec->c=3;
+   rec->d=4;
+   rec2->a=5;
+   rec2->b=6;
+   rec2->c=7;
+   rec2->d=8;
+}
+
+void FF_FuncioProvaExternal2(void *lDeriva, void *gDeriva, void *lId, void *gId){
+    FF_HelmholtzDerivatives *lDer=(FF_HelmholtzDerivatives *)lDeriva;
+    FF_HelmholtzDerivatives *gDer=(FF_HelmholtzDerivatives *)gDeriva;
+    FF_IdealThermoProp *lIdeal=(FF_IdealThermoProp *)lId;
+    FF_IdealThermoProp *gIdeal=(FF_IdealThermoProp *)gId;
+    lDer->a=1.0;
+    gDer->a=2.0;
+    lIdeal->h=3.0;
+    gIdeal->h=4.0;
+}
+
 
 
 
