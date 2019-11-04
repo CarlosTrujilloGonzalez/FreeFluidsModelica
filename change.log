@@ -1,3 +1,10 @@
+Version 1.1.3
+- Changed the inputChoice constant of the TMedium package from enumeration to string. It was impossible to modify the original selection.
+- Changed the assertion level to warning if trying to use the saturationTemperature function, of the TMedium package, over the critical pressure. It was producing problems when working over the Pc.
+
+Version 1.1.2
+- .gitattributes file added in order to obtain correct classification of the used language.
+
 Version 1.1.0
 - The MediaData record in the MediaCommon package has been updated.
 - MediaData records for more substances. Now in two files: MediaDataAL.mo and MediaDataMZ.mo, in order to better edit a high number of substances.
