@@ -18,10 +18,9 @@ package TMedia "TMedia.mo by Carlos Trujillo
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA."
   partial package TMedium
     extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, redeclare record FluidConstants = FreeFluids.MediaCommon.DataRecord);
-    extends FreeFluids.MediaCommon.Types;
     constant String refState = "IIR" "Enthalpy/entropy reference state. Alternatives: ASHRAE, IIR, NBP, otherwise the value at reference_T as 0";
-    constant InputChoice inputChoice = InputChoice.ph "Allows to choose the input choise to use for the construction of a BaseProperties object";
-    constant Boolean highPressure=false;
+    constant String inputChoice = "ph" "Allows to choose the input choise to use for the construction of a BaseProperties object. Alternative are: pT, ph, dT";
+    constant Boolean highPressure = false;
     constant SpecificEnthalpy UserRefH = SpecificEnthalpyCorr(reference_T);
     constant SpecificEnthalpy ASHRAErefH = SpecificEnthalpyCorr(233.15);
     constant SpecificEnthalpy NBPrefH = SpecificEnthalpyCorr(fluidConstants[1].Tb);
@@ -156,31 +155,34 @@ package TMedia "TMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        assert(p < fluidConstants[1].Pc, "No saturated media possible over Pc");
-        T := if fluidConstants[1].BtCorr > 0 then PhysPropCorr(fluidConstants[1].BtCorr, fluidConstants[1].BtCoef, p) else saturationPressureInv(p);
-
+        assert(p < fluidConstants[1].Pc, "No saturated media possible over Pc", AssertionLevel.warning);
+        T := if p >= fluidConstants[1].Pc then fluidConstants[1].Pc else if fluidConstants[1].BtCorr > 0 then PhysPropCorr(fluidConstants[1].BtCorr, fluidConstants[1].BtCoef, p) else saturationPressureInv(p);
     end saturationTemperature;
 
     //BaseProperties model
     //--------------------
 
-    redeclare model extends BaseProperties(h(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default))
-        parameter InputChoice localInputChoice = inputChoice;
+    redeclare model extends BaseProperties(
+  h(stateSelect = if preferredMediumStates and localInputChoice=="ph" then StateSelect.prefer else StateSelect.default), 
+  p(stateSelect = if preferredMediumStates and (localInputChoice=="ph" or localInputChoice=="pT") then StateSelect.prefer else StateSelect.default),
+  T(stateSelect = if preferredMediumStates and (localInputChoice=="pT" or localInputChoice=="dT") then StateSelect.prefer else StateSelect.default),
+  d(stateSelect = if preferredMediumStates and localInputChoice=="dT" then StateSelect.prefer else StateSelect.default))
+        constant String localInputChoice = inputChoice;
 
       equation
         MM = fluidConstants[1].MW / 1000 "in kg/mol";
         R = Modelica.Constants.R / MM;
         u = h - p / d;
         sat = setSat_p(p);
-        if localInputChoice == InputChoice.ph then
+        if localInputChoice == "ph" then
           state = setState_phX(p, h, fill(0, 0));
           state.T = T;
           state.d = d;
-        elseif localInputChoice == InputChoice.pT then
+        elseif localInputChoice == "pT" then
           state = setState_pTX(p, T, fill(0, 0));
           state.d = d;
           state.h = h;
-        elseif localInputChoice == InputChoice.dT then
+        elseif localInputChoice == "dT" then
           state = setState_dTX(d, T, fill(0, 0));
           state.p = p;
           state.h = h;
@@ -217,8 +219,8 @@ package TMedia "TMedia.mo by Carlos Trujillo
           Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, T);
           state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp));
           state.h := if refState == "IIR" then SpecificEnthalpyCorr(T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(T) - ASHRAErefH else SpecificEnthalpyCorr(T) - UserRefH "saturated liquid enthalpy";
-          if highPressure==true then
-            state.h:= if (T<=0.45*fluidConstants[1].Tc) then state.h+state.p/state.d-Vp/Dls else if  (T<0.85*fluidConstants[1].Tc) then state.h+(0.85*fluidConstants[1].Tc-T)/(0.4*fluidConstants[1].Tc)*(state.p/state.d-Vp/Dls) else state.h "pressure correction for liquid enthalpy";
+          if highPressure == true then
+            state.h := if T <= 0.45 * fluidConstants[1].Tc then state.h + state.p / state.d - Vp / Dls else if T < 0.85 * fluidConstants[1].Tc then state.h + (0.85 * fluidConstants[1].Tc - T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else state.h "pressure correction for liquid enthalpy";
           end if;
           state.phase := 1;
           state.gf := 0;
@@ -244,17 +246,17 @@ package TMedia "TMedia.mo by Carlos Trujillo
         state.d := d;
         Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, T) "saturated liquid density at T";
         Hls := if refState == "IIR" then SpecificEnthalpyCorr(T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(T) - ASHRAErefH else SpecificEnthalpyCorr(T) - UserRefH;
-        Vp:=PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
+        Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
         if d >= Dls then
           state.p := if fluidConstants[1].lnuA > 0 then Vp + (exp((d - Dls) * fluidConstants[1].lnuA) - 1) * 1000 * Modelica.Constants.R * T * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) / (fluidConstants[1].lnuA * fluidConstants[1].MW) else (1 - Dls / d) / fluidConstants[1].IsothComp + Vp;
-          state.h:= if (T<=0.45*fluidConstants[1].Tc) then Hls+(state.p-Vp)/state.d else if  (T<0.85*fluidConstants[1].Tc) then Hls+(0.85*fluidConstants[1].Tc-state.T)/(0.4*fluidConstants[1].Tc)*(state.p-Vp)/state.d else Hls;
+          state.h := if T <= 0.45 * fluidConstants[1].Tc then Hls + (state.p - Vp) / state.d else if T < 0.85 * fluidConstants[1].Tc then Hls + (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p - Vp) / state.d else Hls;
           state.phase := 1;
           state.gf := 0;
         else
           Dgs := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, T);
           assert(d >= Dgs, "The media can´t work with non-saturated gases");
           state.p := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
-          state.h:= if (T<=0.45*fluidConstants[1].Tc) then Hls+state.p/state.d-Vp/Dls else if  (T<0.85*fluidConstants[1].Tc) then Hls+(0.85*fluidConstants[1].Tc-state.T)/(0.4*fluidConstants[1].Tc)*(state.p/state.d-Vp/Dls) else Hls "pressure correction for liquid enthalpy";
+          state.h := if T <= 0.45 * fluidConstants[1].Tc then Hls + state.p / state.d - Vp / Dls else if T < 0.85 * fluidConstants[1].Tc then Hls + (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else Hls "pressure correction for liquid enthalpy";
           if d > Dgs then
             state.phase := 2;
             state.gf := Dgs * (Dls - d) / (d * (Dls - Dgs));
@@ -282,7 +284,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
       algorithm
         state.p := p;
         state.h := h;
-        if p > fluidConstants[1].Pc then
+        if p >= fluidConstants[1].Pc then
           Tb := fluidConstants[1].Tc;
         else
           Tb := saturationTemperature(p);
@@ -293,14 +295,13 @@ package TMedia "TMedia.mo by Carlos Trujillo
         if Hls >= Hraw then
           state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorr(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, Hraw) else SpecificEnthalpyCorrInv(Hraw);
           Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-          Vp:=PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+          Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
           state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
-          if highPressure==true then
-            Hraw:= if (state.T<=0.45*fluidConstants[1].Tc) then Hraw-state.p/state.d+Vp/Dls else if  (state.T<0.85*fluidConstants[1].Tc) then Hraw-(0.85*fluidConstants[1].Tc-state.T)/(0.4*fluidConstants[1].Tc)*(state.p/state.d-Vp/Dls) else Hraw "pressure correction for liquid enthalpy";
-            //Hraw:=Hraw-(state.p-Vp)/state.d "pressure correction for liquid enthalpy";
+          if highPressure == true then
+            Hraw := if state.T <= 0.45 * fluidConstants[1].Tc then Hraw - state.p / state.d + Vp / Dls else if state.T < 0.85 * fluidConstants[1].Tc then Hraw - (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else Hraw "pressure correction for liquid enthalpy";
             state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorr(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, Hraw) else SpecificEnthalpyCorrInv(Hraw);
             Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-            Vp:=PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
             state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
           end if;
           state.phase := 1;
@@ -315,6 +316,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
           state.gf := (Hraw - Hls) / (Hgs - Hls);
           state.d := Dls * Dgs / (state.gf * Dls + (1 - state.gf) * Dgs);
         end if;
+//Hraw:=Hraw-(state.p-Vp)/state.d "pressure correction for liquid enthalpy";
     end setState_phX;
 
     redeclare function extends setState_psX "Return thermodynamic state as function of p, s and composition X or Xi"
@@ -341,18 +343,18 @@ package TMedia "TMedia.mo by Carlos Trujillo
         if Sl >= Sraw then
           state.T := SpecificEntropyCorrInv(Sraw);
           Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-          Vp:= PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+          Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
           state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
-          if highPressure==true then
-            Sraw:=if state.T<=0.45*fluidConstants[1].Tc then Sraw else Sraw+(state.T-0.45*fluidConstants[1].Tc) * (state.p-Vp)/(0.4*fluidConstants[1].Tc*state.d*state.T) "pressure correction for liquid entropy";
+          if highPressure == true then
+            Sraw := if state.T <= 0.45 * fluidConstants[1].Tc then Sraw else Sraw + (state.T - 0.45 * fluidConstants[1].Tc) * (state.p - Vp) / (0.4 * fluidConstants[1].Tc * state.d * state.T) "pressure correction for liquid entropy";
             state.T := SpecificEntropyCorrInv(Sraw);
             Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-            Vp:= PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
             state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
           end if;
           state.h := if refState == "IIR" then SpecificEnthalpyCorr(state.T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(state.T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(state.T) - ASHRAErefH else SpecificEnthalpyCorr(state.T) - UserRefH "saturated liquid enthalpy";
-          if highPressure==true then         
-            state.h:= if (state.T<=0.45*fluidConstants[1].Tc) then state.h+state.p/state.d-Vp/Dls else if  (state.T<0.85*fluidConstants[1].Tc) then state.h+(0.85*fluidConstants[1].Tc-state.T)/(0.4*fluidConstants[1].Tc)*(state.p/state.d-Vp/Dls) else state.h "pressure correction for liquid enthalpy";
+          if highPressure == true then
+            state.h := if state.T <= 0.45 * fluidConstants[1].Tc then state.h + state.p / state.d - Vp / Dls else if state.T < 0.85 * fluidConstants[1].Tc then state.h + (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else state.h "pressure correction for liquid enthalpy";
           end if;
           state.phase := 1;
           state.gf := 0;
@@ -458,10 +460,10 @@ package TMedia "TMedia.mo by Carlos Trujillo
       algorithm
         Sl := if refState == "IIR" then SpecificEntropyCorr(state.T) - IIRrefS else if refState == "NBP" then SpecificEntropyCorr(state.T) - NBPrefS else if refState == "ASHRAE" then SpecificEntropyCorr(state.T) - ASHRAErefS else SpecificEntropyCorr(state.T) - UserRefS;
         if state.gf == 0.0 then
-          s:=Sl;
-          if highPressure==true then
-            Vp:=PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
-            s := if state.T<=0.45*fluidConstants[1].Tc then s else s-(state.T-0.45*fluidConstants[1].Tc) * (state.p-Vp)/(0.4*fluidConstants[1].Tc*state.d*state.T)"pressure correction for liquid entropy";
+          s := Sl;
+          if highPressure == true then
+            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+            s := if state.T <= 0.45 * fluidConstants[1].Tc then s else s - (state.T - 0.45 * fluidConstants[1].Tc) * (state.p - Vp) / (0.4 * fluidConstants[1].Tc * state.d * state.T) "pressure correction for liquid entropy";
           end if;
         else
           s := Sl + state.gf * PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, state.T) / state.T;
@@ -491,9 +493,9 @@ package TMedia "TMedia.mo by Carlos Trujillo
       algorithm
         if state.gf == 0.0 then
           cp := PhysPropCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, state.T);
-          if highPressure==true then
+          if highPressure == true then
             ds := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T);
-            cp:= if fluidConstants[1].family==17 then cp*exp(-5.0*(state.d-ds)^0.5/(ds*(1-state.T/fluidConstants[1].Tc)^0.5)) else cp*exp(-2.8*(state.d-ds)^0.5/(ds*(1-state.T/fluidConstants[1].Tc)^0.5));
+            cp := if fluidConstants[1].family == 17 then cp * exp(-5.0 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5)) else cp * exp(-2.8 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5));
           end if;
         else
           cp := 0;
@@ -600,28 +602,30 @@ package TMedia "TMedia.mo by Carlos Trujillo
 
     redeclare function extends dynamicViscosity "Return dynamic viscosity"
         extends Modelica.Icons.Function;
+
       protected
         Real lpVisc;
+
       algorithm
         if state.gf == 0.0 then
-          if fluidConstants[1].CAS=="7732-18-5" then
-            eta:=FreeFluids.MediaCommon.Functions.waterViscosity(state.T,state.d);
+          if fluidConstants[1].CAS == "7732-18-5" then
+            eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
           elseif fluidConstants[1].lViscCorr > 0 then
-            eta := if highPressure==false  then PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T) else FreeFluids.MediaCommon.Functions.liqViscPcorLucas(fluidConstants[1], state.T, state.p, PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T), PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T));
+            eta := if highPressure == false then PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T) else FreeFluids.MediaCommon.Functions.liqViscPcorLucas(fluidConstants[1], state.T, state.p, PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T), PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T));
           else
             assert(false, "there is no correlation for liquid viscosity calculation");
           end if;
         elseif state.phase == 1.0 then
-          if fluidConstants[1].CAS=="7732-18-5" then
-            eta:=FreeFluids.MediaCommon.Functions.waterViscosity(state.T,state.d);
+          if fluidConstants[1].CAS == "7732-18-5" then
+            eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
           else
-            lpVisc:= if fluidConstants[1].gViscCorr > 0 then PhysPropCorr(fluidConstants[1].gViscCorr, fluidConstants[1].gViscCoef, state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(fluidConstants[1], state.T);
-            eta:=lpVisc "no pressure correction seems necessary for gas phase";
-            //eta:= if highPressure==false then lpVisc else  FreeFluids.MediaCommon.Functions.gasViscPcorLucas(fluidConstants[1], state.T, state.p, lpVisc);
+            lpVisc := if fluidConstants[1].gViscCorr > 0 then PhysPropCorr(fluidConstants[1].gViscCorr, fluidConstants[1].gViscCoef, state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(fluidConstants[1], state.T);
+            eta := lpVisc "no pressure correction seems necessary for gas phase";
           end if;
         else
           eta := 0 "no viscosity calculation is done for two phases situation";
         end if;
+//eta:= if highPressure==false then lpVisc else  FreeFluids.MediaCommon.Functions.gasViscPcorLucas(fluidConstants[1], state.T, state.p, lpVisc);
     end dynamicViscosity;
 
     redeclare function extends thermalConductivity "Return thermal conductivity"
@@ -630,9 +634,9 @@ package TMedia "TMedia.mo by Carlos Trujillo
       algorithm
         if state.gf == 0.0 then
           lambda := if fluidConstants[1].lThCondCorr > 0 then PhysPropCorr(fluidConstants[1].lThCondCorr, fluidConstants[1].lThCondCoef, state.T) else FreeFluids.MediaCommon.Functions.liqThCondLatini(fluidConstants[1], state.T);
-          if highPressure==true then 
-            lambda:=lambda*exp(state.d/PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T)-1);
- end if;
+          if highPressure == true then
+            lambda := lambda * exp(state.d / PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) - 1);
+          end if;
         elseif state.gf == 1.0 then
           lambda := if fluidConstants[1].gThCondCorr > 0 then PhysPropCorr(fluidConstants[1].gThCondCorr, fluidConstants[1].gThCondCoef, state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(fluidConstants[1], specificHeatCapacityCp(state), dynamicViscosity(state), state.T);
         else
@@ -644,7 +648,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        sigma := if fluidConstants[1].lSurfTensCorr>0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
     end surfaceTension;
 
     //Saturation properties
@@ -702,90 +706,90 @@ package TMedia "TMedia.mo by Carlos Trujillo
     package Acetone
       extends FreeFluids.TMedia.TMedium(final mediumName = "Acetone", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Acetone}, refState = "IIR");
     end Acetone;
-  
+
     package Ammonia
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ammonia", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ammonia}, reference_T = 273.15);
     end Ammonia;
-  
+
     package Butane_n
       extends TMedium(final mediumName = "Butane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Butane_n}, refState = "IIR", reference_T = 273.15);
     end Butane_n;
-  
+
     package Butanol_n
       extends FreeFluids.TMedia.TMedium(final mediumName = "n-Butanol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Butanol_n});
     end Butanol_n;
-  
+
     package CO2
       extends FreeFluids.TMedia.TMedium(final mediumName = "Carbon dioxide", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.CO2});
     end CO2;
-  
+
     package Dichlorodifluormethane
       extends FreeFluids.TMedia.TMedium(final mediumName = "Dichlorodifluormethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Dichlorodifluormethane}, reference_T = 273.15, refState = "ASHRAE");
     end Dichlorodifluormethane;
-  
+
     package EG
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ethylene glycol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
     end EG;
-  
+
     package Ethane
-      extends TMedium(final mediumName = "Ethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethane}, refState="IIR", reference_T=273.15);
+      extends TMedium(final mediumName = "Ethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethane}, refState = "IIR", reference_T = 273.15);
     end Ethane;
-  
+
     package Ethanol
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ethanol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethanol}, reference_T = 273.15);
     end Ethanol;
-  
+
     package Isobutane
       extends FreeFluids.TMedia.TMedium(final mediumName = "Isobutane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Isobutane}, reference_T = 273.15);
     end Isobutane;
-  
+
     package MarlothermSH
       extends FreeFluids.TMedia.TMedium(final mediumName = "Marlotherm SH", final singleState = false, p_default = 1.0e5, T_default = 425.0, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.MarlothermSH});
     end MarlothermSH;
-  
+
     package Methane
-      extends TMedium(final mediumName = "Methane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Methane}, refState="IIR", reference_T=273.15);
+      extends TMedium(final mediumName = "Methane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Methane}, refState = "IIR", reference_T = 273.15);
     end Methane;
-  
+
     package N2
       extends FreeFluids.TMedia.TMedium(final mediumName = "Nitrogen", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.N2});
     end N2;
-  
+
     package O2
       extends FreeFluids.TMedia.TMedium(final mediumName = "Oxygen", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.O2});
     end O2;
-  
+
     package Pentane_n
-      extends TMedium(final mediumName = "Pentane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Pentane_n}, refState="IIR", reference_T=273.15);
+      extends TMedium(final mediumName = "Pentane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Pentane_n}, refState = "IIR", reference_T = 273.15);
     end Pentane_n;
-  
+
     package Propane
       extends TMedium(final mediumName = "Propane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Propane}, refState = "NBP");
     end Propane;
-  
+
     package R134A
-      extends TMedium(final mediumName = "R134A", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.R134A}, refState="ASHRAE", reference_T=273.15);
+      extends TMedium(final mediumName = "R134A", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.R134A}, refState = "ASHRAE", reference_T = 273.15);
     end R134A;
-  
+
     package R410A
-      extends TMedium(final mediumName = "R410A", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.R410A}, refState="ASHRAE", reference_T=273.15);
+      extends TMedium(final mediumName = "R410A", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.R410A}, refState = "ASHRAE", reference_T = 273.15);
     end R410A;
-  
+
     package ShellS2
       extends FreeFluids.TMedia.TMedium(final mediumName = "Shell S2", final singleState = false, p_default = 2.0e5, T_default = 425.0, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.ShellS2});
     end ShellS2;
-  
+
     package Toluene
       extends FreeFluids.TMedia.TMedium(final mediumName = "Toluene", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Toluene}, reference_T = 273.15);
     end Toluene;
-  
+
     package Water
       extends FreeFluids.TMedia.TMedium(final mediumName = "Water", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Water}, reference_T = 273.15, refState = "User");
     end Water;
   end Fluids;
 
   package Tests
-    partial model FluidTest1
+    partial model FluidTestingA
       replaceable package Medium = Modelica.Media.Interfaces.PartialTwoPhaseMedium;
       parameter Medium.AbsolutePressure p = 1.0e5;
       parameter Medium.Temperature initialT = 273.19;
@@ -836,72 +840,72 @@ package TMedia "TMedia.mo by Carlos Trujillo
       Medium.BaseProperties BaseProp;
     algorithm
 //Construction of StateP and calculation of properties
-    for i in 1:100 loop
-      StateP := Medium.setState_pTX(p, T, fill(0, 0));
-      MM := Medium.molarMass(StateP);
-      H := Medium.specificEnthalpy(StateP);
-      D := Medium.density(StateP);
-      S := Medium.specificEntropy(StateP);
-      U := Medium.specificInternalEnergy(StateP);
-      G := Medium.specificGibbsEnergy(StateP);
-      A := Medium.specificHelmholtzEnergy(StateP);
-      Cp := Medium.specificHeatCapacityCp(StateP);
-      Cv := Medium.specificHeatCapacityCv(StateP);
-      Gamma := Cp / Cv;
-      SS := Medium.velocityOfSound(StateP);
-      Beta := Medium.isobaricExpansionCoefficient(StateP);
-      Kappa := Medium.isothermalCompressibility(StateP);
-      Mu := Medium.dynamicViscosity(StateP);
-      Th := Medium.thermalConductivity(StateP);
-//Reconstruction of states from properties
-      StateD := Medium.setState_dTX(D, T, fill(0, 0));
-      StateH := Medium.setState_phX(p, H, fill(0, 0));
-      StateS := Medium.setState_psX(p, S, fill(0, 0));
-//Construction of state Dlow and get properties
-      StateDlow := Medium.setState_dTX(D * fract, T, fill(0, 0));
-      DlowGasFract := Medium.vapourQuality(StateDlow);
-      DlowD := Medium.density(StateDlow);
-      DlowH := Medium.specificEnthalpy(StateDlow);
-      DlowU := Medium.specificInternalEnergy(StateDlow);
-      DlowS := Medium.specificEntropy(StateDlow);
-      DlowA := Medium.specificHelmholtzEnergy(StateDlow);
-//Calculations at saturation
-      sat := Medium.setSat_T(T);
-      Vp:=Medium.saturationPressure_sat(sat);
-      StateBub := Medium.setBubbleState(sat);
-      StateDew := Medium.setDewState(sat);
-      BubD := Medium.bubbleDensity(sat);
-      BubH := Medium.bubbleEnthalpy(sat);
-      DewD := Medium.dewDensity(sat);
-      DewH := Medium.dewEnthalpy(sat);
-      Hv := DewH - BubH;
-      BubS := Medium.bubbleEntropy(sat);
-      DewS := Medium.dewEntropy(sat);
-      DewMu:= Medium.dynamicViscosity(StateDew);
-      Tsat := Medium.saturationTemperature(sat.psat);
-      Sigma := Medium.surfaceTension(sat);
-    //construction of state HalfH
-      StateHalfH:=Medium.setState_phX(Vp, (BubH+DewH)/2, fill(0, 0));
+      for i in 1:100 loop
+        StateP := Medium.setState_pTX(p, T, fill(0, 0));
+        MM := Medium.molarMass(StateP);
+        H := Medium.specificEnthalpy(StateP);
+        D := Medium.density(StateP);
+        S := Medium.specificEntropy(StateP);
+        U := Medium.specificInternalEnergy(StateP);
+        G := Medium.specificGibbsEnergy(StateP);
+        A := Medium.specificHelmholtzEnergy(StateP);
+        Cp := Medium.specificHeatCapacityCp(StateP);
+        Cv := Medium.specificHeatCapacityCv(StateP);
+        Gamma := Cp / Cv;
+        SS := Medium.velocityOfSound(StateP);
+        Beta := Medium.isobaricExpansionCoefficient(StateP);
+        Kappa := Medium.isothermalCompressibility(StateP);
+        Mu := Medium.dynamicViscosity(StateP);
+        Th := Medium.thermalConductivity(StateP);
+        StateD := Medium.setState_dTX(D, T, fill(0, 0));
+        StateH := Medium.setState_phX(p, H, fill(0, 0));
+        StateS := Medium.setState_psX(p, S, fill(0, 0));
+        StateDlow := Medium.setState_dTX(D * fract, T, fill(0, 0));
+        DlowGasFract := Medium.vapourQuality(StateDlow);
+        DlowD := Medium.density(StateDlow);
+        DlowH := Medium.specificEnthalpy(StateDlow);
+        DlowU := Medium.specificInternalEnergy(StateDlow);
+        DlowS := Medium.specificEntropy(StateDlow);
+        DlowA := Medium.specificHelmholtzEnergy(StateDlow);
+        sat := Medium.setSat_T(T);
+        Vp := Medium.saturationPressure_sat(sat);
+        StateBub := Medium.setBubbleState(sat);
+        StateDew := Medium.setDewState(sat);
+        BubD := Medium.bubbleDensity(sat);
+        BubH := Medium.bubbleEnthalpy(sat);
+        DewD := Medium.dewDensity(sat);
+        DewH := Medium.dewEnthalpy(sat);
+        Hv := DewH - BubH;
+        BubS := Medium.bubbleEntropy(sat);
+        DewS := Medium.dewEntropy(sat);
+        DewMu := Medium.dynamicViscosity(StateDew);
+        Tsat := Medium.saturationTemperature(sat.psat);
+        Sigma := Medium.surfaceTension(sat);
+        StateHalfH := Medium.setState_phX(Vp, (BubH + DewH) / 2, fill(0, 0));
       end for;
+//Reconstruction of states from properties
+//Construction of state Dlow and get properties
+//Calculations at saturation
+//construction of state HalfH
     equation
 //Construction of BaseProperties
       BaseProp.p = p;
       BaseProp.h = H;
       der(T) = finalT - initialT;
-    end FluidTest1;
+    end FluidTestingA;
 
-    model Test1A
-      extends FluidTest1(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState="User", reference_T=273.15, highPressure=true), p = 100.0e5, initialT = 0.1 + 273.15, fract = 0.3, finalT = 250.0 + 273.15);
-    end Test1A;
+    model TestA1A
+      extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "user", reference_T = 273.15, highPressure = true), p = 200.0e5, initialT = 0.1 + 273.15, fract = 0.3, finalT = 260.0 + 273.15);
+    end TestA1A;
 
-    model Test1B
-      extends Test1A(redeclare package Medium = Modelica.Media.Water.WaterIF97_ph "Medium model");
-      //extends Test1A(redeclare package Medium = Modelica.Media.R134a.R134a_ph "Medium model");
-    end Test1B;
+    model TestA1B
+      extends TestA1A(redeclare package Medium = Modelica.Media.Water.WaterIF97_ph);
+      //extends TestA1A(redeclare package Medium = Modelica.Media.R134a.R134a_ph);
+    end TestA1B;
 
-    model Test2A
-      extends FluidTest1(redeclare replaceable package Medium = TMedia.Fluids.O2(refState="NBP", highPressure=true), p = 50.0e5, initialT = 55.0, finalT = 120.0);
-    end Test2A;
+    model TestA2A
+      extends FluidTestingA(redeclare replaceable package Medium = TMedia.Fluids.O2(highPressure=true), p = 50.0e5, initialT = 55.0, finalT = 140.0, fract=0.5);
+    end TestA2A;
 
     partial model FluidTestingB
       replaceable package Medium = Modelica.Media.Interfaces.PartialTwoPhaseMedium;
@@ -986,32 +990,12 @@ package TMedia "TMedia.mo by Carlos Trujillo
     end FluidTestingB;
 
     model TestB1A
-      extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState="User", reference_T=273.15, highPressure=true), T = 210 + 273.2, initialP = 20.0e5, fract = 1.0, finalP = 2.0e7);
+      extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true), T = 200 + 273.2, initialP = 20.0e5, fract = 1.0, finalP = 1.5e7);
     end TestB1A;
 
     model TestB1B
       extends TestB1A(redeclare package Medium = Modelica.Media.Water.WaterIF97_ph "Medium model");
     end TestB1B;
-    
-    package ModelicaTests
-      model ModelicaR134ATest
-        package Medium = Modelica.Media.R134a.R134a_ph;
-        parameter Real T = 20 + 273.15;
-        Medium.SaturationProperties sat;
-        Medium.ThermodynamicState StateBub;
-        Medium.ThermodynamicState StateDew;
-        Medium.ThermodynamicState StateBi "a biphasic state with density halfway between bubble and dew";
-        Medium.Density dBi "density half way between bubble and dew";
-        Real gasFraction;
-      algorithm
-        sat := Medium.setSat_T(T);
-        StateBub := Medium.setBubbleState(sat);
-        StateDew := Medium.setDewState(sat);
-        dBi := (StateBub.d + StateDew.d) / 2;
-        StateBi := Medium.setState_dTX(dBi, T);
-        gasFraction := Medium.vapourQuality(StateBi);
-      end ModelicaR134ATest;
-  end ModelicaTests;
   end Tests;
   annotation(
     Documentation(info = "<html>
@@ -1027,7 +1011,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
     <p>When going back from liquid enthalpy, or entropy, to temperature, we have two ways: One of them is to fit a correlation that makes this calculation, that can again be made with FreeFluidsGui. The second, that will be used if we left the value of lTfromHsatCorr=0, will calculate insitu the temperature using a solving function, as is done in the IdealGasMedia package.</p>
     <p>For liquid transport properties, the calculation is done directly from T, but pressure corrections have been introduced for the liquid phase, as already stated.</p> 
     <p>The thermodynamic record contains: p,T,gas fraction, d and h. Care must be taken in limiting the use to the temperature limits of the correlations used, as only few checks are done by the media, in order not to interfer with the solver process</p>
-    <p>A new enumeration type called InputChoice has been defined in order to specify the independent variables to use in each instance of the BaseProperties model. This is done assigning value to the parameter localInputChoice in the model, that has as default the value given to the constant InputChoice inputChoice at package level. </p>
+    <p>A constant string 'localInputChoice' has been added to the BaseProperties model in order to specify the independent variables to use in each instance of the BaseProperties model. The default value for this constant is the value given to the constant string 'inputChoice' at package level. The valid alternatives are: ph, pT, dT</p>
     <p>In the package Tests there is a comparison between the medium performance with water and the WaterIF97_ph medium model.</p>
     <p>The global idea has been not to use the Modelica files for the storage of substances data, but to store the data in a database, from which we can recover and use them when needed. A database is provided with more than 400 substances that can be enlarged, and the FreeFluids GUI can retrieve the data from the data base, treat it as needed (for example creating EOS from saturated vapor pressure and/or densities, or creating correlations from the EOS), store the results in the database, and export the data in Modelica format when needed.</p>
     <p>As a resume: The medium is for fast calculation of liquid phase, condensation, and evaporation, but not for non-saturated gases.</p>
