@@ -25,7 +25,12 @@ package IdealGasMedia
   //***** PACKAGE IdealGasMedium*****
   //*********************************
   partial package IdealGasMedium
-    extends Modelica.Media.Interfaces.PartialPureSubstance(ThermoStates=Modelica.Media.Interfaces.Choices.IndependentVariables.pT);
+    extends Modelica.Media.Interfaces.PartialPureSubstance(ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, 
+    h_default=1e6, singleState=false, 
+    Temperature(min=200, max=6000, start=500, nominal=500), 
+    SpecificEnthalpy(start=h_default, nominal=h_default),
+    Density(start=10, nominal=10),
+    AbsolutePressure(start=5e5, nominal=5e5));
   
       constant Boolean useTransportCorr=true "if true correlations will be used for transport properties
    calculation, if available";
@@ -67,7 +72,7 @@ package IdealGasMedia
 
       Internal.f_nonlinear_Data fd;
     algorithm
-      T := Internal.solve(y, 50.0, 5000.0, 1.0e5, {1}, fd);
+      T := Internal.solve(y, 50.0, max(1500.0,data.Cp0LimS), 1.0e5, {1}, fd);
     end SpecificEnthalpyCorrInv;
     
     function SpecificEntropyCorr "Calculates specific entropy from a given Cp correlation at a given temperature, using an external function. No constant adjustment is used in the integration."
@@ -99,7 +104,7 @@ package IdealGasMedia
       end Internal;
       Internal.f_nonlinear_Data fd;
     algorithm
-      T := Internal.solve(y, 50.0, 5000.0, 1.0e5, {1}, fd);
+      T := Internal.solve(y, 50.0, max(1500.0,data.Cp0LimS), 1.0e5, {1}, fd);
     end SpecificEntropyCorrInv;
   
   //BaseProperties model
@@ -383,7 +388,7 @@ package IdealGasMedia
   //***** PACKAGE Template*****
 
   package IdealGasMediumTemplate
-    extends IdealGasMedium(final mediumName = "no name", final singleState = false, data=FreeFluids.MediaCommon.MediaData.MediaDataTemplate);
+    extends IdealGasMedium(final mediumName = "no name", final singleState = false, data=FreeFluids.MediaCommon.MediaDataTemplate);
   end IdealGasMediumTemplate;
 
   //***** PACKAGE Acetone*****
@@ -395,7 +400,7 @@ package IdealGasMedia
   //***** PACKAGE Air*****
 
   package Air
-    extends IdealGasMedium(final mediumName = "Air", final singleState = false, data=FreeFluids.MediaCommon.MediaDataAL.Air); 
+    extends IdealGasMedium(final mediumName = "Air", final singleState = false, h_default=1e6, data=FreeFluids.MediaCommon.MediaDataAL.Air); 
   end Air;
 
   package Ammonia
@@ -448,6 +453,7 @@ package IdealGasMedia
       Medium.SpecificEntropy S "StateP specific entropy";
       Real Cp;
       Real Cv;
+      Real Gamma;
       Real G "isentropic exponent";
       SI.Velocity SS "StateP speed of sound";
       Medium.SpecificEnthalpy H2 "isentropic enthalpy at pressure p2";
@@ -463,6 +469,7 @@ package IdealGasMedia
       S:=Medium.specificEntropy(StateP);
       Cp:=Medium.specificHeatCapacityCp(StateP);
       Cv:=Medium.specificHeatCapacityCv(StateP);
+      Gamma:=Medium.isentropicExponent(StateP);
       G:=Medium.isentropicExponent(StateP);
       SS:=Medium.velocityOfSound(StateP);
       H2:=Medium.isentropicEnthalpy(p2,StateP);
@@ -490,7 +497,7 @@ package IdealGasMedia
     end FluidTesting;
 
     model Test1A
-      extends FluidTesting(redeclare replaceable package Medium = FreeFluids.IdealGasMedia.N2(useTransportCorr=true), p=1.0e5, p2=1.0e6, initialT=1000.0, finalT=273.15);  
+      extends FluidTesting(redeclare replaceable package Medium = FreeFluids.IdealGasMedia.N2(useTransportCorr=true), p=7.0e5, p2=1.0e6, initialT=1000.0, finalT=273.15);  
     end Test1A;
     model Test1B
       extends Test1A(redeclare package Medium = Modelica.Media.IdealGases.SingleGases.N2);  

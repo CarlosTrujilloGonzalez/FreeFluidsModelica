@@ -22,7 +22,16 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
   //*********************************
 
   partial package IdealGasMix
-    extends Modelica.Media.Interfaces.PartialMixtureMedium(ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pTX, substanceNames = data[:].name, reducedX = false, fixedX = true, singleState = true, reference_X = fill(1 / nX, nX));
+    extends Modelica.Media.Interfaces.PartialMixtureMedium(ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pTX, 
+    substanceNames = data[:].name, 
+    reducedX = false, 
+    fixedX = true, 
+    singleState = false, 
+    reference_X = fill(1 / nX, nX),
+      Temperature(min=200, max=6000, start=500, nominal=500), 
+      SpecificEnthalpy(start=h_default, nominal=h_default),
+      Density(start=10, nominal=10),
+      AbsolutePressure(start=5e5, nominal=5e5));
     constant Boolean useTransportCorr=true;
     //Data storage definitions
     //------------------------
@@ -436,7 +445,7 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
       end for;
         
         MF:=massToMoleFractions(state.X, data[:].MW);
-        lambda:=FreeFluids.MediaCommon.Functions.gasMixThCondMason(state.T,MF,lambdaX,data.MW,data.Tc,data.Pc);
+        lambda:=FreeFluids.MediaCommon.Functions.gasMixThCondMason(state.T,MF,lambdaX,data.MW,data.Tc,data.criticalPressure);
     end thermalConductivity;
     
     redeclare function extends setSmoothState

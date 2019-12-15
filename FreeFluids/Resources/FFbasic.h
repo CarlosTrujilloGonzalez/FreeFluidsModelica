@@ -94,7 +94,7 @@ typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,VdWV,c,k1,k2,k3,k4;}
 typedef struct {double a,Theta,b,c,u,w,dTheta,d2Theta,Tc,Pc,Zc;}FF_CubicParam;
 //Data for SAFT type EOS. Critical properties used are reported in order to better fix the EOS
 typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,sigma,m,epsilon,lr,la,chi,kAB,epsilonAB,mu,xp,Q;int nPos,nNeg,nAcid;}FF_SaftEOSdata;
-//Data for Schmidt-Wagner type EOS
+//Data for Setzmann-Wagner type EOS
 typedef struct {int id;enum FF_EOS eos;double MW,Tc,Pc,Zc,w,tRef,rhoRef,n[60],t[60],a[16],e[16],b[16],g[16],af[5],bf[5],
                 Af[5],Bf[5],Cf[5],Df[5],betaf[5];int d[60],c[55],nPol,nExp,nSpec,nFinal;}FF_SWEOSdata;
 //Data for physical properties correlation formulas

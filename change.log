@@ -1,3 +1,11 @@
+Version 1.1.4
+- Added pure Modelica functions for the calculation of physical properties by correlations, including enthalpy and entropy.
+- Substitution, in the TMedium package, of the physical properties calculation using external function by a pure Modelica function calculation.
+The change is not yet done for enthalpy and entropy calculation.
+- Correction of some bugs in the physical properties calculation routines.
+- Changed the variable name from Pc to criticalPressure in the fluids data record.
+- Addition of derivative functions calculation to the TMedium package. The package is now compatible with ThermoPower package.
+
 Version 1.1.3
 - Changed the inputChoice constant of the TMedium package from enumeration to string. It was impossible to modify the original selection.
 - Changed the assertion level to warning if trying to use the saturationTemperature function, of the TMedium package, over the critical pressure. It was producing problems when working over the Pc.
