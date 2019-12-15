@@ -392,9 +392,11 @@ void CALLCONV FF_VfromTPcubic(const double *T,const double *P,const  FF_CubicPar
         resultL[0]=resultG[0]=Veos-param->c;//this is V
         resultL[1]=resultG[1]=param->Theta/(param->b*R* *T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultL[0]/(Veos-param->b));//This is Arr
         resultL[2]=resultG[2]=Z[0]*resultL[0]/Veos;//Z
-        if ((*T>=param->Tc)||(Z[0]>param->Zc)) *state='G';
+        if (*T>=param->Tc) *state='G';
+        else if (*P>=param->Pc) *state='L';
+        else if (Z[0]>=param->Zc) *state='G';
         else *state='L';
-        //printf("Vl:%f\n",resultL[0]);
+        //printf("VfromTPcubic T:%f P:%f Vl:%f Z[0]:%f State:%c\n",*T, *P, resultL[0],Z[0],*state);
     }
     else{
         m = 2 * pow(-L / 3,0.5);
@@ -2197,19 +2199,19 @@ void CALLCONV FF_VfromTPeosS(const double *T,const double *P,const FF_SubstanceD
             //( FF_CubicEOSdata*) data;
             FF_FixedParamCubic(&data->cubicData, &param);
             FF_ThetaDerivCubic(T,&data->cubicData, &param);
-            //printf("Hola soy V from TP eos: c:%f b:%f a:%f Theta:%f dTheta:%f d2Theta:%f\n",param.c,param.b,param.a,param.Theta,param.dTheta,param.d2Theta);
+            //printf("Hola soy V from TP eos: c:%f b:%f a:%f Theta:%f dTheta:%f d2Theta:%f Tc:%f Zc:%f\n",param.c,param.b,param.a,param.Theta,
+            //       param.dTheta,param.d2Theta,param.Tc,param.Zc);
             FF_VfromTPcubic(T,P,&param,option,resultL,resultG,state);
             break;
     }
-    //printf("T:%f  P:%f Vl:%f ArrL:%f Zl:%f\n",*T,*P,resultL[0],resultL[1],resultL[2]);
+    //printf("T:%f  P:%f Vl:%f ArrL:%f Zl:%f Vg:%f ArrG:%f Zg:%f State:%c\n",*T,*P,resultL[0],resultL[1],resultL[2],resultG[0],resultG[1],resultG[2],*state);
     //the answer from SAFT and SW is very elaborated to L or G, but from Cubic is u or b
-    if (*option=='s'){
-        if (*state=='b'){
-            if ((resultL[1]+resultL[2]-1-log(resultL[2]))<(resultG[1]+resultG[2]-1-log(resultG[2]))) *state='L';//we compare Gdr
-            else if ((resultL[1]+resultL[2]-1-log(resultL[2]))>(resultG[1]+resultG[2]-1-log(resultG[2]))) *state='G';
-            else *state='E';//if Gdr is the same we are in equilibrium
-        }
+    if ((*option=='s')&&(*state=='b')){
+        if ((resultL[1]+resultL[2]-1-log(resultL[2]))<(resultG[1]+resultG[2]-1-log(resultG[2]))) *state='L';//we compare Gdr
+        else if ((resultL[1]+resultL[2]-1-log(resultL[2]))>(resultG[1]+resultG[2]-1-log(resultG[2]))) *state='G';
+        else *state='E';//if Gdr is the same we are in equilibrium
     }
+    //printf("State VfromTPeosS:%c\n",*state);
 }
 
 //Boiling point calculation

@@ -17,22 +17,32 @@ package TMedia "TMedia.mo by Carlos Trujillo
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA."
   partial package TMedium
-    extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, redeclare record FluidConstants = FreeFluids.MediaCommon.DataRecord);
-    constant String refState = "IIR" "Enthalpy/entropy reference state. Alternatives: ASHRAE, IIR, NBP, otherwise the value at reference_T as 0";
+    extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(singleState=false, onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, redeclare record FluidConstants = FreeFluids.MediaCommon.DataRecord);
+  
+     
+    import PhysPropCorrCalc=FreeFluids.MediaCommon.Functions.PhysPropCorrCalc;
+    import SpecificEnthalpyCorrCalc=FreeFluids.MediaCommon.Functions.SpecificEnthalpyCorrCalc;
+  
+    constant String refState = "None" "Enthalpy/entropy reference state. Alternatives: ASHRAE, IIR, NBP, User(value at reference_T as 0), otherwise no reference";
     constant String inputChoice = "ph" "Allows to choose the input choise to use for the construction of a BaseProperties object. Alternative are: pT, ph, dT";
-    constant Boolean highPressure = false;
+    constant Boolean highPressure = true;
+    
     constant SpecificEnthalpy UserRefH = SpecificEnthalpyCorr(reference_T);
     constant SpecificEnthalpy ASHRAErefH = SpecificEnthalpyCorr(233.15);
     constant SpecificEnthalpy NBPrefH = SpecificEnthalpyCorr(fluidConstants[1].Tb);
     constant SpecificEnthalpy IIRrefH = SpecificEnthalpyCorr(273.15) - 2.0e5;
+  
     constant SpecificEntropy UserRefS = SpecificEntropyCorr(reference_T);
     constant SpecificEntropy ASHRAErefS = SpecificEntropyCorr(233.15);
     constant SpecificEntropy NBPrefS = SpecificEntropyCorr(fluidConstants[1].Tb);
     constant SpecificEntropy IIRrefS = SpecificEntropyCorr(273.15) - 1.0e3;
+    
+    
+  
     //Auxiliary functions based in correlations
     //-----------------------------------------
-
-    function PhysPropCorr "Calculates a physical property from a given correlation data and a given temperature, or pressure, using an external function."
+  
+    /*function PhysPropCorr "Calculates a physical property from a given correlation data and a given temperature, or pressure, using an external function."
       input Integer corr;
       input Real coef[:];
       input Real x;
@@ -41,9 +51,21 @@ package TMedia "TMedia.mo by Carlos Trujillo
       external "C" FF_PhysPropCorr(corr, coef, fluidConstants[1].MW, x, y) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFphysprop.c\"");
-    end PhysPropCorr;
-
-    function SpecificEnthalpyCorr "Calculates specific enthalpy from a given Cp correlation at a given temperature from 0K"
+    end PhysPropCorr;*/
+  
+  
+    
+    /*function SpecificEnthalpyCorr "Calculates specific enthalpy from a given Cp correlation at a given temperature from 0K"
+      input Real x;
+      output Real y;
+    algorithm
+      y:=SpecificEnthalpyCorrCalc(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, x);
+      annotation(
+        Inline = true,
+        smoothOrder = 2);
+    end SpecificEnthalpyCorr;*/
+    
+    function SpecificEnthalpyCorr "Calculates specific enthalpy from a given Cp correlation at a given temperature from 0K, using an external function"
       input Real x;
       output Real y;
     
@@ -54,8 +76,18 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Inline = true,
         smoothOrder = 2);
     end SpecificEnthalpyCorr;
-
-    function SpecificEntropyCorr "Calculates specific entropy from a given Cp correlation at a given temperature from 0K"
+  
+    /*function SpecificEntropyCorr "Calculates specific enthalpy from a given Cp correlation at a given temperature from 0K"
+      input Real x;
+      output Real y;
+    algorithm
+      y:=FreeFluids.MediaCommon.Functions.SpecificEntropyCorrCalc(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, x);
+      annotation(
+        Inline = true,
+        smoothOrder = 2);
+    end SpecificEntropyCorr;*/
+  
+    function SpecificEntropyCorr "Calculates specific entropy from a given Cp correlation at a given temperature from 0K, using an external function"
       input Real x;
       output Real y;
     
@@ -63,35 +95,34 @@ package TMedia "TMedia.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFphysprop.c\"");
     end SpecificEntropyCorr;
-
+  
     //Function SpecificEnthalpyCorrInv
-
     function SpecificEnthalpyCorrInv "Compute temperature from property value"
       input Real y "Property value";
       output Temperature T "Temperature";
     protected
       package Internal "Solve h(fluidConstants[1],T) for T with given h (use only indirectly via temperature_phX)"
         extends Modelica.Media.Common.OneNonLinearEquation;
-
+  
         redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
         end f_nonlinear_Data;
-
+  
         redeclare function extends f_nonlinear
           algorithm
             y := SpecificEnthalpyCorr(x);
         end f_nonlinear;
-
+  
         redeclare function extends solve
         end solve;
       end Internal;
-
+  
       Internal.f_nonlinear_Data fd;
     algorithm
-      T := Internal.solve(y, 50.0, fluidConstants[1].Tc - 0.01, 1.0e5, {1}, fd);
+      T := Internal.solve(y, 20.0, fluidConstants[1].Tc - 0.01, 1.0e5, {1}, fd);
     end SpecificEnthalpyCorrInv;
-
+  
     //Function SpecificEntropyCorrInv
-
+  
     function SpecificEntropyCorrInv "Compute temperature from property value"
       //input Correlation corrData;
       input Real y "Property value";
@@ -99,76 +130,83 @@ package TMedia "TMedia.mo by Carlos Trujillo
     protected
       package Internal "Solve h(fluidConstants[1],T) for T with given h (use only indirectly via temperature_phX)"
         extends Modelica.Media.Common.OneNonLinearEquation;
-
+  
         redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
         end f_nonlinear_Data;
-
+  
         redeclare function extends f_nonlinear
           algorithm
             y := SpecificEntropyCorr(x);
         end f_nonlinear;
-
+  
         redeclare function extends solve
         end solve;
       end Internal;
-
+  
       Internal.f_nonlinear_Data fd;
     algorithm
-      T := Internal.solve(y, 50.0, fluidConstants[1].Tc - 0.01, 1.0e5, {1}, fd);
+      T := Internal.solve(y, 20.0, fluidConstants[1].Tc - 0.01, 1.0e5, {1}, fd);
     end SpecificEntropyCorrInv;
-
+  
     redeclare function extends saturationPressure "Return saturation pressure from T"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         assert(T < fluidConstants[1].Tc, "The media can´t be used over Tc");
-        p := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
+        p := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, T);
     end saturationPressure;
-
+  
     function saturationPressureInv "Compute temperature from property value"
       input Real y;
       output Real T;
     protected
       package Internal
         extends Modelica.Media.Common.OneNonLinearEquation;
-
+  
         redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
         end f_nonlinear_Data;
-
+  
         redeclare function extends f_nonlinear
           algorithm
             y := saturationPressure(x);
         end f_nonlinear;
-
+  
         // Dummy definition has to be added for current Dymola
-
+  
         redeclare function extends solve
         end solve;
       end Internal;
-
+  
       Internal.f_nonlinear_Data fd;
     algorithm
       T := Internal.solve(y, 50.0, fluidConstants[1].Tc - 0.01, 1.0e5, {1}, fd);
     end saturationPressureInv;
-
+  
     redeclare function extends saturationTemperature "Return saturation temperature from P"
         extends Modelica.Icons.Function;
-
+  
       algorithm
-        assert(p < fluidConstants[1].Pc, "No saturated media possible over Pc", AssertionLevel.warning);
-        T := if p >= fluidConstants[1].Pc then fluidConstants[1].Pc else if fluidConstants[1].BtCorr > 0 then PhysPropCorr(fluidConstants[1].BtCorr, fluidConstants[1].BtCoef, p) else saturationPressureInv(p);
+        assert(p < fluidConstants[1].criticalPressure, "No saturated media possible over Pc", AssertionLevel.warning);
+        T := if p >= fluidConstants[1].criticalPressure then fluidConstants[1].criticalPressure else if fluidConstants[1].BtCorr > 0 then PhysPropCorrCalc(fluidConstants[1].BtCorr, fluidConstants[1].BtCoef, fluidConstants[1].MW, p) else saturationPressureInv(p);
     end saturationTemperature;
-
+    
+    redeclare function extends saturationTemperature_derp "Return derivative of saturation temperature w.r.t. pressure"
+        extends Modelica.Icons.Function;
+      algorithm
+        dTp := (saturationTemperature(p)-saturationTemperature(0.999*p))/(0.001*p);
+    end saturationTemperature_derp;
+    
+  
     //BaseProperties model
     //--------------------
-
+  
     redeclare model extends BaseProperties(
   h(stateSelect = if preferredMediumStates and localInputChoice=="ph" then StateSelect.prefer else StateSelect.default), 
   p(stateSelect = if preferredMediumStates and (localInputChoice=="ph" or localInputChoice=="pT") then StateSelect.prefer else StateSelect.default),
   T(stateSelect = if preferredMediumStates and (localInputChoice=="pT" or localInputChoice=="dT") then StateSelect.prefer else StateSelect.default),
   d(stateSelect = if preferredMediumStates and localInputChoice=="dT" then StateSelect.prefer else StateSelect.default))
         constant String localInputChoice = inputChoice;
-
+  
       equation
         MM = fluidConstants[1].MW / 1000 "in kg/mol";
         R = Modelica.Constants.R / MM;
@@ -190,10 +228,10 @@ package TMedia "TMedia.mo by Carlos Trujillo
           assert(false, "Invalid choice for BaseProperties inputChoice");
         end if;
     end BaseProperties;
-
+  
     //Thermodynamic state definition and constructors
     //-----------------------------------------------
-
+  
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         AbsolutePressure p "Pressure in Pa";
@@ -202,126 +240,131 @@ package TMedia "TMedia.mo by Carlos Trujillo
         SpecificEnthalpy h "specific enthalpy";
         Fraction gf "gas fraction";
     end ThermodynamicState;
-
-    redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi"
-        extends Modelica.Icons.Function;
-
-      protected
-        AbsolutePressure Vp;
-        Density Dls "saturated liquid density at T";
-
-      algorithm
-        assert(T <= fluidConstants[1].Tc, "The media can´t be used over Tc.");
-        state.p := p;
-        state.T := T;
-        Vp := saturationPressure(T);
-        if p > Vp then
-          Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, T);
-          state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp));
-          state.h := if refState == "IIR" then SpecificEnthalpyCorr(T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(T) - ASHRAErefH else SpecificEnthalpyCorr(T) - UserRefH "saturated liquid enthalpy";
-          if highPressure == true then
-            state.h := if T <= 0.45 * fluidConstants[1].Tc then state.h + state.p / state.d - Vp / Dls else if T < 0.85 * fluidConstants[1].Tc then state.h + (0.85 * fluidConstants[1].Tc - T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else state.h "pressure correction for liquid enthalpy";
-          end if;
-          state.phase := 1;
-          state.gf := 0;
-        elseif p < Vp then
-          assert(false, "The medium can't work with non-saturated gas");
-        else
-          assert(false, "A two phases state can't be constructed from p and T");
-        end if;
-    end setState_pTX;
-
+  
+    redeclare     function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi"
+            extends Modelica.Icons.Function;
+      
+          protected
+            AbsolutePressure Vp;
+            Density Dls "saturated liquid density at T";
+            SpecificEnthalpy Href;
+          algorithm
+            assert(T <= fluidConstants[1].Tc, "The media can´t be used over Tc.");
+            state.p := p;
+            state.T := T;
+            Vp := saturationPressure(T);
+            if p > Vp then
+              Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, T);
+              state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp));
+              //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+              //state.h := SpecificEnthalpyCorr(T) - Href;
+              state.h := if refState == "IIR" then SpecificEnthalpyCorr(T) - IIRrefH elseif refState == "NBP" then SpecificEnthalpyCorr(T) - NBPrefH elseif refState == "ASHRAE" then SpecificEnthalpyCorr(T) - ASHRAErefH else SpecificEnthalpyCorr(T) - UserRefH "saturated liquid enthalpy";
+              
+              if highPressure == true then
+                state.h := if T <= 0.45 * fluidConstants[1].Tc then state.h + state.p / state.d - Vp / Dls else if T < 0.85 * fluidConstants[1].Tc then state.h + (0.85 * fluidConstants[1].Tc - T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else state.h "pressure correction for liquid enthalpy";
+              end if;
+              state.phase := 1;
+              state.gf := 0;
+            elseif p < Vp then
+              assert(false, "The medium can't work with non-saturated gas");
+            else
+              assert(false, "A two phases state can't be constructed from p and T");
+            end if;
+        end setState_pTX;
+  
     redeclare function extends setState_dTX "Return ThermodynamicState record as function of T,d and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       protected
         Density Dls;
         Density Dgs;
         SpecificEnthalpy Hls "enthalpy of the saturated liquid at given T";
         AbsolutePressure Vp;
-
+  
       algorithm
         assert(T <= fluidConstants[1].Tc, "The media can´t be used over Tc");
         state.T := T;
         state.d := d;
-        Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, T) "saturated liquid density at T";
+        Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, T) "saturated liquid density at T";
         Hls := if refState == "IIR" then SpecificEnthalpyCorr(T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(T) - ASHRAErefH else SpecificEnthalpyCorr(T) - UserRefH;
-        Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
+        Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, T);
         if d >= Dls then
           state.p := if fluidConstants[1].lnuA > 0 then Vp + (exp((d - Dls) * fluidConstants[1].lnuA) - 1) * 1000 * Modelica.Constants.R * T * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) / (fluidConstants[1].lnuA * fluidConstants[1].MW) else (1 - Dls / d) / fluidConstants[1].IsothComp + Vp;
           state.h := if T <= 0.45 * fluidConstants[1].Tc then Hls + (state.p - Vp) / state.d else if T < 0.85 * fluidConstants[1].Tc then Hls + (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p - Vp) / state.d else Hls;
           state.phase := 1;
           state.gf := 0;
         else
-          Dgs := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, T);
+          Dgs := PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, T);
           assert(d >= Dgs, "The media can´t work with non-saturated gases");
-          state.p := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, T);
+          state.p := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, T);
           state.h := if T <= 0.45 * fluidConstants[1].Tc then Hls + state.p / state.d - Vp / Dls else if T < 0.85 * fluidConstants[1].Tc then Hls + (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else Hls "pressure correction for liquid enthalpy";
           if d > Dgs then
             state.phase := 2;
             state.gf := Dgs * (Dls - d) / (d * (Dls - Dgs));
-            state.h := state.h + state.gf * PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, T);
+            state.h := state.h + state.gf * PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, T);
           elseif d == Dgs then
             state.phase := 1;
             state.gf := 1;
-            state.h := state.h + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, T);
+            state.h := state.h + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, T);
           end if;
         end if;
     end setState_dTX;
-
-    redeclare function extends setState_phX "Return ThermodynamicState record as function of p,H and composition X or Xi"
-        extends Modelica.Icons.Function;
-
-      protected
-        Temperature Tb;
-        SpecificEnthalpy Hls "saturated liquid enthalpy";
-        SpecificEnthalpy Hgs "saturated gas enthalpy";
-        Density Dls "saturated liquid density";
-        Density Dgs "saturated gas density";
-        SpecificEnthalpy Hraw "Input enthalpy without reference correction";
-        AbsolutePressure Vp;
-
-      algorithm
-        state.p := p;
-        state.h := h;
-        if p >= fluidConstants[1].Pc then
-          Tb := fluidConstants[1].Tc;
-        else
-          Tb := saturationTemperature(p);
-        end if;
-        Hraw := if refState == "IIR" then h + IIRrefH else if refState == "NBP" then h + NBPrefH else if refState == "ASHRAE" then h + ASHRAErefH else h + UserRefH;
-        Hls := SpecificEnthalpyCorr(Tb) "unreferenced saturated liquid specific enthalpy at T";
-//Hls := SpecificEnthalpyCorr(Tb) - UserRefH "liquid specific enthalpy at boiling T";
-        if Hls >= Hraw then
-          state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorr(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, Hraw) else SpecificEnthalpyCorrInv(Hraw);
-          Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-          Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
-          state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
-          if highPressure == true then
-            Hraw := if state.T <= 0.45 * fluidConstants[1].Tc then Hraw - state.p / state.d + Vp / Dls else if state.T < 0.85 * fluidConstants[1].Tc then Hraw - (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else Hraw "pressure correction for liquid enthalpy";
-            state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorr(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, Hraw) else SpecificEnthalpyCorrInv(Hraw);
-            Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
-            state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
-          end if;
-          state.phase := 1;
-          state.gf := 0;
-        else
-          Hgs := Hls + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, Tb);
-          assert(Hgs >= Hraw, "The media can´t work with non-saturated gases");
-          Dgs := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, Tb);
-          Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, Tb);
-          state.T := Tb;
-          state.phase := 2;
-          state.gf := (Hraw - Hls) / (Hgs - Hls);
-          state.d := Dls * Dgs / (state.gf * Dls + (1 - state.gf) * Dgs);
-        end if;
-//Hraw:=Hraw-(state.p-Vp)/state.d "pressure correction for liquid enthalpy";
-    end setState_phX;
-
+  
+    redeclare         function extends setState_phX "Return ThermodynamicState record as function of p,H and composition X or Xi"
+                extends Modelica.Icons.Function;
+          
+              protected
+                Temperature Tb;
+                SpecificEnthalpy Hls "saturated liquid enthalpy";
+                SpecificEnthalpy Hgs "saturated gas enthalpy";
+                Density Dls "saturated liquid density";
+                Density Dgs "saturated gas density";
+                SpecificEnthalpy Hraw "Input enthalpy without reference correction";
+                AbsolutePressure Vp;
+                SpecificEnthalpy Href;
+              algorithm
+                state.p := p;
+                state.h := h;
+                if p >= fluidConstants[1].criticalPressure then
+                  Tb := fluidConstants[1].Tc;
+                else
+                  Tb := saturationTemperature(p);
+                end if;
+                //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+                //Hraw:= h + Href;
+                Hraw := if refState == "IIR" then h + IIRrefH else if refState == "NBP" then h + NBPrefH else if refState == "ASHRAE" then h + ASHRAErefH else h + UserRefH;
+                
+                Hls := SpecificEnthalpyCorr(Tb) "unreferenced saturated liquid specific enthalpy at T";
+                if Hls >= Hraw then
+                  state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorrCalc(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, fluidConstants[1].MW, Hraw) else SpecificEnthalpyCorrInv(Hraw);
+                  Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) "saturated liquid density";
+                  Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T);
+                  state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
+                  if highPressure == true then
+                    Hraw := if state.T <= 0.45 * fluidConstants[1].Tc then Hraw - state.p / state.d + Vp / Dls else if state.T < 0.85 * fluidConstants[1].Tc then Hraw - (0.85 * fluidConstants[1].Tc - state.T) / (0.4 * fluidConstants[1].Tc) * (state.p / state.d - Vp / Dls) else Hraw "pressure correction for liquid enthalpy";
+                    state.T := if fluidConstants[1].lTfromHsatCorr > 0 then PhysPropCorrCalc(fluidConstants[1].lTfromHsatCorr, fluidConstants[1].lTfromHsatCoef, fluidConstants[1].MW, Hraw) else SpecificEnthalpyCorrInv(Hraw);
+                    Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) "saturated liquid density";
+                    Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T);
+                    state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
+                  end if;
+                  state.phase := 1;
+                  state.gf := 0;
+                else
+                  Hgs := Hls + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, Tb);
+                  assert(Hgs >= Hraw, "The media can´t work with non-saturated gases");
+                  Dgs := PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, Tb);
+                  Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, Tb);
+                  state.T := Tb;
+                  state.phase := 2;
+                  state.gf := (Hraw - Hls) / (Hgs - Hls);
+                  state.d := Dls * Dgs / (state.gf * Dls + (1 - state.gf) * Dgs);
+                end if;
+          //Hraw:=Hraw-(state.p-Vp)/state.d "pressure correction for liquid enthalpy";
+            end setState_phX;
+  
     redeclare function extends setState_psX "Return thermodynamic state as function of p, s and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       protected
         Temperature Tb;
         SpecificEntropy Sl;
@@ -330,10 +373,10 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Density Dgs;
         SpecificEntropy Sraw "Input entropy without reference correction";
         AbsolutePressure Vp;
-
+  
       algorithm
         state.p := p;
-        if p > fluidConstants[1].Pc then
+        if p > fluidConstants[1].criticalPressure then
           Tb := fluidConstants[1].Tc;
         else
           Tb := saturationTemperature(p);
@@ -342,14 +385,14 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Sl := SpecificEntropyCorr(Tb) "unreferenced saturated liquid specific entropy at T";
         if Sl >= Sraw then
           state.T := SpecificEntropyCorrInv(Sraw);
-          Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-          Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+          Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) "saturated liquid density";
+          Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T);
           state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
           if highPressure == true then
             Sraw := if state.T <= 0.45 * fluidConstants[1].Tc then Sraw else Sraw + (state.T - 0.45 * fluidConstants[1].Tc) * (state.p - Vp) / (0.4 * fluidConstants[1].Tc * state.d * state.T) "pressure correction for liquid entropy";
             state.T := SpecificEntropyCorrInv(Sraw);
-            Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) "saturated liquid density";
-            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+            Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) "saturated liquid density";
+            Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T);
             state.d := if fluidConstants[1].lnuA > 0 then Dls + log(fluidConstants[1].lnuA * fluidConstants[1].MW / (1000 * exp(fluidConstants[1].lnuA * Dls + fluidConstants[1].lnuB) * Modelica.Constants.R * state.T) * (state.p - Vp) + 1) / fluidConstants[1].lnuA else Dls / (1 - fluidConstants[1].IsothComp * (state.p - Vp)) "saturated liquid density, pressure corrected";
           end if;
           state.h := if refState == "IIR" then SpecificEnthalpyCorr(state.T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(state.T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(state.T) - ASHRAErefH else SpecificEnthalpyCorr(state.T) - UserRefH "saturated liquid enthalpy";
@@ -359,155 +402,193 @@ package TMedia "TMedia.mo by Carlos Trujillo
           state.phase := 1;
           state.gf := 0;
         else
-          Sg := Sl + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, Tb) / Tb;
+          Sg := Sl + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, Tb) / Tb;
           assert(Sg >= Sraw, "The media can´t work with non-saturated gases");
-          Dgs := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, Tb);
-          Dls := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, Tb);
+          Dgs := PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, Tb);
+          Dls := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, Tb);
           state.T := Tb;
           state.phase := 2;
           state.gf := (Sraw - Sl) / (Sg - Sl);
           state.h := if refState == "IIR" then SpecificEnthalpyCorr(state.T) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(state.T) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(state.T) - ASHRAErefH else SpecificEnthalpyCorr(state.T) - UserRefH "saturated liquid enthalpy";
-          state.h := state.h + state.gf * PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, Tb) / Tb;
+          state.h := state.h + state.gf * PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, Tb) / Tb;
           state.d := Dls * Dgs / (state.gf * Dls + (1 - state.gf) * Dgs);
         end if;
     end setState_psX;
-
+  
     //Special thermodynamic states constructors
     //------------------------------------------
-
+  
     redeclare function extends setBubbleState "The input is a SaturationProperties record called sat. Returns the ThermodynamicState record at the bubble point"
         extends Modelica.Icons.Function;
-
       protected
         AbsolutePressure Vp;
-
+        SpecificEnthalpy Href;
       algorithm
         state.p := sat.psat;
         state.T := sat.Tsat;
-        state.h := if refState == "User" then SpecificEnthalpyCorr(sat.Tsat) - UserRefH else if refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH else 0.0;
+        //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+        //state.h := SpecificEnthalpyCorr(sat.Tsat)-Href;
+        state.h := if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH elseif refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH elseif refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else SpecificEnthalpyCorr(sat.Tsat) - UserRefH;
+        
         Vp := saturationPressure(state.T);
-        state.d := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T);
+        state.d := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T);
         state.gf := 0.0 "liquid";
         state.phase := 1;
     end setBubbleState;
-
+  
     redeclare function extends setDewState "The input is a SaturationProperties record called sat. Returns the ThermodynamicState record at the dew point"
         extends Modelica.Icons.Function;
-
+        protected
+          //SpecificEnthalpy Href;
       algorithm
         state.p := sat.psat;
         state.T := sat.Tsat;
-        state.h := if refState == "User" then SpecificEnthalpyCorr(sat.Tsat) - UserRefH else if refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH else 0.0;
-        state.h := state.h + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, sat.Tsat);
-        state.d := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, sat.Tsat);
+        //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+        //state.h := SpecificEnthalpyCorr(sat.Tsat)- Href;
+        state.h := if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH elseif refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH elseif refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else SpecificEnthalpyCorr(sat.Tsat) - UserRefH;     
+        state.h := state.h + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat);
+        state.d := PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, sat.Tsat);
         state.gf := 1.0 "gas";
         state.phase := 1;
     end setDewState;
-
+  
     //Properties calculation from thermodynamic state
     //-----------------------------------------------
-
-    function molarMass "Return the molar mass of the medium"
-      extends Modelica.Icons.Function;
-      input ThermodynamicState state;
-      output Real MM;
-    algorithm
-      MM := fluidConstants[1].MW * 1e-3;
-    end molarMass;
-
+  
     redeclare function extends pressure "Return pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         p := state.p;
     end pressure;
-
+  
     redeclare function extends temperature "Return temperature"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         T := state.T;
     end temperature;
-
+  
     redeclare function extends density "Return density"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         d := state.d;
     end density;
-
+  
+    redeclare function extends density_derp_T "Return density derivative w.r.t. pressure at const temperature"
+  extends Modelica.Icons.Function;
+      algorithm
+        if (state.gf==0.0) or (state.gf==1.0) then
+        ddpT := state.d*isothermalCompressibility(state);
+        else
+          ddpT:=0;
+        end if;
+    end density_derp_T;
+    
+    redeclare function extends density_derT_p "Return density derivative w.r.t. temperature at constant pressure"
+  extends Modelica.Icons.Function;
+      algorithm
+        if (state.gf==0.0) or (state.gf==1.0) then
+        ddTp := -state.d*isobaricExpansionCoefficient(state);
+        else
+          ddTp:=0;
+        end if;
+    end density_derT_p;
+  
+    
+    redeclare function extends density_derp_h "Return density derivative w.r.t. pressure at const specific enthalpy"
+  extends Modelica.Icons.Function;
+      algorithm
+        /*if (state.gf==0.0) or (state.gf==1.0) then
+        ddph := state.d*isothermalCompressibility(state) "a pressure independent enthalpy aproximation is used";
+        else
+          ddph:=0 "Not yet implemented";
+        end if;*/
+        ddph:=(density(setState_phX(1.05*state.p,state.h))-state.d)/(0.05*state.p);
+    end density_derp_h;
+  
+    redeclare function extends density_derh_p "Return density derivative w.r.t. specific enthalpy at constant pressure"
+  extends Modelica.Icons.Function;
+      algorithm
+        ddhp := (state.d-density(setState_phX(state.p,state.h-30.0)))/30.0;
+    end density_derh_p;
+  
     redeclare function extends specificEnthalpy "Return specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         h := state.h;
     end specificEnthalpy;
-
+  
     redeclare function extends specificInternalEnergy "Return specific internal energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         u := state.h - state.p / state.d;
     end specificInternalEnergy;
-
+  
     redeclare function extends specificEntropy "Return specific entropy"
         extends Modelica.Icons.Function;
-
+  
       protected
         SpecificEntropy Sl "entropy of the liquid phase";
         AbsolutePressure Vp;
-
+        SpecificEntropy Sref;
       algorithm
+        //Sref:= if refState == "User" then SpecificEntropyCorr(reference_T) elseif refState == "NBP" then SpecificEntropyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEntropyCorr(233.15) elseif refState == "IIR" then SpecificEntropyCorr(273.15)- 1.0e3 else 0;
+        //Sl := SpecificEntropyCorr(state.T) - Sref;
         Sl := if refState == "IIR" then SpecificEntropyCorr(state.T) - IIRrefS else if refState == "NBP" then SpecificEntropyCorr(state.T) - NBPrefS else if refState == "ASHRAE" then SpecificEntropyCorr(state.T) - ASHRAErefS else SpecificEntropyCorr(state.T) - UserRefS;
+        
         if state.gf == 0.0 then
           s := Sl;
           if highPressure == true then
-            Vp := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T);
+            Vp := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T);
             s := if state.T <= 0.45 * fluidConstants[1].Tc then s else s - (state.T - 0.45 * fluidConstants[1].Tc) * (state.p - Vp) / (0.4 * fluidConstants[1].Tc * state.d * state.T) "pressure correction for liquid entropy";
           end if;
         else
-          s := Sl + state.gf * PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, state.T) / state.T;
+          s := Sl + state.gf * PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, state.T) / state.T;
         end if;
     end specificEntropy;
-
+  
     redeclare function extends specificGibbsEnergy "Return specific Gibbs energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         g := state.h - state.T * specificEntropy(state);
     end specificGibbsEnergy;
-
+  
     redeclare function extends specificHelmholtzEnergy "Return specific Helmholtz energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         f := state.h - state.p / state.d - state.T * specificEntropy(state);
     end specificHelmholtzEnergy;
-
+  
     redeclare function extends specificHeatCapacityCp "Return specific heat capacity at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real vp1, vp2, dv, ds;
-
+  
       algorithm
         if state.gf == 0.0 then
-          cp := PhysPropCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, state.T);
+          cp := PhysPropCorrCalc(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, state.T);
           if highPressure == true then
-            ds := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T);
+            ds := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T);
             cp := if fluidConstants[1].family == 17 then cp * exp(-5.0 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5)) else cp * exp(-2.8 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5));
           end if;
         else
           cp := 0;
         end if;
     end specificHeatCapacityCp;
-
+  
     redeclare function extends specificHeatCapacityCv "Return heat capacity at constant volume"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real beta, kappa;
-
+  
       algorithm
         if state.gf == 0.0 then
           beta := isobaricExpansionCoefficient(state);
@@ -520,50 +601,52 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Inline = true,
         smoothOrder = 2);
     end specificHeatCapacityCv;
-
+  
     redeclare function extends isentropicExponent "Return isentropic exponent"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real cp, cv;
-
+  
       algorithm
         cp := specificHeatCapacityCp(state);
         cv := specificHeatCapacityCv(state);
         gamma := cp / cv;
     end isentropicExponent;
-
+  
     redeclare function extends isobaricExpansionCoefficient "Returns the approximate isobaric expansion coefficient beta"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real dd, d0, d1, d2, dv, vp1, vp2;
-
+  
       algorithm
         if state.gf == 0 then
-          d1 := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T - 0.1);
-          d2 := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T + 0.1);
+          d1 := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T - 0.1);
+          d2 := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T + 0.1);
           d0 := (d1 + d2) / 2;
           beta := (d1 - d2) * d0 / (d1 * d2 * 0.2) "Coefficient along the saturation line, function only of T, not the real beta";
-          vp1 := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T - 0.1);
-          vp2 := PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T + 0.1);
+          vp1 := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T - 0.1);
+          vp2 := PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T + 0.1);
           dv := (vp2 - vp1) / 0.2;
           beta := beta + isothermalCompressibility(state) * dv "Beta at saturation, once corrected for pressure variation";
           if fluidConstants[1].lnuA > 0 then
             beta := beta * d0 * exp(-fluidConstants[1].lnuA * (state.d - d0)) / state.d + (1 - exp(-fluidConstants[1].lnuA * (state.d - d0))) / (fluidConstants[1].lnuA * state.d * state.T) "Beta at the given T and d. Postnikov et alt. 2016";
           end if;
+        elseif state.gf == 1.0 then
+          beta := 1/state.T "ideal gas expansion coefficient";
         else
           beta := 0;
         end if;
-//at saturation
+  //at saturation
     end isobaricExpansionCoefficient;
-
+  
     redeclare function extends isothermalCompressibility "Returns overall the isothermal compressibility factor"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real rhoRed1 "reduced density - 1";
-
+  
       algorithm
         if state.gf == 0.0 then
           if fluidConstants[1].lBulkModRCorr > 0 then
@@ -576,42 +659,44 @@ package TMedia "TMedia.mo by Carlos Trujillo
           else
             kappa := fluidConstants[1].IsothComp;
           end if;
+        elseif state.gf == 1.0 then
+          kappa:=1.0/state.p "ideal gas compressibility";
         else
           kappa := 0.0;
         end if;
     end isothermalCompressibility;
-
+  
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real cp, kappa, beta;
         //Real cv;
-
+  
       algorithm
         beta := isobaricExpansionCoefficient(state);
         cp := specificHeatCapacityCp(state);
-//cv := specificHeatCapacityCv(state);
+  //cv := specificHeatCapacityCv(state);
         kappa := isothermalCompressibility(state);
-//a := sqrt(max(0, cp / (cv * kappa * state.d)));
+  //a := sqrt(max(0, cp / (cv * kappa * state.d)));
         a := sqrt(max(0, cp / (cp * kappa * state.d - state.T * beta * beta)));
       annotation(
         Inline = true,
         smoothOrder = 2);
     end velocityOfSound;
-
+  
     redeclare function extends dynamicViscosity "Return dynamic viscosity"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real lpVisc;
-
+  
       algorithm
         if state.gf == 0.0 then
           if fluidConstants[1].CAS == "7732-18-5" then
             eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
           elseif fluidConstants[1].lViscCorr > 0 then
-            eta := if highPressure == false then PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T) else FreeFluids.MediaCommon.Functions.liqViscPcorLucas(fluidConstants[1], state.T, state.p, PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, state.T), PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, state.T));
+            eta := if highPressure == false then PhysPropCorrCalc(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.liqViscPcorLucas(fluidConstants[1], state.T, state.p, PhysPropCorrCalc(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T), PhysPropCorrCalc(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T));
           else
             assert(false, "there is no correlation for liquid viscosity calculation");
           end if;
@@ -619,84 +704,144 @@ package TMedia "TMedia.mo by Carlos Trujillo
           if fluidConstants[1].CAS == "7732-18-5" then
             eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
           else
-            lpVisc := if fluidConstants[1].gViscCorr > 0 then PhysPropCorr(fluidConstants[1].gViscCorr, fluidConstants[1].gViscCoef, state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(fluidConstants[1], state.T);
+            lpVisc := if fluidConstants[1].gViscCorr > 0 then PhysPropCorrCalc(fluidConstants[1].gViscCorr, fluidConstants[1].gViscCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(fluidConstants[1], state.T);
             eta := lpVisc "no pressure correction seems necessary for gas phase";
           end if;
         else
           eta := 0 "no viscosity calculation is done for two phases situation";
         end if;
-//eta:= if highPressure==false then lpVisc else  FreeFluids.MediaCommon.Functions.gasViscPcorLucas(fluidConstants[1], state.T, state.p, lpVisc);
+  //eta:= if highPressure==false then lpVisc else  FreeFluids.MediaCommon.Functions.gasViscPcorLucas(fluidConstants[1], state.T, state.p, lpVisc);
     end dynamicViscosity;
-
+  
     redeclare function extends thermalConductivity "Return thermal conductivity"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         if state.gf == 0.0 then
-          lambda := if fluidConstants[1].lThCondCorr > 0 then PhysPropCorr(fluidConstants[1].lThCondCorr, fluidConstants[1].lThCondCoef, state.T) else FreeFluids.MediaCommon.Functions.liqThCondLatini(fluidConstants[1], state.T);
+          lambda := if fluidConstants[1].lThCondCorr > 0 then PhysPropCorrCalc(fluidConstants[1].lThCondCorr, fluidConstants[1].lThCondCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.liqThCondLatini(fluidConstants[1], state.T);
           if highPressure == true then
-            lambda := lambda * exp(state.d / PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, state.T) - 1);
+            lambda := lambda * exp(state.d / PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) - 1);
           end if;
         elseif state.gf == 1.0 then
-          lambda := if fluidConstants[1].gThCondCorr > 0 then PhysPropCorr(fluidConstants[1].gThCondCorr, fluidConstants[1].gThCondCoef, state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(fluidConstants[1], specificHeatCapacityCp(state), dynamicViscosity(state), state.T);
+          lambda := if fluidConstants[1].gThCondCorr > 0 then PhysPropCorrCalc(fluidConstants[1].gThCondCorr, fluidConstants[1].gThCondCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(fluidConstants[1], specificHeatCapacityCp(state), dynamicViscosity(state), state.T);
         else
           lambda := 0 "no thermal conductivity calculation is done in two phases situation";
         end if;
     end thermalConductivity;
-
+  
     redeclare function extends surfaceTension "Return surface tension"
         extends Modelica.Icons.Function;
-
+  
       algorithm
-        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorrCalc(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
     end surfaceTension;
-
+  
     //Saturation properties
     //-------------------------
-
+  
     redeclare function extends bubbleDensity "Return bubble point density from a sat record"
         extends Modelica.Icons.Function;
-
+  
       algorithm
-        dl := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, sat.Tsat);
+        dl := PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, sat.Tsat);
     end bubbleDensity;
-
+    
+    redeclare function extends dBubbleDensity_dPressure "Return bubble point density derivative"
+        extends Modelica.Icons.Function;
+  
+      algorithm
+        ddldp := (PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, sat.Tsat)-PhysPropCorrCalc(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, sat.Tsat-0.01))/ (sat.psat-saturationPressure(sat.Tsat-0.01));
+    end dBubbleDensity_dPressure;
+  
     redeclare function extends dewDensity "Return bubble point density from a sat record"
         extends Modelica.Icons.Function;
-
+  
       algorithm
-        dv := PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, sat.Tsat);
+        dv := PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, sat.Tsat);
     end dewDensity;
-
+    
+    redeclare function extends dDewDensity_dPressure "Return dew point density derivative"
+        extends Modelica.Icons.Function;
+  
+      algorithm
+        ddvdp := (PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, sat.Tsat)-PhysPropCorrCalc(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, sat.Tsat-0.01))/(sat.psat-saturationPressure(sat.Tsat-0.01));
+    end dDewDensity_dPressure;
+  
     redeclare function extends bubbleEnthalpy "Return bubble point specific enthalpy"
         extends Modelica.Icons.Function;
-
+      protected
+        SpecificEnthalpy Href;
       algorithm
+        //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+        //hl:=SpecificEnthalpyCorr(sat.Tsat)-Href;
         hl := if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else SpecificEnthalpyCorr(sat.Tsat) - UserRefH;
     end bubbleEnthalpy;
-
+    
+    redeclare function extends dBubbleEnthalpy_dPressure "Return bubble point specific enthalpy derivative"
+        extends Modelica.Icons.Function;
+  
+      algorithm
+        dhldp := (SpecificEnthalpyCorr(sat.Tsat)-SpecificEnthalpyCorr(sat.Tsat-0.01))/(sat.psat-saturationPressure(sat.Tsat-0.01));
+    end dBubbleEnthalpy_dPressure;
+ 
+  
     redeclare function extends dewEnthalpy "Return dew point specific enthalpy"
         extends Modelica.Icons.Function;
-
+      protected
+        SpecificEnthalpy Href;
       algorithm
+        //Href:= if refState == "User" then SpecificEnthalpyCorr(reference_T) elseif refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEnthalpyCorr(233.15) elseif refState == "IIR" then SpecificEnthalpyCorr(273.15)-2e5 else 0;
+        //hv:=SpecificEnthalpyCorr(sat.Tsat)-Href;
         hv := if refState == "IIR" then SpecificEnthalpyCorr(sat.Tsat) - IIRrefH else if refState == "NBP" then SpecificEnthalpyCorr(sat.Tsat) - NBPrefH else if refState == "ASHRAE" then SpecificEnthalpyCorr(sat.Tsat) - ASHRAErefH else SpecificEnthalpyCorr(sat.Tsat) - UserRefH;
-        hv := hv + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, sat.Tsat);
+        hv := hv + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat);
     end dewEnthalpy;
-
+  
+    redeclare function extends dDewEnthalpy_dPressure "Return dew point specific enthalpy derivative"
+        extends Modelica.Icons.Function;
+  
+      algorithm
+        //dhvdp := (SpecificEnthalpyCorr(sat.Tsat) + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) - SpecificEnthalpyCorr(sat.Tsat-0.01)-PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat-0.01))/(sat.psat-saturationPressure(sat.Tsat-0.01))"bad precision";
+        dhvdp := ( -PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat-0.01))/(sat.psat-saturationPressure(sat.Tsat-0.01));
+        //dhvdp:= (-PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, saturationTemperature(0.9*sat.psat)))/(0.1*sat.psat)"needs a high pressure range. As correlations are T functions better not to use.";
+    end dDewEnthalpy_dPressure;
+  
     redeclare function extends bubbleEntropy "Return bubble point specific entropy"
         extends Modelica.Icons.Function;
-
+      protected
+        SpecificEntropy Sref;
       algorithm
+        //Sref:= if refState == "User" then SpecificEntropyCorr(reference_T) elseif refState == "NBP" then SpecificEntropyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEntropyCorr(233.15) elseif refState == "IIR" then SpecificEntropyCorr(273.15)- 1.0e3 else 0;
+        //sl:=SpecificEntropyCorr(sat.Tsat)-Sref;
         sl := if refState == "IIR" then SpecificEntropyCorr(sat.Tsat) - IIRrefS else if refState == "NBP" then SpecificEntropyCorr(sat.Tsat) - NBPrefS else if refState == "ASHRAE" then SpecificEntropyCorr(sat.Tsat) - ASHRAErefS else SpecificEntropyCorr(sat.Tsat) - UserRefS;
     end bubbleEntropy;
-
+  
     redeclare function extends dewEntropy "Return dew point specific entropy"
         extends Modelica.Icons.Function;
-
+      protected
+        SpecificEntropy Sref;
       algorithm
+        //Sref:= if refState == "User" then SpecificEntropyCorr(reference_T) elseif refState == "NBP" then SpecificEntropyCorr(fluidConstants[1].Tb) elseif refState == "ASHRAE" then SpecificEntropyCorr(233.15) elseif refState == "IIR" then SpecificEntropyCorr(273.15)- 1.0e3 else 0;
+        //sv:=SpecificEntropyCorr(sat.Tsat)-Sref;
         sv := if refState == "IIR" then SpecificEntropyCorr(sat.Tsat) - IIRrefS else if refState == "NBP" then SpecificEntropyCorr(sat.Tsat) - NBPrefS else if refState == "ASHRAE" then SpecificEntropyCorr(sat.Tsat) - ASHRAErefS else SpecificEntropyCorr(sat.Tsat) - UserRefS;
-        sv := sv + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, sat.Tsat) / sat.Tsat;
+        sv := sv + PhysPropCorrCalc(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) / sat.Tsat;
     end dewEntropy;
+    
+   redeclare function extends setSmoothState
+        "Return thermodynamic state so that it smoothly approximates: if x > 0 then state_a else state_b"
+          extends Modelica.Icons.Function;
+          algorithm
+            state := ThermodynamicState(
+            p=Modelica.Media.Common.smoothStep(x, state_a.p, state_b.p, x_small),
+            s=Modelica.Media.Common.smoothStep(x, state_a.s, state_b.s, x_small),
+            h=Modelica.Media.Common.smoothStep(x, state_a.h, state_b.h, x_small), 
+            T=Modelica.Media.Common.smoothStep(x, state_a.T, state_b.T, x_small),
+            ld=Modelica.Media.Common.smoothStep(x, state_a.ld, state_b.ld, x_small),
+            gd=Modelica.Media.Common.smoothStep(x, state_a.gd, state_b.gd, x_small),
+            gf=Modelica.Media.Common.smoothStep(x, state_a.gf, state_b.gf, x_small),
+            phase=0);
+            annotation (Inline=true);
+                                        
+    end setSmoothState;
   end TMedium;
 
   //*****MEDIUMS OF TEMPERATURE ONLY DEPENDENT PROPERTIES*****
@@ -799,17 +944,17 @@ package TMedia "TMedia.mo by Carlos Trujillo
       Medium.MolarMass MM;
       Medium.ThermodynamicState StateP "original state from p and T";
       Medium.ThermodynamicState StateH "state reproduced from p,h";
-      Medium.ThermodynamicState StateS "state reproduced from p,s";
       Medium.ThermodynamicState StateD "state reproduced from d,T";
-      Medium.ThermodynamicState StateDlow "state at fraction of original density";
-      Medium.ThermodynamicState StateBub "bubble state at sat";
-      Medium.ThermodynamicState StateDew "dew state at sat";
+      Medium.ThermodynamicState StateS "state reproduced from p,s";
       Medium.ThermodynamicState StateHalfH "state half way between Bub and Dew";
       //Properties of StateP
-      Real D, H;
+      Real H;
+      Real D;
       Real S;
       Real Beta "isobaric expansion coefficient";
       Real Kappa "isothermal compressibility";
+      Real DerD_p_h;
+      Real DerD_h_p;
       Real Cp;
       Real Cv;
       Real Gamma;
@@ -820,6 +965,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
       Real Mu;
       Real Th;
       //Properties of StateDlow
+      Medium.ThermodynamicState StateDlow "state at fraction of original density";
       Real DlowGasFract "gas fraction of StateDlow";
       Real DlowD, DlowH;
       Real DlowS;
@@ -828,21 +974,30 @@ package TMedia "TMedia.mo by Carlos Trujillo
       //Saturation properties
       Medium.SaturationProperties sat "saturation point at given T";
       Real Vp;
-      Real BubD, BubH "bubble properties";
+      Real DerTb_p;
+      Medium.ThermodynamicState StateBub "bubble state at sat";
+      Medium.ThermodynamicState StateDew "dew state at sat";
+      Real BubD;
+      Real BubH "bubble properties";
       Real BubS;
-      Real DewD, DewH "dew properties";
+      Real BubDerD_p;
+      Real BubDerH_p;
+      Real DewD;
+      Real DewH "dew properties";
       Real DewS;
-      Real DewMu;
+      Real DewDerD_p;
+      Real DewDerH_p;
       Real Hv "vaporization enthalpy";
+      Real DewMu;
       Real Sigma;
       Medium.Temperature Tsat "temperature recovered from saturation pressure";
       //BaseProperties
-      Medium.BaseProperties BaseProp;
+      /*Medium.BaseProperties BaseProp;*/
     algorithm
-//Construction of StateP and calculation of properties
-      for i in 1:100 loop
-        StateP := Medium.setState_pTX(p, T, fill(0, 0));
+    //Construction of StateP and calculation of properties
+      for i in 1:1 loop
         MM := Medium.molarMass(StateP);
+        StateP := Medium.setState_pTX(p, T, fill(0, 0));
         H := Medium.specificEnthalpy(StateP);
         D := Medium.density(StateP);
         S := Medium.specificEntropy(StateP);
@@ -855,10 +1010,12 @@ package TMedia "TMedia.mo by Carlos Trujillo
         SS := Medium.velocityOfSound(StateP);
         Beta := Medium.isobaricExpansionCoefficient(StateP);
         Kappa := Medium.isothermalCompressibility(StateP);
+        DerD_p_h:=Medium.density_derp_h(StateP);
+        DerD_h_p:=Medium.density_derh_p(StateP);
         Mu := Medium.dynamicViscosity(StateP);
         Th := Medium.thermalConductivity(StateP);
-        StateD := Medium.setState_dTX(D, T, fill(0, 0));
         StateH := Medium.setState_phX(p, H, fill(0, 0));
+        StateD := Medium.setState_dTX(D, T, fill(0, 0));
         StateS := Medium.setState_psX(p, S, fill(0, 0));
         StateDlow := Medium.setState_dTX(D * fract, T, fill(0, 0));
         DlowGasFract := Medium.vapourQuality(StateDlow);
@@ -867,45 +1024,51 @@ package TMedia "TMedia.mo by Carlos Trujillo
         DlowU := Medium.specificInternalEnergy(StateDlow);
         DlowS := Medium.specificEntropy(StateDlow);
         DlowA := Medium.specificHelmholtzEnergy(StateDlow);
+        
         sat := Medium.setSat_T(T);
         Vp := Medium.saturationPressure_sat(sat);
+        DerTb_p:=Medium.saturationTemperature_derp_sat(sat);
         StateBub := Medium.setBubbleState(sat);
         StateDew := Medium.setDewState(sat);
         BubD := Medium.bubbleDensity(sat);
+        BubDerD_p := Medium.dBubbleDensity_dPressure(sat);
         BubH := Medium.bubbleEnthalpy(sat);
-        DewD := Medium.dewDensity(sat);
-        DewH := Medium.dewEnthalpy(sat);
-        Hv := DewH - BubH;
+        BubDerH_p:=Medium.dBubbleEnthalpy_dPressure(sat);
         BubS := Medium.bubbleEntropy(sat);
+        DewD := Medium.dewDensity(sat);
+        DewDerD_p := Medium.dDewDensity_dPressure(sat);
+        DewH := Medium.dewEnthalpy(sat);
+        DewDerH_p := Medium.dDewEnthalpy_dPressure(sat);
+        Hv := DewH - BubH;
         DewS := Medium.dewEntropy(sat);
         DewMu := Medium.dynamicViscosity(StateDew);
         Tsat := Medium.saturationTemperature(sat.psat);
         Sigma := Medium.surfaceTension(sat);
         StateHalfH := Medium.setState_phX(Vp, (BubH + DewH) / 2, fill(0, 0));
       end for;
-//Reconstruction of states from properties
-//Construction of state Dlow and get properties
-//Calculations at saturation
-//construction of state HalfH
+    
     equation
-//Construction of BaseProperties
-      BaseProp.p = p;
-      BaseProp.h = H;
+    //Construction of BaseProperties
+      /*BaseProp.p = p;
+      BaseProp.h = H;*/
       der(T) = finalT - initialT;
     end FluidTestingA;
 
     model TestA1A
-      extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "user", reference_T = 273.15, highPressure = true), p = 200.0e5, initialT = 0.1 + 273.15, fract = 0.3, finalT = 260.0 + 273.15);
+      extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T=273.15, highPressure = false), p = 40e5, initialT = 0.1 + 273.15, fract = 0.1, finalT = 250.0 + 273.15);
     end TestA1A;
 
     model TestA1B
       extends TestA1A(redeclare package Medium = Modelica.Media.Water.WaterIF97_ph);
-      //extends TestA1A(redeclare package Medium = Modelica.Media.R134a.R134a_ph);
     end TestA1B;
 
     model TestA2A
-      extends FluidTestingA(redeclare replaceable package Medium = TMedia.Fluids.O2(highPressure=true), p = 50.0e5, initialT = 55.0, finalT = 140.0, fract=0.5);
+      extends FluidTestingA(redeclare replaceable package Medium = TMedia.Fluids.R134A(highPressure=false, refState="User", reference_T=100.0), p = 30.0e5, initialT = -50.0+273.15, finalT = 50.0+273.15, fract=0.5);
     end TestA2A;
+    
+    model TestA2B
+      extends TestA2A(redeclare package Medium = Modelica.Media.R134a.R134a_ph);
+    end TestA2B;
 
     partial model FluidTestingB
       replaceable package Medium = Modelica.Media.Interfaces.PartialTwoPhaseMedium;
@@ -990,7 +1153,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
     end FluidTestingB;
 
     model TestB1A
-      extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true), T = 200 + 273.2, initialP = 20.0e5, fract = 1.0, finalP = 1.5e7);
+      extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = false), T = 25 + 273.15, initialP = 100.0e5, fract = 1.0, finalP = 1e5);
     end TestB1A;
 
     model TestB1B
@@ -1003,18 +1166,18 @@ package TMedia "TMedia.mo by Carlos Trujillo
     <p>The medium is designed for liquid, and liquid/vapor phases, at a temperature lower than 0.85 Tc, and a pressure not higher than 200 bars, because in those situations properties are highly dependent on pressure. It extends the Modelica  PartialTwoPhaseMedium. The medium properties are obtained using correlations that are mainly functions of T, but different pressure corrections are also used. It is somewhat similar to the Modelica TableBased medium, but uses specific correlations for each physical property, allows to work with saturated gas phase, and adds a density dependent correlation for the reduced bulk modulus of the liquid, that improves a lot the calculation of liquid density at high pressure, isothermal compressiblity, and isobaric expansion coefficient. Improving also the calculation of heat capacity at constant volume (Cv) and the speed of sound.</p>
     <p>The obtained properties correspond to the liquid phase, or to the saturated gas phase. It can´t be used for non-saturated gas phase.</p>
     <p>If available, the reduced bulk modulus correlation for the liquid is used. In other case, a substance specific isothermal compressibility factor (with a default value of 6.667 e-10) is used. The parameters for the reduced bulk modulus correlation(with liquid density as independent variable) are normally not available, but can be calculated from a good equation of state of the multiparameter or SAFT types. This can be done easily with the FreeFluids GUI: you make the calculation with the EOS, transfer the results (density and the natural logarithm of the reduced bulk modulus) to the correlations tab, make the regresion of the coefficients, and store the result in the database. It is good to calculate the reduced bulk modulus at a pressure close to 50 bars but, if necessary in order to have liquid phase at the temperature of interest, it can be done at higher pressure. Check that all density data correspond to the liquid state.</p>
-    <p>The liquid heat capacity correlation can be also a problem, as many times we only find it with a temperature limit of the normal boiling point. This can be solved using a Cp correlation constructed from a good EOS, using the FreeFluids GUI. It is important not to use data too close to the Tc for the regression (use data till 10 K below the Tc). The best equation for the regression of the liquid heat capacity is the PPDS15 equation. Do not use the Chemsep equations as they are not integrated by the medium to obtain enthalpy or entropy</p>
-    <p>A The use of pressure correction is controlled by the constant Boolean 'highPressure'. Its default value is false. If switched to true, pressure correction will be applyied to liquid specific enthalpy, specific entropy, heat capcity, viscosity and thermal conductivity. No pressure correction is used for the gas phase. It is interesting to make highPressure=true if we need to work over 30 bars.</p>
+    <p>The liquid heat capacity correlation can be also a problem, as many times we only find it with a temperature limit of the normal boiling point. This can be solved using a Cp correlation constructed from a good EOS, using the FreeFluids GUI. It is important not to use data too close to the Tc for the regression (use data till 10 K below the Tc). The best equation for the regression of the liquid heat capacity is the PPDS15 equation. Do not use the Chemsep equations as they are not integrated by the medium to obtain enthalpy or entropy.</p>
+    <p>The use of pressure correction is controlled by the constant Boolean 'highPressure'. Its default value is false. If switched to true, pressure correction will be applied (in plus than to liquid density) to liquid specific enthalpy, specific entropy, heat capcity, viscosity and thermal conductivity. No pressure correction is used for the gas phase. It is interesting to make highPressure=true if we need to work over 30 bars.</p>
     <p> The liquid enthalpy is calculated from the liquid Cp correlation at saturation. If highPressure has been made equal to true, a PV correction is applied. The correction comes from full correction below 0.45Tc to 0 at 0.85Tc.</p>
-    <p>The values of enthalpy and entropy are calculated from a reference state. The reference state to use can be select giving value to the constant string 'refState'. The values can be:  'ASHRAE', 'IIR', 'NBP' or 'User'. When using 'User', the values at reference_T will be used as zero for both enthalpy and entropy.</p>
+    <p>The values of enthalpy and entropy are calculated from a reference state. The reference state to use can be selected giving value to the constant string 'refState'. The values can be:  'ASHRAE', 'IIR', 'NBP' or 'User'. When using 'User', the values at reference_T will be used as zero for both enthalpy and entropy.</p>
     <p>The use of the liquid Cp correlation is an alternative to the use of ideal Cp correlation plus vaporization enthalpy. This makes possible the use of the medium with substances for which we do not have Cp0 data.</p> 
     <p>When going back from liquid enthalpy, or entropy, to temperature, we have two ways: One of them is to fit a correlation that makes this calculation, that can again be made with FreeFluidsGui. The second, that will be used if we left the value of lTfromHsatCorr=0, will calculate insitu the temperature using a solving function, as is done in the IdealGasMedia package.</p>
     <p>For liquid transport properties, the calculation is done directly from T, but pressure corrections have been introduced for the liquid phase, as already stated.</p> 
     <p>The thermodynamic record contains: p,T,gas fraction, d and h. Care must be taken in limiting the use to the temperature limits of the correlations used, as only few checks are done by the media, in order not to interfer with the solver process</p>
     <p>A constant string 'localInputChoice' has been added to the BaseProperties model in order to specify the independent variables to use in each instance of the BaseProperties model. The default value for this constant is the value given to the constant string 'inputChoice' at package level. The valid alternatives are: ph, pT, dT</p>
-    <p>In the package Tests there is a comparison between the medium performance with water and the WaterIF97_ph medium model.</p>
+    <p>In the package Tests there is a comparison between the medium performance with water and the Modelica WaterIF97_ph medium model (TestA1A/B and TestB1A/B). And with R134A and the Modelica R134a_ph model.</p>
     <p>The global idea has been not to use the Modelica files for the storage of substances data, but to store the data in a database, from which we can recover and use them when needed. A database is provided with more than 400 substances that can be enlarged, and the FreeFluids GUI can retrieve the data from the data base, treat it as needed (for example creating EOS from saturated vapor pressure and/or densities, or creating correlations from the EOS), store the results in the database, and export the data in Modelica format when needed.</p>
-    <p>As a resume: The medium is for fast calculation of liquid phase, condensation, and evaporation, but not for non-saturated gases.</p>
+    <p>As a resume: The medium is for fast calculation of liquid phase, condensation, and evaporation, but not for non-saturated gases. The medium is compatible with OpenModelica 1.14 old frontend, but not with the new frontend. The reason is the use of external function calls, that the new frontend doesn't support yet. The plan is to switch completely to pure Modelica functions in a short time. The medium is also compatible, since the addition of derivative functions calculation, with the ThermoPower library.</p>
     </body>
     </html>"));
 end TMedia;

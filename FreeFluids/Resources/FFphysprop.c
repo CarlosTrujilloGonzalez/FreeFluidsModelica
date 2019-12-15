@@ -45,14 +45,14 @@ void CALLCONV FF_CorrelationResult(const int *eq,const double coef[],double x,do
 		*y=coef[0]+x*(coef[1]+x*(coef[2]+x*(coef[3]+x*coef[4])));
         break;
     case FF_Polynomial://Polynomial a+b*T+c*T^2+d*T^3+e*T^4+f*T^5.Ideal gas heat capacity
-        *y=coef[0]+coef[1]*x+coef[2]*pow(x,2)+coef[3]*pow(x,3)+coef[4]*pow(x,4)+coef[5]*pow(x,2);
+        *y=coef[0]+coef[1]*x+coef[2]*pow(x,2)+coef[3]*pow(x,3)+coef[4]*pow(x,4)+coef[5]*pow(x,5);
         //printf("%f\n",y[0]);
         break;
     case FF_Polynomial2://Polynomial a+b*T^0.25+c*T^0.5+d*T+e*T^2+f*T^3.
         *y=coef[0]+coef[1]*pow(x,0.125)+coef[2]*pow(x,0.25)+coef[3]*pow(x,0.5)+coef[4]*x;
         //printf("%f\n",y[0]);
         break;
-	case FF_expDIPPR100://exp(a + b*T + c*T^2 + d*T^3 + e*T^4). Used for liquid viscosity
+    case FF_expDIPPR100://exp(a + b*T + c*T^2 + d*T^3 + e*T^4). Used for liquid viscosity
                 *y=exp(coef[0]+coef[1]*x+coef[2]*pow(x,2)+coef[3]*pow(x,3)+coef[4]*pow(x,4));
         break;
     case FF_DIPPR101://DIPPR-101. exp{a+b/T+c*ln(T)+d*T^e} Liquid viscosity. Vapor pressure.
@@ -133,6 +133,7 @@ void CALLCONV FF_CorrelationResult(const int *eq,const double coef[],double x,do
     case FF_Wagner25://Modified Wagner equation. a*exp{(b*Tm+c*Tm^1.5+d*Tm^2.5+e*Tm^5)/(1-Tm)} with a=Pc, and Tm=1-T/f; f=Tc. Vapor pressure
         Tm=1-x/coef[5];
         *y=coef[0]*exp((coef[1]*Tm+coef[2]*pow(Tm,1.5)+coef[3]*pow(Tm,2.5)+coef[4]*pow(Tm,5))/(1-Tm));
+        break;
     case FF_Wagner36://Original Wagner equation. a*exp{(b*Tm+c*Tm^1.5+d*Tm^3+e*Tm^6)/(1-Tm)} with a=Pc, and Tm=1-T/f; f=Tc. Vapor pressure
         Tm=1-x/coef[5];
         *y=coef[0]*exp((coef[1]*Tm+coef[2]*pow(Tm,1.5)+coef[3]*pow(Tm,3)+coef[4]*pow(Tm,6))/(1-Tm));
@@ -519,6 +520,7 @@ void FF_SpecificEntropyCorr(int cor,const double coef[],double MW, double x, dou
                 (coef[3]*(coef[6] + coef[7])/coef[6] + coef[5]*y4*y2/(7.*coef[7]*(coef[6] + coef[7])))*y+w;
             }
         *S=R*(coef[0]*log(x)+coef[1]*(1+coef[2]/x)*exp(-coef[2]/x)/(coef[2]*coef[2])+s);
+        //*S=x1;
     }
         break;
     case 7:{//Cooper (11 coefficients used in IAPWS95 and CO2) plus potential term  (used in short fundamental equations with 11 coefficients also,lacks last exp terms)
