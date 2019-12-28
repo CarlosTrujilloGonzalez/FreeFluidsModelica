@@ -1,3 +1,7 @@
+Version 1.1.5
+- All media packages use now pure Modelica functions and are compatible with the new frotend of OpenModelica.
+- The package TMedia has been extended to manage also the gas phase, with density and enthalpy calculation improved over ideal gas.
+- The package TMedia continues being limited to work below the critical temperature.
 Version 1.1.4
 - Added pure Modelica functions for the calculation of physical properties by correlations, including enthalpy and entropy.
 - Substitution, in the TMedium package, of the physical properties calculation using external function by a pure Modelica function calculation.

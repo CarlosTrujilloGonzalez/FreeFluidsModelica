@@ -420,7 +420,7 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         Fraction MF[nS];
       algorithm
       for i in 1:nS loop
-        etaX[i]:= if (data[i].gViscCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.FF_gasViscCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(data[i],state.T);
+        etaX[i]:= if (data[i].gViscCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.gasViscCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(data[i],state.T);
         assert(useTransportCorr==false or data[i].gViscCorr==0 or state.T<=data[i].gViscLimS,"You are over the maximum temperature for the low pressure viscosity correlation", AssertionLevel.warning);        
       end for;
         MF:=massToMoleFractions(state.X, data[:].MW);
@@ -436,11 +436,11 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         Fraction MF[nS];
     algorithm
       for i in 1:nS loop
-        etaX[i]:= if (data[i].gViscCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.FF_gasViscCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(data[i],state.T);
+        etaX[i]:= if (data[i].gViscCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.gasViscCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(data[i],state.T);
         
         Cp0X[i]:=FreeFluids.MediaCommon.Functions.Cp0Corr(data[i], state.T);
         
-        lambdaX[i]:= if (data[i].gThCondCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.FF_gasThCondCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(data[i], Cp0X[i], etaX[i], state.T);
+        lambdaX[i]:= if (data[i].gThCondCorr>0 and useTransportCorr==true) then FreeFluids.MediaCommon.Functions.gasThCondCorr(data[i], state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(data[i], Cp0X[i], etaX[i], state.T);
         assert(useTransportCorr==false or data[i].gThCondCorr==0 or state.T<=data[i].gThCondLimS,"You are over the maximum temperature for the low pressure thermal conductivity correlation", AssertionLevel.warning);        
       end for;
         
