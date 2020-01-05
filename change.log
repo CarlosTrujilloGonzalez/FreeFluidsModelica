@@ -1,3 +1,8 @@
+Version 1.1.6
+- The BaseProperties model has been changed from equations to algorithms.
+- Improved gas density and enthalpy calculation.
+- Improved density and enthalpy derivatives calculation. 
+- n-Hexane and n-Heptane added to the Fluids datadabase.
 Version 1.1.5
 - All media packages use now pure Modelica functions and are compatible with the new frotend of OpenModelica.
 - The package TMedia has been extended to manage also the gas phase, with density and enthalpy calculation improved over ideal gas.
@@ -7,7 +12,7 @@ Version 1.1.4
 - Substitution, in the TMedium package, of the physical properties calculation using external function by a pure Modelica function calculation.
 The change is not yet done for enthalpy and entropy calculation.
 - Correction of some bugs in the physical properties calculation routines.
-- Changed the variable name from Pc to criticalPressure in the fluids data record.
+- Changed the variable name from Pc to criticalPressure in the fluids data record, in order to gain compatibility with ThermoPower.
 - Addition of derivative functions calculation to the TMedium package. The package is now compatible with ThermoPower package.
 
 Version 1.1.3
