@@ -10,6 +10,6 @@ package FreeFluids
   type Possitive = Real(min = 0.0);
 
   annotation(
-    version="1.1.5",
+    version="1.1.6",
     uses(Modelica(version = "3.2.3")));
 end FreeFluids;
