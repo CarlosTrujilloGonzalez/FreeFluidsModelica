@@ -1,3 +1,6 @@
+Version 1.2.0
+- Added package ExternalMedia for two phases single substance. Based in equations of state.
+
 Version 1.1.6
 - The BaseProperties model has been changed from equations to algorithms.
 - Improved gas density and enthalpy calculation.

@@ -49,24 +49,26 @@ int nPoints=1;
 //HERE BEGINS THE MODELICA INTERFACE
 //==================================
 
-
-
-void *FF_createSubstanceData(const char *name, int thermoModel, int refState, double refT, double refP) {
+void *FF_createSubstanceData(const char *name, const char *resDir, int thermoModel, int refState, double refT, double refP) {
   double T,P,V,answerL[3],answerG[3],H,S;
   char option,state;
   FF_SubstanceData *data = (FF_SubstanceData*) calloc(1,sizeof(FF_SubstanceData));
   if (!data) {
     ModelicaError("Memory allocation error\n");
   }
-  char path[FILENAME_MAX]="C:/Users/Carlos/workspacePH/FreeFluids/Resources/";
+  //char path[FILENAME_MAX]="C:/Users/Carlos/workspace/FreeFluids/Resources/";
+  char path[FILENAME_MAX]="";
   //"C:/Users/CARLOS~1/workspaceNew/ExternalMedium/Resources/"
   //char path[FILENAME_MAX];
   //char *omlib=getenv("OPENMODELICALIBRARY");
   //ModelicaFormatError("%s\n",omlib);
   //strcpy(path,omlib);
   //strcat(path,"/FreeFluids/");
+  strcat(path,resDir);
+  strcat(path,"/");
   strcat(path,name);
   strcat(path,".sd");
+  //printf("%s\n",path);
   //FILE * file= fopen("Z:/Datos/acetone.sd", "rb");
   //FILE * file= fopen("C:/Users/CARLOS~1/workspaceNew/ExternalMedium/acetone.sd", "rb");
   //FILE * file= fopen(name, "rb");
@@ -120,8 +122,6 @@ void *FF_createSubstanceData(const char *name, int thermoModel, int refState, do
       data->refH=data->refH-2.0e2*data->baseProp.MW;
       data->refS=data->refS-1*data->baseProp.MW;
   }
-
-
   return data;
 }
 
@@ -139,8 +139,8 @@ void FF_saturationPressure(void *object,double T, double *Vp){
   if((data->model==FF_CubicType)&&(data->cubicData.Tc>0)&&(T>=data->cubicData.Tc)) *Vp=data->cubicData.Pc;
   else if((data->model==FF_SAFTtype)&&(data->saftData.Tc>0)&&(T>=data->saftData.Tc)) *Vp=data->saftData.Pc;
   else if((data->model==FF_SWtype)&&(data->swData.Tc>0)&&(T>=data->swData.Tc)) *Vp=data->swData.Pc;
-  else if((data->model==FF_SWtype)&&(data->vpCorr.form>0)) FF_PhysPropCorr(data->vpCorr.form,data->vpCorr.coef,data->swData.MW,T,Vp);
-  else FF_VpEOSs(&T,data,Vp);
+  else if((data->model==FF_SWtype)&&(data->vpCorr.form>0) && !(data->swData.eos==FF_IAPWS95)) FF_PhysPropCorr(data->vpCorr.form,data->vpCorr.coef,data->swData.MW,T,Vp);
+  else FF_VpEOSs(&T,data,Vp);  //for water IAPWS uses a very accurate correlation
 }
 
 
@@ -150,7 +150,7 @@ void FF_saturationTemperature(void *object,double P, double *Tb){
   if((data->model==FF_CubicType)&&(data->cubicData.Pc>0)&&(P>=data->cubicData.Pc)) *Tb=data->cubicData.Tc;
   else if((data->model==FF_SAFTtype)&&(data->saftData.Pc>0)&&(P>=data->saftData.Pc)) *Tb=data->saftData.Tc;
   else if((data->model==FF_SWtype)&&(data->swData.Pc>0)&&(P>=data->swData.Pc)) *Tb=data->swData.Tc;
-  else if((data->model==FF_SWtype)&&(data->btCorr.form>0)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->swData.MW,P,Tb);
+  else if((data->model==FF_SWtype)&&(data->btCorr.form>0) && !(data->swData.eos==FF_IAPWS95)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->swData.MW,P,Tb);
   FF_TbEOSs(&P,data,Tb);
 }
 
@@ -165,10 +165,10 @@ void FF_pressureEOS_dT(void *object, double d, double T, double *P){
 //Densities from T,P by EOS
 void FF_densitiesEOS_pT(void *object, double P, double T, int phase, double *ld, double *gd){
   FF_SubstanceData *data = (FF_SubstanceData *)object;
-  if((data->model==FF_SAFTtype)&&(T>(data->saftData.Tc-1))) *ld=*gd=300.0;
-  else if((data->model==FF_SWtype)&&(T>(data->swData.Tc-1))) *ld=*gd=300.0;
+  if((data->model==FF_SAFTtype)&&(T>(data->saftData.Tc-1.0))) *ld=*gd=data->saftData.Pc*data->saftData.MW/(1000*data->saftData.Zc*8.314472*data->saftData.Tc);
+  else if((data->model==FF_SWtype)&&(T>(data->swData.Tc-1.0))) *ld=*gd=data->swData.Pc*data->swData.MW/(1000*data->swData.Zc*8.314472*data->swData.Tc);
   else{
-      double answerL[3],answerG[3];
+      double answerL[3],answerG[3];//for cubic eos we can arrive to the critical point
       char option,state;
       if (phase==1) option='g';
       else if (phase==0) option='b';
@@ -182,247 +182,184 @@ void FF_densitiesEOS_pT(void *object, double P, double T, int phase, double *ld,
   }
 }
 
-void FF_satProp_T(void *object, double T, double p, int phase, double *nMols, double *d, double *Ar, double *ArT, double *Cpi, double *Hi, double *Si){
-    FF_SubstanceData *data = (FF_SubstanceData *)object;
-    double MW=data->baseProp.MW*1e-3;//Mol weight in kg
-    double answerL[3],answerG[3],deriv[2];
-    double tau,delta;
-    char option,state;
-    FF_CubicParam param;
-    FF_ThermoProperties th0;
-    *nMols=1/MW;
-    if (phase==1){
-        if((data->model==FF_SWtype)&&(data->gDensCorr.form>0)){
-            FF_PhysPropCorr(data->gDensCorr.form,data->gDensCorr.coef,data->baseProp.MW,T,d);
-            th0.V=MW/ *d;
-        }
-        else{
-            option='g';
-            FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
-            th0.V=answerG[0];
-            *d=MW/answerG[0];
-        }
-    }
-    else if(phase==2){
-        if((data->model==FF_SWtype)&&(data->lDensCorr.form>0)){
-            FF_PhysPropCorr(data->lDensCorr.form,data->lDensCorr.coef,data->baseProp.MW,T,d);
-            th0.V=MW/ *d;
-        }
-        else{
-            option='l';
-            FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
-            th0.V=answerL[0];
-            *d=MW/answerL[0];
-        }
-    }
-    th0.T=T;
-    if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-    else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-    *Cpi=th0.Cp;
-    *Hi=th0.H-data->refH;
-    *Si=th0.S-data->refS;
-    if(data->model==FF_SWtype){
-        delta=1/(th0.V * data->swData.rhoRef);
-        tau=data->swData.tRef/ T;
-        FF_ArrDerSW0T(&tau,&delta,&data->swData,deriv);
-        deriv[1]=-deriv[1]*data->swData.tRef/(T*T);
-    }
-    else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(&T,&th0.V,&data->saftData,deriv);
-    else{
-        FF_FixedParamCubic(&data->cubicData,&param);
-        FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-        FF_ArrDerCubic0T(&T,&th0.V,&param,deriv);
-    }
-    *Ar=deriv[0];
-    *ArT=deriv[1];
-}
 
-void FF_solveEOS_Tp(void *object, double T, double p, double *nMols, double *ld, double *gd, double *lAr, double *lArT, double *gAr,
-                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
+void FF_solveEOS_Tp(void *object, double T, double p, int phase, double *gd, double *gh, double *gs, double *gCv, double *gCp, double *gDvp,
+                    double *gDvT, double *ld, double *lh, double *ls, double *lCv, double *lCp, double *lDvp, double *lDvT){
     FF_SubstanceData *data = (FF_SubstanceData *)object;
     double MW=data->baseProp.MW*1e-3;//Mol weight in kg
-    double answerL[3],answerG[3],lDer[2],gDer[2];
-    double tau,delta;
+    double nMols=1/MW;//number of moles in a kg
+    double answerL[3],answerG[3];
     char option,state;
-    FF_CubicParam param;
-    FF_ThermoProperties th0;
-    *nMols=1/MW;
-    if (T>=data->baseProp.Tc) option='g';
+    FF_ThermoProperties th;
+    if (data->model==FF_SWtype){
+        if (T>=data->baseProp.Tc) option='g';
+        else if (p>data->baseProp.Pc) option='l';
+        else option='s';
+        FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+        if (phase==2){
+            if (T<data->baseProp.Tc) state='L';
+            else state='N';
+        }
+        else if (phase==1){
+            if (T<data->baseProp.Tc) state='G';
+            else state='N';
+        }
+    }
+    else if (data->model==FF_CubicType){
+        if (T>=data->cubicData.Tc) option='g';
+        else if (p>data->cubicData.Pc) option='l';
+        else option='s';
+        FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+        if (phase==2){
+            if (T<data->cubicData.Tc) state='L';
+            else state='N';
+        }
+        else if (phase==1){
+            if (T<data->cubicData.Tc) state='G';
+            else state='N';
+        }
+    }
+    else if (data->model==FF_SAFTtype){
+        if (T>=data->saftData.Tc) option='g';
+        else if (p>data->saftData.Pc) option='l';
+        else option='s';
+        FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
+        if (phase==2){
+            if (T<data->saftData.Tc) state='L';
+            else state='N';
+        }
+        else if (phase==1){
+            if (T<data->saftData.Tc) state='G';
+            else state='N';
+        }
+    }
+    /*if (T>=data->baseProp.Tc) option='g';
     else if (p>data->baseProp.Pc) option='l';
     else option='s';
     FF_VfromTPeosS(&T,&p,data,&option,answerL,answerG,&state);
-    th0.T=T;
+    if (phase==2){
+        if (T<data->baseProp.Tc) state='L';
+        else state='N';
+    }
+    else if (phase==1){
+        if (T<data->baseProp.Tc) state='G';
+        else state='N';
+    }*/
+    //printf("phase:%i option:%c state:%c\n",phase,option,state);
+    th.T=T;
     if(state=='L'){
-        th0.V=answerL[0];
+        th.V=answerL[0];
         *ld=MW/answerL[0];
-        *gd=0;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *lSi=th0.S-data->refS;
-        *gSi=0.0;
-        if(data->model==FF_SWtype){
-            delta=1/(answerL[0] * data->swData.rhoRef);
-            tau=data->swData.tRef/ T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,lDer);
-            lDer[1]=-lDer[1]*data->swData.tRef/(T*T);
-        }
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(&T,&answerL[0],&data->saftData,lDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(&T,&answerL[0],&param,lDer);
-        }
-        *lAr=lDer[0];
-        *lArT=lDer[1];
-        *gAr=0.0;
-        *gArT=0.0;
-        //printf("lAr:%f lArT:%f\n",*lAr,*lArT);
+        FF_ThermoEOSs(data,&th);
+        *lh=(th.H-data->refH)*nMols;
+        *ls=(th.S-data->refS)*nMols;
+        *lCv=th.Cv*nMols;
+        *lCp=th.Cp*nMols;
+        *lDvp=nMols/th.dP_dV;
+        *lDvT=-nMols*th.dP_dT/th.dP_dV;
+        *gd= *gh= *gs= *gCv= *gCp= *gDvp= *gDvT= 0;
     }
     else if(state=='G'){
-        th0.V=answerG[0];
+        th.V=answerG[0];
         *gd=MW/answerG[0];
-        *ld=0;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *gSi=th0.S-data->refS;
-        *lSi=0.0;
-
-        if(data->model==FF_SWtype){
-            delta=1/(answerG[0] * data->swData.rhoRef);
-            tau=data->swData.tRef/ T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,gDer);
-            gDer[1]=-gDer[1]*data->swData.tRef/(T*T);
-        }
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(&T,&answerG[0],&data->saftData,gDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(&T,&answerG[0],&param,gDer);
-        }
-        *gAr=gDer[0];
-        *gArT=gDer[1];
-        *lAr=0.0;
-        *lArT=0.0;
+        FF_ThermoEOSs(data,&th);
+        *gh=(th.H-data->refH)*nMols;
+        *gs=(th.S-data->refS)*nMols;
+        *gCv=th.Cv*nMols;
+        *gCp=th.Cp*nMols;
+        *gDvp=nMols/th.dP_dV;
+        *gDvT=-nMols*th.dP_dT/th.dP_dV;
+        *ld= *lh= *ls= *lCv= *lCp= *lDvp= *lDvT= 0;
+    }
+    else{
+        *gd= *gh= *gs= *gCv= *gCp= *gDvp= *gDvT= 0;
+        *ld= *lh= *ls= *lCv= *lCp= *lDvp= *lDvT= 0;
     }
 }
 
-void FF_solveEOS_Td(void *object, double T, double d, double *nMols, double *p, double *ld, double *gd, double *lAr, double *lArT, double *gAr,
-                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
+void FF_solveEOS_Td(void *object, double T, double d, double *p, double *gd, double *gh, double *gs, double *gCv, double *gCp, double *gDvp,
+                    double *gDvT, double *ld, double *lh, double *ls, double *lCv, double *lCp, double *lDvp, double *lDvT){
+//void FF_solveEOS_Td(void *object, double T, double d, double *nMols, double *p, double *ld, double *gd, double *lAr, double *lArT, double *gAr,
+//                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
     FF_SubstanceData *data = (FF_SubstanceData *)object;
     double MW=data->baseProp.MW*1e-3;//Mol weight in kg
+    double nMols=1/MW;//number of moles in a kg
     double V;
     double Vp;
-    double answerL[3],answerG[3],lDer[2],gDer[2];
-    double tau,delta;
+    double answerL[3],answerG[3];
     char option,state;
-    FF_CubicParam param;
-    FF_ThermoProperties th0;
-    th0.T=T;
-    *nMols=1/MW;
+    FF_ThermoProperties th;
+    th.T=T;
     V=MW/d;
     //Volume calculation
-    if (T>=data->baseProp.Tc) state='G';
+    if (T>=data->baseProp.Tc){
+        state='G';
+        *gd=d;
+    }
     else{
         FF_VpEOSs(&T,data,&Vp);
         option='b';
         FF_VfromTPeosS(&T,&Vp,data,&option,answerL,answerG,&state);
-        if(V<=answerL[0]) state='L';
-        else if (V>=answerG[0]) state='G';
-        else state='B';
+        if(V<=answerL[0]){
+            state='L';
+           *ld=d;
+        }
+        else if (V>=answerG[0]){
+            state='G';
+            *gd=d;
+        }
+        else{
+             state='B';
+             *ld=MW/answerL[0];
+             *gd=MW/answerG[0];
+        }
     }
-    if (state=='L'){
-        *ld=d;
-        *gd=0.0;
-        FF_PfromTVeosS(&T,&V,data,p);
-        th0.V=MW/ *ld;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *lSi=th0.S-data->refS;
-        *gSi=0.0;
-    }
-    else if (state=='G'){
-        *gd=d;
-        *ld=0.0;
-        FF_PfromTVeosS(&T,&V,data,p);
-        th0.V=MW/ *gd;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *gSi=th0.S-data->refS;
-        *lSi=0.0;
+
+    if (state=='G'){
+        *ld= *lh= *ls= *lCv= *lCp= *lDvp= *lDvT= 0;
     }
     else{
-        *ld=MW/answerL[0];
-        *gd=MW/answerG[0];
-        *p=Vp;
-        th0.V=answerL[0];
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *lSi=th0.S-data->refS;
-        *gSi=*lSi+R*log(*ld/ *gd);
+        th.V=MW/ *ld;
+        FF_ThermoEOSs(data,&th);
+        *lh=(th.H-data->refH)*nMols;
+        *ls=(th.S-data->refS)*nMols;
+        *lCv=th.Cv*nMols;
+        *lCp=th.Cp*nMols;
+        *lDvp=nMols/th.dP_dV;
+        *lDvT=-nMols*th.dP_dT/th.dP_dV;
     }
+    if (state=='L'){
+        *gd= *gh= *gs= *gCv= *gCp= *gDvp= *gDvT= 0;
+    }
+    else{
+        th.V=MW/ *gd;
+        FF_ThermoEOSs(data,&th);
+        *gh=(th.H-data->refH)*nMols;
+        *gs=(th.S-data->refS)*nMols;
+        *gCv=th.Cv*nMols;
+        *gCp=th.Cp*nMols;
+        *gDvp=nMols/th.dP_dV;
+        *gDvT=-nMols*th.dP_dT/th.dP_dV;
 
-    if(!(state=='G')){
-        th0.V=MW/ *ld;     
-        if(data->model==FF_SWtype){
-            delta=1/(th0.V * data->swData.rhoRef);
-            tau=data->swData.tRef/ T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,lDer);
-            lDer[1]=-lDer[1]*data->swData.tRef/(T*T);
-        }
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(&T,&th0.V,&data->saftData,lDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(&T,&th0.V,&param,lDer);
-            }
-        *lAr=lDer[0];
-        *lArT=lDer[1];
     }
-    if(!(state=='L')){
-        th0.V=MW/ *gd;
-        if(data->model==FF_SWtype){
-            delta=1/(th0.V * data->swData.rhoRef);
-            tau=data->swData.tRef/ T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,gDer);
-            gDer[1]=-gDer[1]*data->swData.tRef/(T*T);
-            //printf("gAr:%f gArT:%f\n",gDer[0],gDer[1]);
-        }
-        else if(data->model==FF_SAFTtype)FF_ArrDerSAFT0T(&T,&th0.V,&data->saftData,gDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(&T,&th0.V,&param,gDer);
-        }
-        *gAr=gDer[0];
-        *gArT=gDer[1];
-    }
+    *p=th.P;
 }
-
-void FF_solveEOS_ph(void *object, double p, double h, double *nMols, double *T, double *ld, double *gd, double *gf, double *lAr, double *lArT, double *gAr,
-                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
+//data, p, h, T, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT
+void FF_solveEOS_ph(void *object, double p, double h, double *T, double *gd, double *gh, double *gs, double *gCv, double *gCp, double *gDvp,
+                    double *gDvT, double *ld, double *lh, double *ls, double *lCv, double *lCp, double *lDvp, double *lDvT){
+//void FF_solveEOS_ph(void *object, double p, double h, double *nMols, double *T, double *ld, double *gd, double *gf, double *lAr, double *lArT, double *gAr,
+//                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
     FF_SubstanceData *data = (FF_SubstanceData *)object;
     double MW=data->baseProp.MW*1e-3;//Mol weight in kg
-    double Tb;
-    double Hraw,Hl,Hh,Sl,Sh,Ht,Cp0;
-    double answerL[3],answerG[3],lDer[2],gDer[2];
-    double tau,delta;
+    double nMols=1/MW;//number of moles in a kg
+    double Tb,Th,Tl,Tn;
+    double Hraw,Hl,Hh,Sl,Sh,Cp0,Hn,Sn;
+    double answerL[3],answerG[3];
     char option,state;
     int i;
-    FF_CubicParam param;
-    FF_ThermoProperties th0;
-    *nMols=1/MW;
-    Hraw=h*MW + data->refH;
-    th0.P=p;
+    FF_ThermoProperties th;
+    Hraw=h*MW + data->refH;//In J/mol
+    th.P=p;
     //determination of the boiling point at given p
     if(p>=data->baseProp.Pc) Tb=data->baseProp.Tc;
     else if((data->model==FF_SWtype)&&(data->btCorr.form>0)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->baseProp.MW,p,&Tb);
@@ -436,151 +373,246 @@ void FF_solveEOS_ph(void *object, double p, double h, double *nMols, double *T, 
         answerG[0]=MW/ *gd;
     }
     else  FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
+    //determination of liquid and gas enthalpies at boiling point
     FF_HSfromTVPeosS(&Tb,&answerL[0],&p,data,&Hl,&Sl);
     FF_HSfromTVPeosS(&Tb,&answerG[0],&p,data,&Hh,&Sh);
-    printf("Tb:%f Hraw:%f Hh:%f Hl:%f\n",Tb,Hraw,Hh,Hl);
-    if((Hraw>Hl)&&(Hraw<Hh)){
+    //printf("Initial Tb:%f Hraw:%f Hh:%f Hl:%f\n",Tb,Hraw,Hh,Hl);
+    if((Hraw>Hl)&&(Hraw<Hh)){//two phases situation
         *T=Tb;
         *ld=MW/answerL[0];
         *gd=MW/answerG[0];
-        *gf=(Hraw-Hl)/(Hh-Hl);
     }
 
-    else if (Hraw>=Hh){
-        *gf=1.0;
+    else if (Hraw>=Hh){//only gas phase
         *ld=0.0;
         option='g';
+        Tn=Tb;
+        Hn=Hh;
+        FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+        Th=Tb+(Hraw-Hh)/(MW*Cp0);
+        FF_VfromTPeosS(&Th,&p,data,&option,answerL,answerG,&state);
+        FF_HSfromTVPeosS(&Th,&answerG[0],&p,data,&Hh,&Sh);
         i=1;
-        while (fabs((Hraw-Hh)/Hraw)>0.0001){
-            FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
-            Tb=Tb+(Hraw-Hh)/(1.5*MW*Cp0);
-            FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
-            FF_HSfromTVPeosS(&Tb,&answerG[0],&p,data,&Hh,&Sh);
-            printf("Seeking gas temperature i:%i Tb:%f Hraw:%f, Hh:%f Cp0:%f\n",i,Tb,Hraw,Hh,Cp0);
+        while (fabs((Hraw-Hn)/Hraw)>0.00005){
+            if (Hraw>Hn){
+                Hl=Hn;
+                Tl=Tn;
+            }
+            else{
+                Hh=Hn;
+                Th=Tn;
+            }
+            Tn=Tl+(Hraw-Hl)/(Hh-Hl)*(Th-Tl);
+            FF_VfromTPeosS(&Tn,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tn,&answerG[0],&p,data,&Hn,&Sn);
+            //printf("Seeking gas temperature i:%i Tn:%f Hn:%f Hraw:%f, Hl:%f Hh:%f\n",i,Tn,Hn,Hraw,Hl,Hh);
             i++;
+            if (i>20) break;
         }
-        *T=Tb;
+        *T=Tn;
         *gd=MW/answerG[0];
     }
-    else{
-        *gf=0.0;
+    else{//only liquid phase
         *gd=0.0;
         option='l';
+        Tn=Tb;
+        Hn=Hl;
+        FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+        if (data->lCpCorr.limI>0) Tl=data->lCpCorr.limI;
+        else if (data->baseProp.Tm>0) Tl=data->baseProp.Tm;
+        else if (data->cp0Corr.limI>0) Tl=data->cp0Corr.limI;
+        else Tl=273.15;
+        //printf("Tl:%f\n",Tl);
+        FF_VfromTPeosS(&Tl,&p,data,&option,answerL,answerG,&state);
+        FF_HSfromTVPeosS(&Tl,&answerL[0],&p,data,&Hl,&Sl);
         i=1;
-        while (fabs((Hraw-Hl)/Hraw)>0.0001){
-            FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
-            Tb=Tb+(Hraw-Hl)/(4.0*MW*Cp0);
-            FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
-            FF_HSfromTVPeosS(&Tb,&answerL[0],&p,data,&Hl,&Sl);
-            printf("Seeking liquid temperature i:%i Tb:%f Hraw:%f, Hl:%f Cp0:%f\n",i,Tb,Hraw,Hl,Cp0);
+        while (fabs((Hraw-Hn)/Hraw)>0.00005){
+            if (Hraw>Hn){
+                Hl=Hn;
+                Tl=Tn;
+            }
+            else{
+                Hh=Hn;
+                Th=Tn;
+            }
+            Tn=Tl+(Hraw-Hl)/(Hh-Hl)*(Th-Tl);
+            FF_VfromTPeosS(&Tn,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tn,&answerL[0],&p,data,&Hn,&Sn);
+            //printf("Seeking liquid temperature i:%i Tn:%f Hn:%f Hraw:%f, Hl:%f Cp0:%f\n",i,Tn,Hn,Hraw,Hl,Cp0);
             i++;
+            if (i>20) break;
         }
-        *T=Tb;
+        *T=Tn;
         *ld=MW/answerL[0];
     }
-    return;
-    th0.T=*T;
-    if(!(*gf==1.0)){
-        th0.V=MW/ *ld;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *lSi=th0.S-data->refS;
-        if (*gf==0.0) *gSi=0;
-        else *gSi=*lSi+R*log(*ld/ *gd);
+    //return;
+    th.T=*T;
+    if (*ld==0.0){
+        *lh= *ls= *lCv= *lCp= *lDvp= *lDvT= 0;
+    }
+    else{
+        th.V=MW/ *ld;
+        FF_ThermoEOSs(data,&th);
+        *lh=(th.H-data->refH)*nMols;
+        *ls=(th.S-data->refS)*nMols;
+        *lCv=th.Cv*nMols;
+        *lCp=th.Cp*nMols;
+        *lDvp=nMols/th.dP_dV;
+        *lDvT=-nMols*th.dP_dT/th.dP_dV;
 
-        if(data->model==FF_SWtype){
-            delta=1/(th0.V * data->swData.rhoRef);
-            tau=data->swData.tRef/ *T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,lDer);
-            lDer[1]=-lDer[1]*data->swData.tRef/(*T * *T);
-        }
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(T,&th0.V,&data->saftData,lDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(T,&th0.V,&param,lDer);
-            }
-        *lAr=lDer[0];
-        *lArT=lDer[1];
     }
-    if(!(*gf==0.0)){
-        th0.V=MW/ *gd;
-        if((data->model==FF_SWtype)&&(data->swData.eos==FF_IAPWS95)) FF_IdealThermoWater(&th0);
-        else FF_IdealThermoEOS(&data->cp0Corr.form,data->cp0Corr.coef,&data->refT,&data->refP,&th0);
-        *Cpi=th0.Cp;
-        *Hi=th0.H-data->refH;
-        *gSi=th0.S-data->refS;
-        if (*gf==1.0) *lSi=0;
-        else *lSi=*gSi+R*log(*gd/ *ld);
-        if(data->model==FF_SWtype){
-            delta=1/(th0.V * data->swData.rhoRef);
-            tau=data->swData.tRef/ *T;
-            FF_ArrDerSW0T(&tau,&delta,&data->swData,gDer);
-            gDer[1]=-gDer[1]*data->swData.tRef/(*T * *T);
-        }
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT0T(T,&th0.V,&data->saftData,gDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(T,&data->cubicData,&param);
-            FF_ArrDerCubic0T(T,&th0.V,&param,gDer);
-        }
-        *gAr=gDer[0];
-        *gArT=gDer[1];
+
+    if (*gd==0.0){
+        *gh= *gs= *gCv= *gCp= *gDvp= *gDvT= 0;
     }
+    else{
+        th.V=MW/ *gd;
+        FF_ThermoEOSs(data,&th);
+        *gh=(th.H-data->refH)*nMols;
+        *gs=(th.S-data->refS)*nMols;
+        *gCv=th.Cv*nMols;
+        *gCp=th.Cp*nMols;
+        *gDvp=nMols/th.dP_dV;
+        *gDvT=-nMols*th.dP_dT/th.dP_dV;
+
+    }
+
 
 
 }
 
-void FF_extraArrDer(void *object, double T, double ld, double gd, double *lArV, double *lArVV, double *lArTT, double *lArVT, double *gArV, double *gArVV,
-                    double *gArTT, double *gArVT){
+void FF_solveEOS_ps(void *object, double p, double s, double *T, double *gd, double *gh, double *gs, double *gCv, double *gCp, double *gDvp,
+                    double *gDvT, double *ld, double *lh, double *ls, double *lCv, double *lCp, double *lDvp, double *lDvT){
+//void FF_solveEOS_ps(void *object, double p, double s, double *nMols, double *T, double *ld, double *gd, double *gf, double *lAr, double *lArT, double *gAr,
+//                    double *gArT, double *Cpi, double *Hi, double *lSi, double *gSi){
     FF_SubstanceData *data = (FF_SubstanceData *)object;
     double MW=data->baseProp.MW*1e-3;//Mol weight in kg
-    double lDer[6],gDer[6];
-    FF_CubicParam param;
-    FF_ThermoProperties th0;
-    if(ld>0.0){
-        th0.V=MW/ld;
-        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&th0.V,&data->swData,lDer);
-        else if(data->model==FF_SAFTtype) FF_ArrDerSAFT(&T,&th0.V,&data->saftData,lDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic(&T,&th0.V,&param,lDer);
+    double nMols=1/MW;//number of moles in a kg
+    double Tb,Th,Tl,Tn;
+    double Sraw,Hl,Hh,Sl,Sh,Ht,Cp0,Hn,Sn;
+    double answerL[3],answerG[3];
+       char option,state;
+    int i;
+    FF_ThermoProperties th;
+    Sraw=s*MW + data->refS;//In J/(mol·K)
+    th.P=p;
+    //determination of the boiling point at given p
+    if(p>=data->baseProp.Pc) Tb=data->baseProp.Tc;
+    else if((data->model==FF_SWtype)&&(data->btCorr.form>0)) FF_PhysPropCorr(data->btCorr.form,data->btCorr.coef,data->baseProp.MW,p,&Tb);
+    else FF_TbEOSs(&p,data,&Tb);
+    //determination of the liquid and gas densities at boiling point
+    option='b';
+    if((data->model==FF_SWtype)&&(data->lDensCorr.form>0)&&(data->gDensCorr.form>0)){//if we can use the saturated densities correlations
+        FF_PhysPropCorr(data->lDensCorr.form,data->lDensCorr.coef,data->baseProp.MW,Tb,ld);
+        FF_PhysPropCorr(data->gDensCorr.form,data->gDensCorr.coef,data->baseProp.MW,Tb,gd);
+        answerL[0]=MW/ *ld;
+        answerG[0]=MW/ *gd;
+    }
+    else  FF_VfromTPeosS(&Tb,&p,data,&option,answerL,answerG,&state);
+    //determination of liquid and gas entropies at boiling point
+    FF_HSfromTVPeosS(&Tb,&answerL[0],&p,data,&Hl,&Sl);
+    FF_HSfromTVPeosS(&Tb,&answerG[0],&p,data,&Hh,&Sh);
+    //printf("Initial Tb:%f Sraw:%f Sh:%f Sl:%f\n",Tb,Sraw,Sh,Sl);
+    if((Sraw>Sl)&&(Sraw<Sh)){//two phases situation
+        *T=Tb;
+        *ld=MW/answerL[0];
+        *gd=MW/answerG[0];
+    }
+
+    else if (Sraw>=Sh){//only gas phase
+        *ld=0.0;
+        option='g';
+        Tn=Tb;
+        Sn=Sh;
+        FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+        Th=Tb+(Sraw-Sh)*Tb/(MW*Cp0);
+        FF_VfromTPeosS(&Th,&p,data,&option,answerL,answerG,&state);
+        FF_HSfromTVPeosS(&Th,&answerG[0],&p,data,&Hh,&Sh);
+        i=1;
+        while (fabs((Sraw-Sn)/Sraw)>0.00005){
+            if (Sraw>Sn){
+                Sl=Sn;
+                Tl=Tn;
             }
-        *lArV=lDer[1];
-        *lArVV=lDer[2];
-        *lArTT=lDer[4];
-        *lArVT=lDer[5];
-        if(gd==0.0){
-            *gArV=0.0;
-            *gArVV=0.0;
-            *gArTT=0.0;
-            *gArVT=0.0;
+            else{
+                Sh=Sn;
+                Th=Tn;
+            }
+            Tn=Tl+(Sraw-Sl)/(Sh-Sl)*(Th-Tl);
+            FF_VfromTPeosS(&Tn,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tn,&answerG[0],&p,data,&Hn,&Sn);
+            //printf("Seeking gas temperature i:%i Tn:%f Hn:%f Sraw:%f, Hl:%f Hh:%f\n",i,Tn,Hn,Sraw,Hl,Hh);
+            i++;
+            if (i>20) break;
         }
+        *T=Tn;
+        *gd=MW/answerG[0];
     }
-    if(gd>0.0){
-        th0.V=MW/gd;
-        if(data->model==FF_SWtype) FF_ArrDerSWTV(&T,&th0.V,&data->swData,gDer);
-        else if(data->model==FF_SAFTtype)FF_ArrDerSAFT(&T,&th0.V,&data->saftData,gDer);
-        else{
-            FF_FixedParamCubic(&data->cubicData,&param);
-            FF_ThetaDerivCubic(&T,&data->cubicData,&param);
-            FF_ArrDerCubic(&T,&th0.V,&param,gDer);
+    else{//only liquid phase
+        *gd=0.0;
+        option='l';
+        Tn=Tb;
+        Sn=Sl;
+        FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,Tb,&Cp0);
+        if (data->lCpCorr.limI>0) Tl=data->lCpCorr.limI;
+        else if (data->baseProp.Tm>0) Tl=data->baseProp.Tm;
+        else if (data->cp0Corr.limI>0) Tl=data->cp0Corr.limI;
+        else Tl=273.15;
+        //printf("Tl:%f\n",Tl);
+        FF_VfromTPeosS(&Tl,&p,data,&option,answerL,answerG,&state);
+        FF_HSfromTVPeosS(&Tl,&answerL[0],&p,data,&Hl,&Sl);
+        i=1;
+        while (fabs((Sraw-Sn)/Sraw)>0.00005){
+            if (Sraw>Sn){
+                Sl=Sn;
+                Tl=Tn;
+            }
+            else{
+                Sh=Sn;
+                Th=Tn;
+            }
+            Tn=Tl+(Sraw-Sl)/(Sh-Sl)*(Th-Tl);
+            FF_VfromTPeosS(&Tn,&p,data,&option,answerL,answerG,&state);
+            FF_HSfromTVPeosS(&Tn,&answerL[0],&p,data,&Hn,&Sn);
+            //printf("Seeking liquid temperature i:%i Tn:%f Hn:%f Sraw:%f, Hl:%f Cp0:%f\n",i,Tn,Hn,Sraw,Hl,Cp0);
+            i++;
+            if (i>20) break;
         }
-        *gArV=gDer[1];
-        *gArVV=gDer[2];
-        *gArTT=gDer[4];
-        *gArVT=gDer[5];
-        if(ld==0.0){
-            *lArV=0.0;
-            *lArVV=0.0;
-            *lArTT=0.0;
-            *lArVT=0.0;
-        }
+        *T=Tn;
+        *ld=MW/answerL[0];
     }
+    //return;
+    th.T=*T;
+    if (*ld==0.0){
+        *lh= *ls= *lCv= *lCp= *lDvp= *lDvT= 0;
+    }
+    else{
+        th.V=MW/ *ld;
+        FF_ThermoEOSs(data,&th);
+        *lh=(th.H-data->refH)*nMols;
+        *ls=(th.S-data->refS)*nMols;
+        *lCv=th.Cv*nMols;
+        *lCp=th.Cp*nMols;
+        *lDvp=nMols/th.dP_dV;
+        *lDvT=-nMols*th.dP_dT/th.dP_dV;
+    }
+    if (*gd==0.0){
+        *gh= *gs= *gCv= *gCp= *gDvp= *gDvT= 0;
+    }
+    else{
+        th.V=MW/ *gd;
+        FF_ThermoEOSs(data,&th);
+        *gh=(th.H-data->refH)*nMols;
+        *gs=(th.S-data->refS)*nMols;
+        *gCv=th.Cv*nMols;
+        *gCp=th.Cp*nMols;
+        *gDvp=nMols/th.dP_dV;
+        *gDvT=-nMols*th.dP_dT/th.dP_dV;
+    }
+
+
 }
+
 
 void FF_hsEOS_Tdp(void *object, double T, double ld, double gd, double gf, double p, double *h, double *s){
     FF_SubstanceData *data = (FF_SubstanceData *)object;
@@ -875,6 +907,11 @@ void FF_thermalConductivity(void *object, double T, double P, double gf, double 
   }
   else if (gf==1.0){
     if ((data->gThCCorr.id>0)&&(T>=data->gThCCorr.limI)&&(T<=data->gThCCorr.limS)) FF_PhysPropCorr(data->gThCCorr.form,data->gThCCorr.coef,data->baseProp.MW,T,lambda);
+    else if(data->cp0Corr.form>0){
+        double Cp0;
+        FF_PhysPropCorr(data->cp0Corr.form,data->cp0Corr.coef,data->baseProp.MW,T,&Cp0);
+        FF_GasLpThCondTCpChung(&T,&Cp0,&data->baseProp,lambda);
+    }
     else ModelicaError("unable to compute gas thermal conductivity\n");
   }
   else ModelicaError("unable to compute two phases thermal conductivity\n");  
