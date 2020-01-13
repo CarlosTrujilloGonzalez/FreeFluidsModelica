@@ -1059,7 +1059,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
       Medium.BaseProperties BaseProp(preferredMediumStates=true);
     algorithm
     //Construction of StateP and calculation of properties
-      for i in 1:20 loop
+      for i in 1:1 loop
         StateP := Medium.setState_pTX(p, T);
         MM := Medium.molarMass(StateP);
         H := Medium.specificEnthalpy(StateP);
@@ -1123,7 +1123,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
     end FluidTestingA;
 
     model TestA1A
-      extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true, inputChoice="ph"), p = 20e5, initialT = 0.1 + 273.15, fract = 0.1, finalT = 300.0 + 273.15);
+      extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true, inputChoice="ph"), p = 20e5, initialT = 0.1 + 273.15, fract = 0.1, finalT = 350 + 273.15);
     end TestA1A;
 
     model TestA1B

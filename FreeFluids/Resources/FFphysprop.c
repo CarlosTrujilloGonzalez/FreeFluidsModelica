@@ -1001,7 +1001,7 @@ void CALLCONV FF_GasLpThCondTCpChung(double *T,double *Cp0,FF_BaseProp *data,dou
     ldVisc=0;
     P=1e5;
     FF_GasViscTPcpLucas(T,&P,data,&ldVisc,&visc);
-    alpha=(*Cp0-R)/R-1.5;
+    alpha=(*Cp0*data->MW*0.001-R)/R-1.5;
     beta=0.7862 - 0.7109*data->w + 1.3168 *data->w*data->w;
     Tr=*T/data->Tc;
     Z=2.0 + 10.5*Tr*Tr;
