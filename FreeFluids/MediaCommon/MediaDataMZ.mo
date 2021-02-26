@@ -77,7 +77,7 @@ within FreeFluids.MediaCommon;
     gThCondCorr = 120, gThCondCoef = {-1.120000e+00, 1.097200e-01, -9.834600e+03, -7.535800e+06, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.311100e+02, gThCondLimS = 1.000000e+03); 
 
   constant FreeFluids.MediaCommon.DataRecord R134A(
-    name = "R134A", description = "1,1,1,2-Tetrafluorethane", CAS = "811-97-2", family = 17, MW = 1.020310e+02, molarMass = 1.020310e-01, Tc = 3.741800e+02, criticalPressure=4.056000e+06, Vc = 1.988000e-04, Zc = 2.591786e-01, w = 3.270000e-01, Tb = 2.470500e+02, lnuA = 5.787034e-03, lnuB = -5.099898e+00,
+    name = "R134A", description = "1,1,1,2-Tetrafluorethane", CAS = "811-97-2", family = 17, MW = 1.020310e+02, molarMass = 1.020310e-01, Tc = 3.7400e+02, criticalPressure=4.056000e+06, Vc = 1.988000e-04, Zc = 2.591786e-01, w = 3.270000e-01, Tb = 2.470500e+02, lnuA = 5.787034e-03, lnuB = -5.099898e+00,
     Cp0Corr = 5, Cp0Coef = {4.000000e+00, 1.340000e+05, 2.300000e+02, 2.188600e+01, -3.694000e+00, -2.840000e+06, 1.560000e+02, 7.000000e+01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 5.000000e+01, Cp0LimS = 3.000000e+03,
     VpCorr = 25, VpCoef = {4.056000e+06, -7.540170e+00, 1.307800e+00, -3.313210e+00, -2.633880e+00, 3.741800e+02}, VpLimI = 1.699000e+02, VpLimS = 3.741000e+02,
     BtCorr = 130, BtCoef = {9.846760e+01, 3.485200e+01, -6.536310e-01, 4.198300e-02, -3.198170e-06, 0.000000e+00}, BtLimI = 1.701500e+02, BtLimS = 3.731500e+02,
@@ -103,10 +103,8 @@ within FreeFluids.MediaCommon;
     gSatDensCorr = 101, gSatDensCoef = {4.590290e+02, -2.688940e+00, -4.205650e+00, -1.081900e+01, -5.909060e+01, 3.444940e+02}, gSatDensLimI = 1.731500e+02, gSatDensLimS = 3.431500e+02,
     gViscCorr = 111, gViscCoef = {8.286300e-07, 3.980000e-08, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.431500e+02, gViscLimS = 3.931500e+02,
     gThCondCorr = 121, gThCondCoef = {-8.700000e-03, 7.410000e-05, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.431500e+02, gThCondLimS = 3.931500e+02); 
-
-    
+  
     constant  FreeFluids.MediaCommon.DataRecord ShellS2(name="Shell S2", MW = 3.600000e+02, molarMass=0.36, Tc = 1.000000e+03, VpCorr = 23, VpCoef = {2.168690e+01, 6.552780e+03, 1.675470e+01, 0.0, 0.0, 0.0}, VpLimI = 2.730000e+02, VpLimS = 6.280000e+02, BtCorr = 130, BtCoef = {1.888270e+02, 1.000000e+02, -1.731020e-01, 4.765400e-02, 4.794380e-05, 0.0}, BtLimI = 3.130000e+02, BtLimS = 6.280000e+02, lDensCorr = 40, lDensCoef = {7.374610e+02, 2.323960e+00, -1.018510e-02, 1.507730e-05, -8.163430e-09, 0.0}, lDensLimI = 2.730000e+02, lDensLimS = 6.130000e+02, lCpCorr = 17, lCpCoef = {9.102910e+02, 2.713260e+00, 3.245940e-03, -4.885660e-06, 2.689070e-09, 0.0}, lCpLimI = 2.730000e+02, lCpLimS = 6.130000e+02, lTfromHsatCorr = 140, lTfromHsatCoef = {2.466690e+01, 8.381320e-04, -5.270540e-10, 2.754040e-16, -6.340110e-23, 0.0}, lTfromHsatLimI = 2.730000e+02, lTfromHsatLimS = 6.130000e+02, lViscCorr = 30, lViscCoef = {-1.581700e+02, 1.000000e+04, 2.153310e+01, -1.153330e-05, 2.000000e+00, 0.0}, lViscLimI = 2.730000e+02, lViscLimS = 6.130000e+02, lThCondCorr = 50, lThCondCoef = {1.682120e-01, -1.705060e-04, 2.637920e-07, -2.901120e-10, 1.063780e-13, 0.0}, lThCondLimI = 2.730000e+02, lThCondLimS = 6.130000e+02);
-    
 
   constant FreeFluids.MediaCommon.DataRecord Toluene(
     name = "Toluene", description = "", CAS = "108-88-3", family = 5, MW = 9.214020e+01, molarMass=0.0921402, Tc = 5.917500e+02, criticalPressure = 4.108000e+06, Vc = 3.160000e-04, Zc = 2.638410e-01, w = 2.630000e-01, Tb = 3.835500e+02, mu = 4.000000e-01, lnuA = 1.076583e-02, lnuB = -5.464864e+00,
@@ -127,13 +125,26 @@ within FreeFluids.MediaCommon;
     constant  FreeFluids.MediaCommon.DataRecord Water(name="Water", CAS = "7732-18-5", family = 6, MW = 1.801500e+01, molarMass=0.018015, Tc = 6.470960e+02, criticalPressure = 2.206400e+07, Vc = 0.0000559, Zc = 2.294000e-01, w = 3.440000e-01, mu=1.8, Tb = 3.731500e+02, IsothComp = 4.900000e-10, lnuA = 7.847711e-03, lnuB = -5.115707e+00, 
     Cp0Corr = 200, Cp0Coef = {1.850940e+03, 1.651260e+03, 2.890990e+03, 5.967120e+02, 1.248300e+03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, Cp0LimI = 5.000000e+01, Cp0LimS = 4.500000e+03, 
     VpCorr = 25, VpCoef = {2.206400e+07, -7.773360e+00, 1.463190e+00, -2.746930e+00, -1.349700e+00, 6.470960e+02}, VpLimI = 2.731500e+02, VpLimS = 6.471000e+02, BtCorr = 130, BtCoef = {1.646700e+02, 4.948900e+01, -5.058530e-01, 2.702780e-02, -8.693810e-07, 0.0}, BtLimI = 2.731500e+02, BtLimS = 6.470960e+02, HvCorr = 90, HvCoef = {5.205300e+07, 3.199000e-01, -2.120000e-01, 2.580000e-01, 0.0, 6.473500e+02}, HvLimI = 2.731600e+02, HvLimS = 6.473500e+02, lDensCorr = 45, lDensCoef = {3.251621e+01, -3.213004e+00, 7.924110e+00, -7.359898e+00, 2.703522e+00, 6.470960e+02}, lDensLimI = 2.531000e+02, lDensLimS = 6.472900e+02, lCpCorr = 19, lCpCoef = {2.487530e+02, 3.588150e+03, -5.485740e+01, -6.383800e+02, 2.312590e+03, 6.470960e+02}, lCpLimI = 2.731500e+02, lCpLimS = 6.371500e+02, lTfromHsatCorr = 0, lTfromHsatCoef = {5.580150e+02, 1.852530e-04, -6.677220e-11, -3.939070e-17, -9.552730e-24, 0.000000e+00}, lTfromHsatLimI = 2.731500e+02, lTfromHsatLimS = 6.371500e+02, lViscCorr = 30, lViscCoef = {-5.196400e+01, 3.670600e+03, 5.733100e+00, -5.349500e-29, 1.000000e+01, 0.0}, lViscLimI = 2.731500e+02, lViscLimS = 6.431500e+02, lThCondCorr = 50, lThCondCoef = {-4.320000e-01, 5.725500e-03, -8.078000e-06, 1.861000e-09, 0.0, 0.0}, lThCondLimI = 2.731600e+02, lThCondLimS = 6.331500e+02, lSurfTensCorr = 61, lSurfTensCoef = {1.855000e-01, 2.717000e+00, -3.554000e+00, 2.047000e+00, 0.0, 6.473500e+02}, lSurfTensLimI = 2.731600e+02, lSurfTensLimS = 6.473500e+02, lBulkModRCorr = 150, lBulkModRCoef = {-5.511280e+01, 2.352350e-01, -3.880190e-04, 2.953210e-07, -8.462820e-11, 0.000000e+00}, lBulkModRLimI = 2.730000e+02, lBulkModRLimS = 5.830000e+02, gSatDensCorr = 101, gSatDensCoef = {3.222720e+02, -3.490130e+00, -3.010570e+00, -1.273460e+01, -5.467520e+01, 6.470960e+02}, gSatDensLimI = 2.731500e+02, gSatDensLimS = 6.470960e+02, gViscCorr = 110, gViscCoef = {7.002327e-08, 9.345760e-01, 1.956338e+02, -1.304599e+04, 0.0, 0.0}, gViscLimI = 2.731600e+02, gViscLimS = 1.073150e+03, gThCondCorr = 120, gThCondCoef = {6.598600e-06, 1.394700e+00, 5.947800e+01, -1.548400e+04, 0.0, 0.0}, gThCondLimI = 2.731600e+02, gThCondLimS = 1.073150e+03);
+
+  constant FreeFluids.MediaCommon.DataRecord Xylene_m(
+    name = "Xylene_m", description = "", CAS = "108-38-3", family = 5, MW = 1.061670e+02, molarMass = 1.061670e-01, Tc = 6.168900e+02, criticalPressure = 3.534600e+06, Vc = 3.750000e-04, Zc = 2.588436e-01, w = 3.250000e-01, Tb = 4.122700e+02, mu = 3.000000e-01, lnuA = 1.086806e-02, lnuB = -5.270932e+00,
+    Cp0Corr = 7, Cp0Coef = {2.169909e+00, 0.000000e+00, 0.000000e+00, 4.443120e+00, 1.600000e+02, 2.862794e+00, 1.900000e+02, 2.483298e+01, 1.333000e+03, 1.626077e+01, 3.496000e+03, 0.000000e+00, 0.000000e+00}, Cp0LimI = 5.000000e+01, Cp0LimS = 2.000000e+03,
+    VpCorr = 20, VpCoef = {8.509900e+01, -7.615900e+03, -9.307200e+00, 5.564300e-06, 2.000000e+00, 0.000000e+00}, VpLimI = 2.253000e+02, VpLimS = 6.170000e+02,
+    HvCorr = 91, HvCoef = {3.515380e+05, -2.297970e+00, 7.660880e+00, -8.661040e+00, 3.611550e+00, 6.168900e+02}, HvLimI = 2.253000e+02, HvLimS = 6.166500e+02,
+    lDensCorr = 46, lDensCoef = {2.830000e+02, 6.700403e+02, -3.007884e+02, 6.136168e+02, -1.893359e+02, 6.170500e+02}, lDensLimI = 225.3e+00, lDensLimS = 6.170500e+02,
+    lCpCorr = 19, lCpCoef = {3.921800e+01, 2.688330e+03, -2.003000e+03, -6.686670e+02, 1.211730e+03, 6.168900e+02}, lCpLimI = 2.253000e+02, lCpLimS = 6.166500e+02,
+    lViscCorr = 31, lViscCoef = {-3.820000e+00, 1.027000e+03, -6.380000e-04, 4.520000e-07, 0.000000e+00, 0.000000e+00}, lViscLimI = 2.260000e+02, lViscLimS = 6.130000e+02,
+    lThCondCorr = 50, lThCondCoef = {1.643000e-01, -1.466000e-05, -2.387000e-07, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 2.250000e+02, lThCondLimS = 6.030000e+02,
+    lSurfTensCorr = 64, lSurfTensCoef = {6.168900e+02, 6.445000e-02, 1.256000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lSurfTensLimI = 2.253000e+02, lSurfTensLimS = 6.168900e+02,
+    lBulkModRCorr = 150, lBulkModRCoef = {-8.532470e+00, 2.063220e-02, 0.000000e+00, -1.936320e-08, 1.308310e-11, 0.000000e+00}, lBulkModRLimI = 2.253000e+02, lBulkModRLimS = 6.080000e+02,
+    gSatDensCorr = 102, gSatDensCoef = {2.665000e+03, 6.168900e+02, -7.808901e-02, 5.400000e-02, -3.249336e+00, 4.300000e-01}, gSatDensLimI = 2.253000e+02, gSatDensLimS = 6.168900e+02,
+    gViscCorr = 110, gViscCoef = {6.829300e-07, 5.219900e-01, 3.241700e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.253000e+02, gViscLimS = 1.000000e+03,
+    gThCondCorr = 120, gThCondCoef = {3.059300e-09, 2.418200e+00, -5.692800e+02, 1.210600e+05, 0.000000e+00, 0.000000e+00}, gThCondLimI = 3.200000e+02, gThCondLimS = 1.000000e+03); 
     annotation(
       Documentation(info = "<html>
   <body>
   <p>Contains data of the individual substances, mainly parameters for temperature dependent correlations for physical properties. The records can be used both with the ideal gas medium packages, and with the temperature dependent liquid packages.</p>
-  <p>You can create a new record copying the MediaDataTemplate and filling it manually. Nevertheless the faster and more convenient way is to create the record from the FreeFluidsGui program. You need to select the substance from the database, select the correlations you want to be included in the record, and export it in Modelica format. You can put the file in any place, better with the .txt extension. Later you edit the file, copy its content, and paste it inside the MediaData package. You still need to declare the substance inside the Media packages, filling the name and the origin of the data, that will be the record you just copied.</p>
-  <p>When using the data in the IdealGasMedia package, only the Cp0 is needed, but you can use also gas viscosity, and gas thermal conductivity correlations. The vapor pressure correlation is also recommended, in order to check if we are working in the gas state. </p>
-  <p>When using the data for the mediums designed for liquids, you will need at least the following correlations: saturated density, vapor pressure, liquid heat capacity. Plus vaporization enthalpy and saturated gas density, if you want to work also with the saturated gas phase. Transport properties correlations as for your needs, and reduced liquid bulk modulus if you want to work at high pressures (till 200 bars). If you want to force the liquid state you can set Tc at a high value, and Pc at a low value (loo as example to the MarlothermSH medium.</p>
+
   <p><strong>There are data records for the following substances:</strong></p>
   <p>MarlothermSH</p>
   <p>Methane</p> 
@@ -146,6 +157,7 @@ within FreeFluids.MediaCommon;
   <p>ShellS2</p> 
   <p>Toluene</p>
   <p>Water</p> 
+  <p>Xylene-m</p>
   </body>
   </html>"));
   end MediaDataMZ;

@@ -1,3 +1,12 @@
+Version 2.0.0
+- Indepth review and improvement of the Modelica code, and of the C code used in ExternalMedia. Many bug corrections also.
+- Addition of Extended Corresponding States capability for viscosity and thermal conductivity calculation, using NIST polynomia when available.
+- Change in the format of the structures used in ExternalMedia for substance description. The old exported structures are not compatible.
+- Enlargement of the database of substances.
+- The database, in MSAcces and SQLite formats, has been added to the Resources folder.
+- As FreeFluidsGui project has not yet been updated, an updated Windows executable is included in the Resources folder,
+in order to allow the export of substances in the formats used in the Modelica part.
+ 
 Version 1.2.0
 - Added package ExternalMedia for two phases single substance. Based in equations of state.
 
@@ -6,10 +15,12 @@ Version 1.1.6
 - Improved gas density and enthalpy calculation.
 - Improved density and enthalpy derivatives calculation. 
 - n-Hexane and n-Heptane added to the Fluids datadabase.
+
 Version 1.1.5
 - All media packages use now pure Modelica functions and are compatible with the new frotend of OpenModelica.
 - The package TMedia has been extended to manage also the gas phase, with density and enthalpy calculation improved over ideal gas.
 - The package TMedia continues being limited to work below the critical temperature.
+
 Version 1.1.4
 - Added pure Modelica functions for the calculation of physical properties by correlations, including enthalpy and entropy.
 - Substitution, in the TMedium package, of the physical properties calculation using external function by a pure Modelica function calculation.

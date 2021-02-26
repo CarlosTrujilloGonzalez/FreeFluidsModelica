@@ -23,6 +23,8 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
 
   partial package IdealGasMedium
     extends Modelica.Media.Interfaces.PartialPureSubstance(ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, h_default = 1e6, singleState = false, Temperature(min = 200, max = 6000, start = 500, nominal = 500), SpecificEnthalpy(start = h_default, nominal = h_default), Density(start = 10, nominal = 10), AbsolutePressure(start = 5e5, nominal = 5e5));
+    //Auxiliary functions based in correlations
+    //-----------------------------------------
     import PhysPropCorr = FreeFluids.MediaCommon.Functions.PhysPropCorr;
     import SpecificEnthalpyCorr = FreeFluids.MediaCommon.Functions.SpecificEnthalpyCorr;
     import SpecificEnthalpyCorrInv = FreeFluids.MediaCommon.Functions.SpecificEnthalpyCorrInv;
@@ -33,8 +35,7 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
     //Data storage definitions
     //------------------------
     constant FreeFluids.MediaCommon.DataRecord data;
-    //Auxiliary functions based in correlations
-    //-----------------------------------------
+  
     //BaseProperties model
     //--------------------
 
@@ -110,7 +111,7 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
       algorithm
         state.p := p;
         state.h := h;
-        state.T := SpecificEnthalpyCorrInv(data.Cp0Corr, data.Cp0Coef, data.MW, data.Cp0LimS, h);
+        state.T := SpecificEnthalpyCorrInv(data.Cp0Corr, data.Cp0Coef, data.MW, h, data.Cp0LimS);
         state.d := p * data.MW / (1000 * R * state.T);
         vp := if state.T < data.Tc and data.VpCorr > 0 then PhysPropCorr(data.VpCorr, data.VpCoef, data.MW, state.T) else 1.0e10;
         assert(state.p <= vp, "The media can´t be used in liquid state", AssertionLevel.warning);
@@ -126,10 +127,10 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
 
       algorithm
         state.p := p;
-        state.T := SpecificEntropyCorrInv(data.Cp0Corr, data.Cp0Coef, data.MW, data.Cp0LimS, s + R * Modelica.Math.log(state.p / reference_p) * 1000 / data.MW);
+        state.T := SpecificEntropyCorrInv(data.Cp0Corr, data.Cp0Coef, data.MW, s + R * Modelica.Math.log(state.p / reference_p) * 1000 / data.MW, data.Cp0LimS);
         if state.T < data.Tc then
           vp := PhysPropCorr(data.VpCorr, data.VpCoef, data.MW, state.T);
-          assert(state.p <= vp, "The media can´t be used in liquid state");
+          assert(state.p <= vp, "The media can´t be used in liquid state. T="+String(state.T)+", p="+String(state.p)+", vp="+String(vp));
         end if;
         state.d := p * data.MW / (1000 * R * state.T);
         state.h := SpecificEnthalpyCorr(data.Cp0Corr, data.Cp0Coef, data.MW, state.T);
@@ -457,7 +458,7 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
     end FluidTesting;
 
     model Test1A
-      extends FluidTesting(redeclare replaceable package Medium = FreeFluids.IdealGasMedia.N2(useTransportCorr = true), p = 7.0e5, p2 = 1.0e6, initialT = 1000.0, finalT = 273.15);
+      extends FluidTesting(redeclare replaceable package Medium = FreeFluids.IdealGasMedia.Water(useTransportCorr = true), p = 1.5e5, p2 = 1.0e6, initialT = 300+273.15, finalT = 25+273.15);
     end Test1A;
 
     model Test1B
@@ -523,7 +524,7 @@ package IdealGasMedia "IdealGasMedia.mo by Carlos Trujillo
   annotation(
     Documentation(info = "<html>
 <body>
-<p>The medium is designed for single substances in gas phase, at a pressure low enough and a temperature high enough, to allow for the ideal gas equation to be used. It extends the Modelica PartialPureSubstance medium. The definition is similar to that of the Modelica.Media.IdealGases.Common.SingleGasNasa, but uses several ecuations for the Cp0 correlation, as the Nasa Glenn coefficients are not available for many organic compounds. Look at the MediaData package information for details on how to use the database to create new substances. The use of a single equation for Cp0 limits somewhat the temperature range. The DIPPR107 equation in J/(kg·K) is recommended</p>
+<p>The medium is designed for single substances in gas phase, at a pressure low enough and a temperature high enough, to allow for the ideal gas equation to be used. It extends the Modelica PartialPureSubstance medium. The definition is similar to that of the Modelica.Media.IdealGases.Common.SingleGasNasa, but uses several equations for the Cp0 correlation, as the NASA Glenn coefficients are not available for many organic compounds. Look at the MediaData package information for details on how to use the database to create new substances. The use of a single equation for Cp0 limits somewhat the temperature range. The DIPPR107 equation in J/(kg·K) is recommended</p>
 <p>It checks, if the vapour pressure correlation is supplied, that the media is in the gas state, warning if not.</p>
 <p>Density is calculated using the ideal gas equation of state. Enthalpy and entropy are calculated from the ideal gas constant pressure heat capacity Cp0, using specific temperature correlations. No constant is added to the raw calculation.</p>
 <p>For transport properties, correlations between temperature and the (low pressure) property are used if the constant useTransportCorr==true, and they are available. If not, the Chung method is used for their estimation.</p>

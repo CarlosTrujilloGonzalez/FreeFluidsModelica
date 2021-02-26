@@ -31,6 +31,7 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
       //criticalPressure must be added for compatibility with ThermoPower
     end FluidConstants;
 
+    constant String refName = "Propane" "name of the reference fluid for ECS calculations. Defaults to propane";
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant FluidConstants fluidK "just for minimum data out of the SubstanceData external object";
     constant String description = " " "Description of the EOS and correlations used for the substance";
@@ -47,35 +48,35 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         //Real nMols "number of moles in a kg";
         AbsolutePressure p(displayUnit = "bar") "Pressure in Pa";
         Temperature T(displayUnit = "degC") "Kelvin temperature of medium";
-        SpecificEnthalpy h "specific enthalpy";
-        SpecificEntropy s;
-        Density d(displayUnit = "kg/m3") "Liquid density in kgr/m3";
+        SpecificEnthalpy h "Overall specific enthalpy";
+        SpecificEntropy s "Overall specific entropy";
+        Density d(displayUnit = "kg/m3") "Overall density in kgr/m3";
         MoleFraction gf "gas molar fraction";
         //additional variables, that should be records, but OpenModelica does not work well with nested records.
-        Density ld(displayUnit = "kg/m3") "Liquid density in kgr/m3";
-        Density gd(displayUnit = "kg/m3") "Gas density in kgr/m3";
-        SpecificEnthalpy lh, gh "liquid and gas specific enthalpy";
-        SpecificEntropy ls, gs;
-        SpecificHeatCapacity lCv, lCp, gCv, gCp;
-        Real lDvp, lDvT, gDvp, gDvT;
+        Density ld(displayUnit = "kg/m3") "Liquid phase density in kgr/m3";
+        Density gd(displayUnit = "kg/m3") "Gas phase density in kgr/m3";
+        SpecificEnthalpy lh, gh "liquid and gas phases specific enthalpy";
+        SpecificEntropy ls, gs "liquid and gas phases specific entropy";
+        SpecificHeatCapacity lCv, lCp, gCv, gCp "liquid and gas phases specific heats";
+        Real lDvp, lDvT, gDvp, gDvT "liquid and gas phases derivatives of volume regarding pressure and temperature";
     end ThermodynamicState;
 
     /*redeclare model extends BaseProperties(h(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default), T(stateSelect =  StateSelect.default), d(stateSelect = StateSelect.default))
-                    constant String localInputChoice = inputChoice;
-                    Integer phase(min=0, max=2, start=1, fixed=false);
-              
-                  algorithm
-                    sat := setSat_p(p);
-                    state := setState_phX(p, h);
-                    MM := fluidK.molarMass "in kg/mol";
-                    R := Modelica.Constants.R / MM;
-                    T := state.T;
-                    d := state.d;
-                    u := h - p / d;
-                    phase:=state.phase;
-                    
-                    
-                end BaseProperties;*/
+                        constant String localInputChoice = inputChoice;
+                        Integer phase(min=0, max=2, start=1, fixed=false);
+                  
+                      algorithm
+                        sat := setSat_p(p);
+                        state := setState_phX(p, h);
+                        MM := fluidK.molarMass "in kg/mol";
+                        R := Modelica.Constants.R / MM;
+                        T := state.T;
+                        d := state.d;
+                        u := h - p / d;
+                        phase:=state.phase;
+                        
+                        
+                    end BaseProperties;*/
 
     redeclare model extends BaseProperties(h(stateSelect = if preferredMediumStates and localInputChoice == "ph" then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates and (localInputChoice == "ph" or localInputChoice == "pT") then StateSelect.prefer else StateSelect.default), T(stateSelect = if preferredMediumStates and (localInputChoice == "pT" or localInputChoice == "dT") then StateSelect.prefer else StateSelect.default), d(stateSelect = if preferredMediumStates and localInputChoice == "dT" then StateSelect.prefer else StateSelect.default))
         constant String localInputChoice = inputChoice;
@@ -131,7 +132,8 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
       end destructor;
     end SubstanceData;
 
-    constant SubstanceData data = SubstanceData(mediumName, resDir, thermoModel, reference_T, reference_p);
+    constant SubstanceData data = SubstanceData(mediumName, resDir, thermoModel, reference_T, reference_p) "creates de substance object";
+    constant SubstanceData refData = SubstanceData(refName, resDir, thermoModel, reference_T, reference_p) "creates de reference object for ECS calculation";
     //Basic functions
     //---------------
 
@@ -160,7 +162,17 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         dTp := if p < fluidConstants[1].criticalPressure then (saturationTemperature(p) - saturationTemperature(0.999 * p)) / (0.001 * p) else 0;
     end saturationTemperature_derp;
 
-    function densitiesEOS_pT "Return liquid and gas densities at give temperature and pressure, by EOS"
+    function pressureEOS_dT "Return pressure given temperature and density, by EOS"
+      input Density d;
+      input Temperature T;
+      output AbsolutePressure p;
+    
+      external "C" FF_pressureEOS_dT(data, d, T, p) annotation(
+        IncludeDirectory = "modelica://FreeFluids/Resources",
+        Include = "#include \"FFmodelicaMedium.c\"");
+    end pressureEOS_dT;
+
+    function densitiesEOS_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
       input AbsolutePressure p;
       input Temperature T;
       input Integer phase = 0 "0=both phases, 1= only gas, 2=only liquid";
@@ -172,74 +184,45 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end densitiesEOS_pT;
 
-    function solveEOS_Tp "Calculate densities, Arr and its T derivative, and ideal part, from T and p"
-      input Temperature T;
-      input AbsolutePressure p;
-      input Integer ph;
-      output Real gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
+    function solveEOS_Tp "Calls the external function that calculates some basic thermodynamic properties of the phases, used later for the definition of the ThermodynamicState and the calculation of  all thermodynamic properties"
+      input Temperature x;
+      input AbsolutePressure y;
+      output Real T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
     
-      external "C" FF_solveEOS_Tp(data, T, p, ph, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
+      external "C" FF_solveEos("p", data, x, y, T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS_Tp;
 
-    function solveEOS_Td "Calculate densities, Arr and its T derivative, and ideal part"
-      input Temperature T;
-      input Density d;
-      output Real p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
+    function solveEOS_Td "Same as solveEOS_Tp, but from temperature and density"
+      input Temperature x;
+      input Density y;
+      output Real T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
     
-      external "C" FF_solveEOS_Td(data, T, d, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
+      external "C" FF_solveEos("d", data, x, y, T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS_Td;
 
-    function solveEOS_ph "Calculates T, densities, Arr and its T derivative, and ideal part"
-      input AbsolutePressure p;
-      input SpecificEnthalpy h;
-      output Real T, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
+    function solveEOS_ph "Same as solveEOS_Tp, but from pressure and specific enthalpy"
+      input AbsolutePressure x;
+      input SpecificEnthalpy y;
+      output Real T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
     
-      external "C" FF_solveEOS_ph(data, p, h, T, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
+      external "C" FF_solveEos("h", data, x, y, T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS_ph;
 
-    function solveEOS_ps "Calculate T, densities, Arr and its T derivative, and ideal part"
-      input AbsolutePressure p;
-      input SpecificEntropy s;
-      output Real T, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
+    function solveEOS_ps "Same as solveEOS_Tp, but from pressure and specific entropy"
+      input AbsolutePressure x;
+      input SpecificEntropy y;
+      output Real T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT;
     
-      external "C" FF_solveEOS_ps(data, p, s, T, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
+      external "C" FF_solveEos("s", data, x, y, T, p, gd, gh, gs, gCv, gCp, gDvp, gDvT, ld, lh, ls, lCv, lCp, lDvp, lDvT) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS_ps;
-
-    function thermoPropertiesEOS_Td "Return all thermo properties from T, densities and gas fraction"
-      input Real T, ld, gd, gf;
-      output Real h, u, s, cp, cv, dP_dT, dP_dV, ss, jt, it;
-    
-      external "C" FF_thermoPropertiesEOS_Td(data, T, ld, gd, gf, h, u, s, cp, cv, dP_dT, dP_dV, ss, jt, it) annotation(
-        IncludeDirectory = "modelica://FreeFluids/Resources",
-        Include = "#include \"FFmodelicaMedium.c\"");
-    end thermoPropertiesEOS_Td;
-
-    function specificEnthalpyEOS_Td "Return specific enthalpy from T, densities and gas fraction"
-      input Real T, ld, gd, gf;
-      output Real h;
-    
-      external "C" FF_specificEnthalpy(data, T, ld, gd, gf, h) annotation(
-        IncludeDirectory = "modelica://FreeFluids/Resources",
-        Include = "#include \"FFmodelicaMedium.c\"");
-    end specificEnthalpyEOS_Td;
-
-    function pressureEOS_dT "Return pressure given temperature and density, by EOS"
-      input Density d;
-      input Temperature T;
-      output AbsolutePressure p;
-    
-      external "C" FF_pressureEOS_dT(data, d, T, p) annotation(
-        IncludeDirectory = "modelica://FreeFluids/Resources",
-        Include = "#include \"FFmodelicaMedium.c\"");
-    end pressureEOS_dT;
 
     //Establish general states
     //------------------------
@@ -247,14 +230,11 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi. The function from T and P is unable to compute any gas fraction different from 0 or 1"
         extends Modelica.Icons.Function;
 
-      protected
-        Integer ph = 5;
-
       algorithm
-        state.p := p;
-        state.T := T;
+//state.p := p;
+//state.T := T;
         state.phase := 1;
-        (state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(T, p, ph);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(T, p);
         if state.ld < 1.0 then
           state.gf := 1.0;
           state.d := state.gd;
@@ -272,9 +252,9 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        state.T := T;
+//state.T := T;
         state.d := d;
-        (state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Td(T, d);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Td(T, d);
         state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else state.gd * (state.ld - d) / (d * (state.ld - state.gd));
         state.h := state.lh * (1 - state.gf) + state.gh * state.gf;
         state.s := state.ls * (1 - state.gf) + state.gs * state.gf;
@@ -287,9 +267,9 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        state.p := p;
+//state.p := p;
         state.h := h;
-        (state.T, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_ph(p, h);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_ph(p, h);
         state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.h - state.lh) / (state.gh - state.lh);
         state.d := if state.gf > 0.999999 then state.gd else if state.gf < 0.000001 then state.ld else state.ld * state.gd / (state.gf * state.ld + (1.0 - state.gf) * state.gd);
         state.s := state.ls * (1 - state.gf) + state.gs * state.gf;
@@ -300,9 +280,9 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        state.p := p;
+//state.p := p;
         state.s := s;
-        (state.T, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_ps(p, s);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_ps(p, s);
         state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.s - state.ls) / (state.gs - state.ls);
         state.d := if state.gf > 0.999999 then state.gd else if state.gf < 0.000001 then state.ld else state.ld * state.gd / (state.gf * state.ld + (1.0 - state.gf) * state.gd);
         state.h := state.lh * (1 - state.gf) + state.gh * state.gf;
@@ -319,11 +299,11 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         Integer ph = 1 "1 indicates gas phase";
 
       algorithm
-        state.p := sat.psat;
-        state.T := sat.Tsat;
+//state.p := sat.psat;
+//state.T := sat.Tsat;
         state.phase := 1;
         state.gf := 1.0 "gas";
-        (state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(sat.Tsat, sat.psat, ph);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(sat.Tsat, sat.psat);
         state.d := state.gd;
         state.h := state.gh;
         state.s := state.gs;
@@ -336,11 +316,11 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         Integer ph = 2;
 
       algorithm
-        state.p := sat.psat;
-        state.T := sat.Tsat;
+//state.p := sat.psat;
+//state.T := sat.Tsat;
         state.phase := 1;
         state.gf := 0.0 "liquid";
-        (state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(sat.Tsat, sat.psat, ph);
+        (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := solveEOS_Tp(sat.Tsat, sat.psat);
         state.d := state.ld;
         state.h := state.lh;
         state.s := state.ls;
@@ -536,9 +516,12 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
 
     redeclare function extends dynamicViscosity "Return dynamic viscosity from a ThermodynamicState record"
         extends Modelica.Icons.Function;
+        /*external "C" FF_dynamicViscosity(data, state.T, state.p, state.gf, eta) annotation(
+                  IncludeDirectory = "modelica://FreeFluids/Resources",
+                  Include = "#include \"FFmodelicaMedium.c\"");*/
 
 
-        external "C" FF_dynamicViscosity(data, state.T, state.p, state.gf, eta) annotation(
+        external "C" FF_Viscosity(data, refData, state.T, state.d, state.p, state.gf, eta) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end dynamicViscosity;
@@ -693,155 +676,182 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
   end ExternalMedium;
 
   package Fluids
-
-
     package Acetone
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Acetone", fluidK(casRegistryNumber = "67-64-1", description = "Multiparameter:Lemmon&Span 2006.", molarMass = 0.058079, criticalTemperature = 5.081000e+02, criticalPressure = 4.700000e+06), onePhase = false, thermoModel = 3, refState = 2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Acetone", fluidK(casRegistryNumber = "67-64-1", description = "Multiparameter:Lemmon&Span 2006. PCSAFT: Solms 2004. PRMC: Kleiman 2002. Cp0: Wilhoit", molarMass = 0.058079, criticalTemperature = 5.081000e+02, criticalPressure = 4.700000e+06), refName = "Propane", onePhase = false, thermoModel = 3, refState = 2);
     end Acetone;
 
     package Ammonia
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Ammonia",
- fluidK(casRegistryNumber = "7664-41-7", description = "Multiparameter: Tillner-Roth. PCSAFT: Mejbri 2005, Cubic: PRMC C.Trujillo 2019. Cp0: Willhoit", molarMass = 1.703026e-02, criticalTemperature = 4.054000e+02, criticalPressure = 1.133300e+07),
- final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Ammonia", fluidK(casRegistryNumber = "7664-41-7", description = "Multiparameter: Tillner-Roth. PCSAFT: Mejbri 2005, Cubic: PRMC C.Trujillo 2019. Cp0: Willhoit", molarMass = 1.703026e-02, criticalTemperature = 4.054000e+02, criticalPressure = 1.133300e+07), final onePhase = false, thermoModel = 3, refState = 2);
     end Ammonia;
-  
+
     package Butane_n
       extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Butane_n", fluidK(casRegistryNumber = "106-97-8", description = "Multiparameter:Buecker&Wagner 2006. PCSAFT:Gross&Sadowski 2001. Cubic:PRMC, C.Trujillo 2019", molarMass = 0.05812, criticalTemperature = 4.251250e+02, criticalPressure = 3.796000e+06), onePhase = false, thermoModel = 3, refState = 2);
     end Butane_n;
-  
+
     package Butanol_n
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Butanol_n",
-   fluidK(casRegistryNumber = "71-36-3", description = "Multiparameter: none. PCSAFT: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: DIPPR107", molarMass = 7.414000e-02, criticalTemperature = 5.630000e+02, criticalPressure = 4.414000e+06),
-   final onePhase=false, thermoModel=2, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Butanol_n", fluidK(casRegistryNumber = "71-36-3", description = "Multiparameter: none. PCSAFT: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: DIPPR107", molarMass = 7.414000e-02, criticalTemperature = 5.630000e+02, criticalPressure = 4.414000e+06), final onePhase = false, thermoModel = 2, refState = 2);
     end Butanol_n;
-  
+
     package CO2
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "CO2", fluidK(casRegistryNumber = "124-38-9", description = "Multiparameter: GERG2004. PCSAFT and PRMC: C.Trujillo from GERG2004. Cp0:Jaeschke", molarMass = 4.400980e-02, criticalTemperature = 3.041282e+02, criticalPressure = 7.377730e+06), final onePhase = false, thermoModel = 1, refState = 2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "CO2", fluidK(casRegistryNumber = "124-38-9", description = "Multiparameter: Span and Wagner 1996. PCSAFT and PRMC: C.Trujillo from GERG2004. Cp0:Wilhoit", molarMass = 4.400980e-02, criticalTemperature = 3.041282e+02, criticalPressure = 7.377730e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end CO2;
-  
-  package Dichlorodifluormethane
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Dichlorodifluormethane",
-   fluidK(casRegistryNumber = "75-71-8", description = "Multiparameter:Marx et alt. PCSAFT:C.Trujillo 2020, Cubic:PRMC. Cp0:from CoolProp", molarMass = 1.209130e-01, criticalTemperature = 3.851200e+02, criticalPressure = 4.136100e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+    
+    package CO2b
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "CO2b",
+   fluidK(casRegistryNumber = "124-38-9", description = "SW: GERG2004. PCSAFT and Cubic: C.Trujillo from GERG2004. Cp0:Jaeschke", molarMass = 4.400980e-02, criticalTemperature = 3.041282e+02, criticalPressure = 7.377300e+06),
+   final onePhase=false, thermoModel=1, refState=2);
+    end CO2b;
+
+    package Dichlorodifluormethane
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Dichlorodifluormethane", fluidK(casRegistryNumber = "75-71-8", description = "Multiparameter:Marx et alt. PCSAFT:C.Trujillo 2020, Cubic:PRMC. Cp0:Cooper", molarMass = 1.209130e-01, criticalTemperature = 3.851200e+02, criticalPressure = 4.136100e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Dichlorodifluormethane;
-  
+
     package EG
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "EG",
-   fluidK(casRegistryNumber = "107-21-1", description = "Multiparameter: none. PPCSAFT_GV: 2B C.Trujillo 2019. Cubic: PRMC", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06),
-   final onePhase=false, thermoModel=2, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "EG", fluidK(casRegistryNumber = "107-21-1", description = "Multiparameter: none. PPCSAFT_GV: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: Wilhoit", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06), final onePhase = false, thermoModel = 2, refState = 2);
     end EG;
-  
+
+    package Eicosane_n
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Eicosane_n", fluidK(casRegistryNumber = "112-95-8", description = "SW: none. PCSAFT: Gross. Cubic: PR. Cp0: Wilhoit ", molarMass = 2.825520e-01, criticalTemperature = 7.680000e+02, criticalPressure = 1.070000e+06), final onePhase = false, thermoModel = 2, refState = 2);
+    end Eicosane_n;
+
     package Ethane
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Ethane",
-   fluidK(casRegistryNumber = "74-84-0", description = "Multiparameter: Buecker-Wagner 2006. PCSAAFT: Gross-Sadowski 2001. Cubic:SRKMC Chemsep", molarMass = 3.006904e-02, criticalTemperature = 3.053220e+02, criticalPressure = 4.872200e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Ethane", fluidK(casRegistryNumber = "74-84-0", description = "Multiparameter: Buecker-Wagner 2006. PCSAAFT: Gross-Sadowski 2001. Cubic:SRKMC Chemsep. Cp0: Cooper", molarMass = 3.006904e-02, criticalTemperature = 3.053220e+02, criticalPressure = 4.872200e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Ethane;
-  
+    
+    package Ethanol
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Ethanol",
+   fluidK(casRegistryNumber = "64-17-5", description = "Multiparameter: Schroeder 2014. PPCSAFT-GV: C.Trujillo 2018. PRMC: C.Trujillo 2018. Cp0: Wilhoit", molarMass = 4.606844e-02, criticalTemperature = 5.147100e+02, criticalPressure = 6.268000e+06),
+   final onePhase=false, thermoModel=3, refState=2);
+    end Ethanol;
+
     package Heptane_n
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Heptane_n", fluidK(casRegistryNumber = "142-82-5", description = "Multiparameter: Span and Wagner 2003. PCSAFT: Gross 2001. Cubic: PRMC", molarMass = 1.002020e-01, criticalTemperature = 5.401300e+02, criticalPressure = 2.736000e+06), final onePhase = false, thermoModel = 3, refState = 2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Heptane_n", fluidK(casRegistryNumber = "142-82-5", description = "Multiparameter: Span and Wagner 2003. PCSAFT: Gross 2001. Cubic: PRMC. Cp0: Jaeschke", molarMass = 1.002020e-01, criticalTemperature = 5.401300e+02, criticalPressure = 2.736000e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Heptane_n;
-  
+
     package Hexane_n
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Hexane_n", fluidK(casRegistryNumber = "110-54-3", description = "Multiparameter: Spand and Wagner 2003. PCSAFT: Gross and Sadowski. Cubic: PRMC", molarMass = 8.617536e-02, criticalTemperature = 5.078200e+02, criticalPressure = 3.034000e+06), final onePhase = false, thermoModel = 3, refState = 2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Hexane_n", fluidK(casRegistryNumber = "110-54-3", description = "Multiparameter: Spand and Wagner 2003. PCSAFT: Gross and Sadowski. Cubic: PRMC. Cp0:Jaeschke", molarMass = 8.617536e-02, criticalTemperature = 5.078200e+02, criticalPressure = 3.034000e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Hexane_n;
-  
+
     package Isobutane
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Isobutane",
-   fluidK(casRegistryNumber = "75-28-5", description = "Multiparameter: Buecker-Wagner 2006. PCSAFT: Gross-Sadowski 2001. Cubic: PRMC. Cp0: Cooper", molarMass = 5.812220e-02, criticalTemperature = 4.078170e+02, criticalPressure = 3.629000e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Isobutane", fluidK(casRegistryNumber = "75-28-5", description = "Multiparameter: Buecker-Wagner 2006. PCSAFT: Gross-Sadowski 2001. Cubic: PRMC. Cp0: Cooper", molarMass = 5.812220e-02, criticalTemperature = 4.078170e+02, criticalPressure = 3.629000e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Isobutane;
-  
+
     package Methane
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Methane",
-   fluidK(casRegistryNumber = "74-82-8", description = "Multiparameter: Seltzmann-Wagner 1991. PCSAF: Gross-Sadowski 2001. Cubic: SRKMC from Chemsep. Cp0: Cooper", molarMass = 1.604280e-02, criticalTemperature = 1.905640e+02, criticalPressure = 4.599200e+06),
-   final onePhase=false, thermoModel=1, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Methane", fluidK(casRegistryNumber = "74-82-8", description = "Multiparameter: Seltzmann-Wagner 1991. PCSAF: Gross-Sadowski 2001. Cubic: SRKMC from Chemsep. Cp0: Cooper", molarMass = 1.604280e-02, criticalTemperature = 1.905640e+02, criticalPressure = 4.599200e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Methane;
-  
+
     package N2
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "N2",
-   fluidK(casRegistryNumber = "7727-37-9", description = "Multiparameter: Span 2001, PCSAFT: Gross 2001. PRMC: Barragan 2002. Cp0: DIPPR107", molarMass = 2.801348e-02, criticalTemperature = 1.261920e+02, criticalPressure = 3.395800e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "N2", fluidK(casRegistryNumber = "7727-37-9", description = "Multiparameter: Span 2001, PCSAFT: Gross 2001. PRMC: Barragan 2002. Cp0: DIPPR107", molarMass = 2.801348e-02, criticalTemperature = 1.261920e+02, criticalPressure = 3.395800e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end N2;
-  
+
     package O2
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "O2",
-   fluidK(casRegistryNumber = "7782-44-7", description = "Multiparameter: Schmidt 1985. PCSAFT: Economou 2007. Cubic:SRKMC Chemsep. Cp0: Cooper", molarMass = 3.199880e-02, criticalTemperature = 1.545810e+02, criticalPressure = 5.043000e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "O2", fluidK(casRegistryNumber = "7782-44-7", description = "Multiparameter: Schmidt 1985. PCSAFT: Economou 2007. Cubic:SRKMC Chemsep. Cp0: Cooper", molarMass = 3.199880e-02, criticalTemperature = 1.545810e+02, criticalPressure = 5.043000e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end O2;
-  
+
     package Pentane_n
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Pentane_n",
-   fluidK(casRegistryNumber = "109-66-0", description = "Multiparameter:Span-Wagner 2003. PCSAFT: Gross-Sadowski 2001. Cubic PRMC. Cp0: Wilhoit", molarMass = 7.215000e-02, criticalTemperature = 4.697000e+02, criticalPressure = 3.370000e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Pentane_n", fluidK(casRegistryNumber = "109-66-0", description = "Multiparameter:Span-Wagner 2003. PCSAFT: Gross-Sadowski 2001. Cubic PRMC. Cp0: Wilhoit", molarMass = 7.215000e-02, criticalTemperature = 4.697000e+02, criticalPressure = 3.370000e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Pentane_n;
-  
+
     package Propane
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Propane",
-   fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: Lemmon 2009. PCSAFT: Gross-Sadowski 2001. Cubic: SRKMC Chemsep. Cp0:Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06),
-   final onePhase=false, thermoModel=3, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Propane", fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: Lemmon 2009. PCSAFT: Gross-Sadowski 2001. Cubic: SRKMC Chemsep. Cp0:Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end Propane;
-  
+
     package R134A
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "R134A", fluidK(casRegistryNumber = "811-97-2", description = "Multiparameter:Tillner 1994. PCSAFT: non assoc.C.Trujillo 2019. Cubic:PRMC, C.Trujillo 2019", molarMass = 1.020310e-01, criticalTemperature = 3.741800e+02, criticalPressure = 4.901200e+06), final onePhase = false, thermoModel = 3, refState = 1);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "R134A", fluidK(casRegistryNumber = "811-97-2", description = "Multiparameter:Tillner 1994. PCSAFT: non assoc.C.Trujillo 2019. Cubic:PRMC, C.Trujillo 2019. Cp0: Wilhoit", molarMass = 1.020310e-01, criticalTemperature = 3.741800e+02, criticalPressure = 4.901200e+06), final onePhase = false, thermoModel = 3, refState = 1);
     end R134A;
-  
+
     package R410A
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "R410A",
-   fluidK(casRegistryNumber = "R410A.PPF", description = "Multiparameter: Lemmon 2003. PCSAFT: non assoc. C.T.2019. Cubic: none. Cp0: Cooper", molarMass = 7.258540e-02, criticalTemperature = 3.444940e+02, criticalPressure = 4.901200e+06),
-   final onePhase=false, thermoModel=1, refState=2);
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "R410A", fluidK(casRegistryNumber = "R410A.PPF", description = "Multiparameter: Lemmon 2003. PCSAFT: non assoc. C.T.2019. Cubic: none. Cp0: Cooper", molarMass = 7.258540e-02, criticalTemperature = 3.444940e+02, criticalPressure = 4.901200e+06), final onePhase = false, thermoModel = 3, refState = 2);
     end R410A;
-  
+    
+    package Toluene
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Toluene",
+   fluidK(casRegistryNumber = "108-88-3", description = "Multiparameter: Lemmon 2006. PCSAFT: Gross 2001. Cubic: SRKMC. Cp0: Wilhoit", molarMass = 9.214020e-02, criticalTemperature = 5.917500e+02, criticalPressure = 4.126000e+06),
+   final onePhase=false, thermoModel=3, refState=2);
+    end Toluene;
+
     package WaterRef
       extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "WaterRef", fluidK(casRegistryNumber = "7732-18-5", description = "Multiparameter:IAPWS95. PCSAFT:C.Trujillo 2B max.633K. Cubic:PRMC,C.Trujillo 2018. Cp0:Jaeschke", molarMass = 1.801528e-02, criticalTemperature = 6.470960e+02, criticalPressure = 2.206400e+07), final onePhase = false, thermoModel = 3, refState = 4);
     end WaterRef;
-  
-    package Water
-      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Water", fluidK(casRegistryNumber = "7732-18-5", description = "Multiparameter:GERG2004. PCSAFT: Diamantotis 4C. Cubic: SRKMC C.Trujillo. Cp0:Jaechske", molarMass = 1.801528e-02, criticalTemperature = 6.470960e+02, criticalPressure = 2.206400e+07), onePhase = false, thermoModel = 1, refState = 4, reference_T = 273.15, reference_p = 101325);
-    end Water;
 
+    package Water
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Water", fluidK(casRegistryNumber = "7732-18-5", description = "Multiparameter:GERG2004. PCSAFT: Diamantotis 4C. Cubic: SRKMC C.Trujillo. Cp0:Jaechske", molarMass = 1.801528e-02, criticalTemperature = 6.470960e+02, criticalPressure = 2.206400e+07), onePhase = false, thermoModel = 3, refState = 4, reference_T = 273.15, reference_p = 101325);
+    end Water;
+    
+    package Xylene_m
+      extends FreeFluids.ExternalMedia.ExternalMedium(final mediumName = "Xylene_m",
+   fluidK(casRegistryNumber = "108-38-3", description = "Multiparameter: Zhou 2012. PCSAFT: Gross 2001. Cubic: PRSV Proust 1998. Cp0: Cooper", molarMass = 1.061670e-01, criticalTemperature = 6.168900e+02, criticalPressure = 3.534600e+06),
+   final onePhase=false, thermoModel=3, refState=2);
+    end Xylene_m;
   end Fluids;
 
   package Tests
-    model Test1Cubic
-      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.WaterRef(thermoModel = 1, refState = 4, reference_T = 273.15, reference_p = 101325.0, inputChoice = "ph"), p = 20.0e5, initialT = 0.1 + 273.15, finalT = 470 + 273.15);
-    end Test1Cubic;
+    model Test1aCubic
+      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.WaterRef(thermoModel = 1, refState = 4, reference_T = 273.15, reference_p = 1.0e5, inputChoice = "pT"), p = 220.0e5, initialT = 600, finalT = 700);
+    end Test1aCubic;
 
-    model Test1PCSAFT
-      extends Test1Cubic(Medium(thermoModel = 2));
-    end Test1PCSAFT;
+    model Test1aPCSAFT
+      extends Test1aCubic(Medium(thermoModel = 2));
+    end Test1aPCSAFT;
 
-    model Test1SW
-      extends Test1Cubic(Medium(thermoModel = 3));
-    end Test1SW;
+    model Test1aSW
+      extends Test1aCubic(Medium(thermoModel = 3));
+    end Test1aSW;
 
-    model Test1SW2
-      extends Test1Cubic(redeclare replaceable package Medium = ExternalMedia.Fluids.Water(thermoModel = 3, refState = 4, reference_T = 273.15, reference_p = 101325.0, inputChoice = "ph"));
-    end Test1SW2;
+    model Test1aIF97
+      extends Test1aCubic(redeclare package Medium = Modelica.Media.Water.StandardWater);
+      end Test1aIF97;
 
-    model Test1TMedia
-      extends Test1Cubic(redeclare package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = true));
-      //extends Test1Cubic(redeclare package Medium = FreeFluids.TMedia.Fluids.R134A(refState = "ASHRAE"));
-    end Test1TMedia;
+    model Test1bCubic
+      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.R410A(thermoModel = 1, refState = 2, reference_T = 273.15, reference_p = 101325.0, inputChoice = "pT"), p = 10.0e5, initialT = (-50) + 273.15, finalT = 100 + 273.15);
+    end Test1bCubic;
 
-    model Test1IF97
-      extends Test1Cubic(redeclare package Medium = Modelica.Media.Water.StandardWater);
-      //extends Test1A(redeclare package Medium = FreeFluids.TMedia.Acetone(refState="IIR"));
-    end Test1IF97;
+    model Test1bPCSAFT
+      extends Test1bCubic(Medium(thermoModel = 2));
+    end Test1bPCSAFT;
 
-    model Test1AdCubic
-      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.R410A(thermoModel = 1, refState = 2, reference_T = 273.15, reference_p = 101325.0, inputChoice = "ph"), p = 35.0e5, initialT = (-50) + 273.15, finalT = 55 + 273.15);
-    end Test1AdCubic;
+    model Test1bSW
+      extends Test1bCubic(Medium(thermoModel = 3));
+    end Test1bSW;
     
-    model Test1AdPCSAFT
-      extends Test1AdCubic(Medium(thermoModel = 2));
-    end Test1AdPCSAFT;
+    model Test1bTMedia
+      extends Test1bCubic(redeclare package Medium = FreeFluids.TMedia.Fluids.R410A(refState = "IIR", highPressure = true, inputChoice="pT"));
+      end Test1bTMedia;
+      
+    model Test1cCubic
+      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.Propane(thermoModel = 1, refState = 2, reference_T = 273.15, reference_p = 101325.0, inputChoice = "pT"), p = 5.0e5, initialT = (-100) + 273.15, finalT = 200 + 273.15);
+    end Test1cCubic;
+    
+    model Test1cPCSAFT
+      extends Test1cCubic(Medium(thermoModel = 2));
+    end Test1cPCSAFT;
   
-    model Test1AdSW
-      extends Test1AdCubic(Medium(thermoModel = 3));
-    end Test1AdSW;
+    model Test1cSW
+      extends Test1cCubic(Medium(thermoModel = 3));
+    end Test1cSW;
+    
+    model Test1cTMedia
+      extends Test1cCubic(redeclare package Medium = FreeFluids.TMedia.Fluids.Propane(refState = "IIR", highPressure = true, inputChoice="pT"));
+      end Test1cTMedia;
+      
+    model Test1dCubic
+      extends FreeFluids.TMedia.Tests.FluidTestingA(redeclare replaceable package Medium = FreeFluids.ExternalMedia.Fluids.Ethanol(thermoModel = 1, refState = 2, reference_T = 273.15, reference_p = 101325.0, inputChoice = "pT"), p = 1.0e5, initialT = 273, finalT = 300 + 273.15);
+    end Test1dCubic;
+    
+    model Test1dPCSAFT
+      extends Test1dCubic(Medium(thermoModel = 2));
+    end Test1dPCSAFT;
+  
+    model Test1dSW
+      extends Test1dCubic(Medium(thermoModel = 3));
+    end Test1dSW;
+    
+    model Test1dTMedia
+      extends Test1dCubic(redeclare package Medium = FreeFluids.TMedia.Fluids.Ethanol(refState = "IIR", highPressure = true, inputChoice="pT"));
+      end Test1dTMedia;
 
-    model TestRefrigerantEvaporator "The test case has been copied from ThermoPower Library. Test case with once-through evaporator using Dittus-Boelter 2-phase heat transfer model"
-      replaceable package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1) constrainedby Modelica.Media.Interfaces.PartialMedium;
+    model TestRefrigerantEvaporator "The test case has been copied from ThermoPower Library. Test case with once-through evaporator using Dittus-Boelter 2-phase heat transfer model. The initial convergence takes some minuts, but should work with thermoModel=1(Cubic) or 2 (PCSAFT)"
+      replaceable package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1) constrainedby Modelica.Media.Interfaces.PartialMedium;
       parameter Integer Nnodes = 10 "number of nodes";
       parameter Modelica.SIunits.Length Dint = 5e-3 "Internal diameter of refrigerant tube";
       parameter Modelica.SIunits.Length th = 0.5e-3 "Thickness of refrigerant tube";
@@ -854,19 +864,19 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
       Modelica.SIunits.Temperature Twall[:] = tubeWall.Tvol "Alias variable for direct comparisons";
       Modelica.SIunits.SpecificEnthalpy hl[:] = fluidFlow.hl * ones(Nnodes);
       Modelica.SIunits.SpecificEnthalpy hv[:] = fluidFlow.hv * ones(Nnodes);
-      ThermoPower.Water.SinkPressure fluidSink(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1), p0 = 3e6) annotation(
+      ThermoPower.Water.SinkPressure fluidSink(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1), p0 = 3e6) annotation(
         Placement(transformation(extent = {{50, -82}, {70, -62}}, rotation = 0)));
       ThermoPower.Gas.SinkPressure gasSink(redeclare package Medium = ThermoPower.Media.Air) annotation(
         Placement(transformation(extent = {{-54, 18}, {-74, 38}}, rotation = 0)));
-      ThermoPower.Water.SourceMassFlow fluidSource(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1), h = -100e3, p0 = 3e5, use_in_h = false, use_in_w0 = true) annotation(
+      ThermoPower.Water.SourceMassFlow fluidSource(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1), h = -100e3, p0 = 3e5, use_in_h = false, use_in_w0 = true) annotation(
         Placement(transformation(extent = {{-70, -82}, {-50, -62}}, rotation = 0)));
-      ThermoPower.Water.SensT fluid_T_in(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1)) annotation(
+      ThermoPower.Water.SensT fluid_T_in(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1)) annotation(
         Placement(transformation(extent = {{-46, -78}, {-26, -58}}, rotation = 0)));
       ThermoPower.Gas.SensT gas_T_in(redeclare package Medium = ThermoPower.Media.Air) annotation(
         Placement(transformation(extent = {{34, 22}, {14, 42}}, rotation = 0)));
       ThermoPower.Gas.SourceMassFlow gasSource(redeclare package Medium = ThermoPower.Media.Air, T = 380.15, use_in_w0 = true) annotation(
         Placement(transformation(extent = {{64, 18}, {44, 38}}, rotation = 0)));
-      ThermoPower.Water.SensT fluid_T_out(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1)) annotation(
+      ThermoPower.Water.SensT fluid_T_out(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1)) annotation(
         Placement(transformation(extent = {{20, -78}, {40, -58}}, rotation = 0)));
       ThermoPower.Gas.SensT gas_T_out(redeclare package Medium = ThermoPower.Media.Air) annotation(
         Placement(transformation(extent = {{-24, 22}, {-44, 42}}, rotation = 0)));
@@ -874,7 +884,7 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         Placement(transformation(extent = {{80, 80}, {100, 100}})));
       ThermoPower.Gas.Flow1DFV gasFlow(redeclare package Medium = ThermoPower.Media.Air, redeclare model HeatTransfer = ThermoPower.Thermal.HeatTransferFV.ConstantHeatTransferCoefficient(gamma = 120), A = (Dgas ^ 2 - Dext ^ 2) / 4 * pi, Dhyd = Dgas, FFtype = ThermoPower.Choices.Flow1D.FFtypes.NoFriction, HydraulicCapacitance = ThermoPower.Choices.Flow1D.HCtypes.Downstream, L = L, N = Nnodes, Nt = 1, Tstartin = 273.15, Tstartout = 283.15, noInitialPressure = true, omega = Dext * pi, wnom = 0.02) annotation(
         Placement(transformation(extent = {{-10, -10}, {10, 10}}, rotation = 180, origin = {-8, 28})));
-      ThermoPower.Water.Flow1DFV2ph fluidFlow(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2(thermoModel = 3, refState = 1), redeclare model HeatTransfer = ThermoPower.Thermal.HeatTransferFV.FlowDependentHeatTransferCoefficient2ph(gamma_nom_liq = 800, gamma_nom_2ph = 8000, gamma_nom_vap = 800), A = Dint ^ 2 / 4 * pi, Cfnom = 0.005, Dhyd = Dint, FFtype = ThermoPower.Choices.Flow1D.FFtypes.Cfnom, HydraulicCapacitance = ThermoPower.Choices.Flow1D.HCtypes.Downstream, L = L, N = Nnodes, dpnom = 1000, hstartin = 250e3, hstartout = 250e3, noInitialPressure = true, omega = Dint * pi, pstart = 3e6, wnom = 0.005) annotation(
+      ThermoPower.Water.Flow1DFV2ph fluidFlow(redeclare package Medium = FreeFluids.ExternalMedia.Fluids.CO2b(thermoModel = 2, refState = 1), redeclare model HeatTransfer = ThermoPower.Thermal.HeatTransferFV.FlowDependentHeatTransferCoefficient2ph(gamma_nom_liq = 800, gamma_nom_2ph = 8000, gamma_nom_vap = 800), A = Dint ^ 2 / 4 * pi, Cfnom = 0.005, Dhyd = Dint, FFtype = ThermoPower.Choices.Flow1D.FFtypes.Cfnom, HydraulicCapacitance = ThermoPower.Choices.Flow1D.HCtypes.Downstream, L = L, N = Nnodes, dpnom = 1000, hstartin = 250e3, hstartout = 250e3, noInitialPressure = true, omega = Dint * pi, pstart = 3e6, wnom = 0.005) annotation(
         Placement(visible = true, transformation(extent = {{-18, -82}, {2, -62}}, rotation = 0)));
       ThermoPower.Thermal.CounterCurrentFV counterCurrentFV(Nw = Nnodes - 1) annotation(
         Placement(transformation(extent = {{-18, -10}, {2, 10}})));
@@ -915,34 +925,51 @@ package ExternalMedia "ExternalMedia.mo by Carlos Trujillo
         Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}), graphics),
         __Dymola_experimentSetupOutput,
         Documentation(info = "<html>
-  <p>The model is designed to test the component <code>ThermoPower.Water.Flow1DFV</code> (fluid side of a heat exchanger, model uses finite volumes).</p><p>This model represent the two fluid sides of a heat exchanger made by two concentric tubes in counterflow configuration. The thickness of the wall separating the two tubes is negligible. The operating fluid is liquid ThermoPower.Water. The mass flow rate during the experiment and initial conditions are the same for the two sides. </p><p>During the simulation, the inlet specific enthalpy for hexA (&QUOT;hot side&QUOT;) is changed at time t = 50 s. The outlet temperature of the hot side starts changing after the fluid transport time delay, while the outlet temperature of the cold side starts changing immediately. </p>
-  <p>Simulation Interval = [0...1200] sec </p><p>Integration Algorithm = DASSL </p><p>Algorithm Tolerance = 1e-6 </p>
-  </html>", revisions = "<html>
-  <ul>
-  <li>18 Sep 2013 by <a href=\"mailto:francesco.casella@polimi.it\">Francesco Casella</a>:<br/>Updated to new FV structure. Updated parameters.</li></li>
-  <li><i>1 Oct 2003</i> by <a href=\"mailto:francesco.schiavo@polimi.it\">Francesco Schiavo</a>:<br>
-  First release.</li>
-  </ul>
-  </html>"),
+    <p>The model is designed to test the component <code>ThermoPower.Water.Flow1DFV</code> (fluid side of a heat exchanger, model uses finite volumes).</p><p>This model represent the two fluid sides of a heat exchanger made by two concentric tubes in counterflow configuration. The thickness of the wall separating the two tubes is negligible. The operating fluid is liquid ThermoPower.Water. The mass flow rate during the experiment and initial conditions are the same for the two sides. </p><p>During the simulation, the inlet specific enthalpy for hexA (&QUOT;hot side&QUOT;) is changed at time t = 50 s. The outlet temperature of the hot side starts changing after the fluid transport time delay, while the outlet temperature of the cold side starts changing immediately. </p>
+    <p>Simulation Interval = [0...1200] sec </p><p>Integration Algorithm = DASSL </p><p>Algorithm Tolerance = 1e-6 </p>
+    </html>", revisions = "<html>
+    <ul>
+    <li>18 Sep 2013 by <a href=\"mailto:francesco.casella@polimi.it\">Francesco Casella</a>:<br/>Updated to new FV structure. Updated parameters.</li></li>
+    <li><i>1 Oct 2003</i> by <a href=\"mailto:francesco.schiavo@polimi.it\">Francesco Schiavo</a>:<br>
+    First release.</li>
+    </ul>
+    </html>"),
         experiment(StopTime = 1e+006, Interval = 2000),
         uses(Modelica(version = "3.2.2")));
     end TestRefrigerantEvaporator;
   end Tests;
+
+
   annotation(
     Documentation(info = "<html>
     <body>
-    <p>The medium is designed for pure or pseudo-pure substances in liquid, gas, or two phases. The thermodynamic calculations are performed using different equations of state(EOS), implemented in C language, that are called using external object and functions.</p>
-    <p>For each substance there is the possibility of choising between three EOS types: multiparameter, PCSAFT, or cubic. The external object contains the substance data, and is a C structure, that is exported from the database using the FreeFluids GUI.</p>
-    <p>The quality of the results is very high when multiparameter (Seltzmann and Wagner, SW) EOS are available. If not, PCSAFT or different flavours of cubic EOS can be used. The transport properties are computed from temperature dependent correlations, with pressure correction.</p>
-    <p>The medium implements all the requirements of Modelica.Media.PartialTwoPhaseMedium. It is compatible with the old frontend of OpenModelica 14.1, but not with the new frontend, as it doesn`t support external functions yet. It is also compatible, at least partially, with the ThermoPower library. Compared with other high quality libraries, it is very easy to use and, although it is not as complete as for example CooProp, or RefProp, the quality of the thermodynamic results is practically the same. In plus there is the possibility of PCSAFT and cubic EOS for substances for which no multiparameter EOS is available.</p>
-    <p>The main limitation of the medium, when using SW or PCSAFT EOS, is in the vecinity of the critical point, as no special technique, as for example splines, is used. Nevertheless you can go normally quite close to the critical point. For transport properties, a pending point is to use multiphase, temperature and density dependent functions, when available. The medium is much slower than the TMedia one, but is the price for the better precision and wider application.</p>
+    <p>The medium is designed for pure or pseudo-pure substances in liquid, gas, or two phases. The thermodynamic calculations are performed using different equations of state(EOS), implemented in C language, that are called using external object and functions. The C code and the substances data are in the Resources folder.</p>
+    <p>For each substance there is the possibility of choosing between three EOS types: multiparameter, PCSAFT, or cubic. The external object contains the substance data, and is a C structure, that is exported from the database using the FreeFluids GUI software.</p>
+    <p>The quality of the results is very high when multiparameter (Seltzmann and Wagner, SW) EOS are available. If not, PCSAFT or different flavours of cubic EOS can be used.</p>
+    <p>The transport properties are normally computed from temperature dependent correlations, with pressure correction. Nevertheless, for viscosity, the system will perform phase independent viscosity calculation (from temperature and density) for selected substances, using dedicated calculation or extended correspondent states with NIST correction polynomia, when available. In order to use the phase independent viscosity calculation the thermoModel parameter must be 3 (multiparameter EOS), as it is the only way to be sure that the supplied density is reliable. For thermal conductivity the same type of calculations are already programmed, but have been inactivated till finishing testing.</p>
+    <p>The medium implements all the requirements of Modelica.Media.PartialTwoPhaseMedium. It is compatible with the old frontend of OpenModelica, but not with the new frontend, as it does not support external functions yet. It is also compatible, at least partially, with the ThermoPower library. Compared with other high quality libraries, it is very easy to use and, although it is not as complete as for example CooProp, or RefProp, the quality of the thermodynamic results is practically the same. In plus there is the possibility of using PCSAFT and cubic EOS for substances for which no multiparameter EOS are not available.</p>
+    <p>The main limitation of the medium, when using SW or PCSAFT EOS, is in the vecinity of the critical point, as no special technique, as for example splines, is used. Nevertheless you can go normally quite close to the critical point with SW, not so with PCSAFT as there is still some problems with its density solver. The medium is much slower than the TMedia one, but is the price for the better precision and wider application.</p>
     <p>The ThermodynamicState record is quite big, in order to allow all the thermodynamic calculations with just one call to external functions.</p>
     <p>The BaseProperties model has been implemented using algorithms instead of equations. I do not know if this is correct, but seems the logical decision when you know the order in which calculations must be performed.</p>
     <p>When extending the medium, the following configuration must be done:</p>
     <p>The thermoModel Integer constant must be made equal to 1 for using the cubic EOS, 2 for the PCSAFT, or 3 for the SW.</p>
     <p>The referenceState Integer constant  must be made equal to 1 for using ASHRAE reference state, to 2 for using IIR, to 3 for using NBP, to 4 for using user reference_T and reference_p. Any other number will produce an unreferenced calculation for enthalpy and entropy.</p>
     <p>If you are going to use the BaseProperties model, you must make the inputChoice constant String equal to 'ph', 'pT' or 'dT', as needed. When instantiating the model, you can still change the selection just for the object, specifying the value for the localInputChoice constant.</p>
-    <p>In the package Tests you can compare the performance of the cubic, PCSAFT, IAPWS95,  GERG2004 EOS, and TMedia for water, against the standard Modelica.Media.Water.StandardWater. There is also the ThermoPower TestRefrigerantEvaporator test, modified to use CO2 as liquid (you need to load the ThermoPower library).</p>
+    <p>With the Test1aXXX models of the Tests package, you can compare the performance of the cubic, PCSAFT, IAPWS95 and GERG2004 EOS, against the standard Modelica.Media.Water.StandardWater. Test1bXXX compare R410A, Test1cXXX compare propane, and Test1dXXX compare ethanol.</p>
+    <p><b>The C code</b></p>
+    <p>The C code is placed in the Resources folder.</p>
+    <p>The FFbasic.h file contains the basic definition of structures and enumerations used in the code. </p>
+    <p>The FFmodelicaMedium.c file contains the interface between Modelica and C. Basically the constructor and destructor of the structure that will contain the data of the selected substance. The reference to this structure is passed to the Modelica code, that uses this reference when calling the external functions written in C.</p>
+    <p>The FFeosPure.c and FFphysprop.c files contain the code that will perform the calculation in C.</p>
+    <p><b>The Medium data</b></p>
+    <p>We need to define the mediums to be used. This definition is inside the Fluids subpackage. Each definition is very short, just with the minimum information necessary. The most important of it is the mediumName, as this name is the name of the file (with extension .sd) placed in the Resources folder that will be used for charging the data to the C structure.</p>
+    <p></p>
+    <p>For each medium you need both a medium definition in Modelica, and a binary file with the data in the Resources folder. Both can be made using the program FreeFluidsGui.exe that has been also placed in the Resources folder. It will access the data base, allow you to select the substance, with the EOS and correlations to be used, and later export it to a binary file, with the data as C structure, and to a text file, with the data to add to the FreeFluids.ExternalMedia.Fluids package.</p>
+    <p>The program allows also the exportation of the correlations in the format used by the TMedia package.</p>
+    <p><b>Transport properties by dedicated calculation or ECS</b></p>
+    <p>The calculation of the substance viscosity is managed by the FF_Viscosity function in the FFphysprop.c file. If you have selected to work with the multiparameter EOS (thermoModel=3), that grants a good density calculation, it will check if there is a dedicated calculation from temperature and density (available only for few substances). If not, it will check if the correlation defined for gas viscosity calculation is the 112 (NIST coefficients for viscosity calculation using ECS) and that the data charged for the reference substance correspond to the needed one. If this is OK the ECS calculation will be applied for viscosity, otherwise temperature dependent correlations, with pressure correction, will be used.</p>
+    <p>If the EOS is of the cubic or PCSAFT type, correlations will be used if available. If not, the Lucas approximation will be used for gas. For liquid phase, if there is no correlation defined, the calculation will be done using ECS from the reference liquid defined.</p>
+    <p>The definition of the reference liquid is done at medium package level, giving value to the const String refName, which default value is 'Propane'.</p>
     </body>
     </html>"));
 end ExternalMedia;
