@@ -37,11 +37,11 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
     //------------------------
     constant FreeFluids.MediaCommon.DataRecord[:] data;
     constant Integer dippr107= min({if data[i].Cp0Corr==200 then 1 else 0 for i in 1:nS});
-
+  
     //Auxiliary functions based in correlations
     //-----------------------------------------
     //Function SpecificEnthalpyMix
-
+  
     function SpecificEnthalpyMix "Compute the ideal specific enthalpy of a mix from T"
       input Temperature T;
       input Real X[nS];
@@ -49,39 +49,40 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
     algorithm
   h:= X*FreeFluids.MediaCommon.Functions.SpecificEnthalpyCorr2(data, T);
     end SpecificEnthalpyMix;
-
-    //Function SpecificEnthalpyCorrInv
-
-    function SpecificEnthalpyMixInv "Compute temperature from property value"
-      //input Correlation corrData;
-      input Real y "Property value";
-      input MassFraction[nS] X "composition as mass fractions";
-      output Temperature T "Temperature that gives the property";
-    protected
-      package Internal "Solve y(data,T) for T with given y (use only indirectly via temperature_phX)"
-        extends Modelica.Media.Common.OneNonLinearEquation;
-
-        redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
-        end f_nonlinear_Data;
-
-        redeclare function extends f_nonlinear
-          algorithm
-            y := SpecificEnthalpyMix(x,X);
-        end f_nonlinear;
-
-        // Dummy definition has to be added for current Dymola??
-
-        redeclare function extends solve
-        end solve;
-      end Internal;
-
-      Internal.f_nonlinear_Data fd;
-    algorithm
-      T := Internal.solve(y, 50.0, min(data.Cp0LimS), 1.0e5, X, fd);
-    end SpecificEnthalpyMixInv;
-
+  
+      //Function SpecificEnthalpyCorrInv
+  
+      function SpecificEnthalpyMixInv "Compute temperature from property value"
+        //input Correlation corrData;
+        input Real y "Property value";
+        input MassFraction[nS] X "composition as mass fractions";
+        output Temperature T "Temperature that gives the property";
+      protected
+        package Internal "Solve y(data,T) for T with given y (use only indirectly via temperature_phX)"
+          extends Modelica.Media.Common.OneNonLinearEquation;
+  
+          redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
+          end f_nonlinear_Data;
+  
+          redeclare function extends f_nonlinear
+            algorithm
+              y := SpecificEnthalpyMix(x,X);
+          end f_nonlinear;
+  
+          // Dummy definition has to be added for current Dymola??
+  
+          redeclare function extends solve
+          end solve;
+        end Internal;
+  
+        Internal.f_nonlinear_Data fd;
+      algorithm
+        T := Internal.solve(y, 50.0, min(data.Cp0LimS), 1.0e5, X, fd);
+      end SpecificEnthalpyMixInv;
+  
+  
     //Function SpecificEntropyMix
-
+  
     function SpecificEntropyMix "Compute the ideal specific entropy of a mix from T"
       input Temperature T;
       input Real X[nS];
@@ -89,51 +90,52 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
     algorithm
   s :=  X * FreeFluids.MediaCommon.Functions.SpecificEntropyCorr2(data, T);
     end SpecificEntropyMix;
-
-    //Function SpecificEntropyCorrInv
-
-    function SpecificEntropyMixInv "Compute temperature from property value"
-      //input Correlation corrData;
-      input Real y "Property value";
-      input MassFraction[nS] X "composition as mass fractions";
-      output Temperature T "Temperature that gives the property";
-    protected
-      package Internal "Solve h(data,T) for T with given h (use only indirectly via temperature_phX)"
-        extends Modelica.Media.Common.OneNonLinearEquation;
-
-        redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
-        end f_nonlinear_Data;
-
-        redeclare function extends f_nonlinear
-          algorithm
-            y := SpecificEntropyMix(x,X);
-        end f_nonlinear;
-
-        // Dummy definition has to be added for current Dymola??
-
-        redeclare function extends solve
-        end solve;
-      end Internal;
-
-      Internal.f_nonlinear_Data fd;
-    algorithm
-      T := Internal.solve(y, 50.0, min(data.Cp0LimS), 1.0e5, X, fd);
-    end SpecificEntropyMixInv;
-
+  
+      //Function SpecificEntropyCorrInv
+  
+      function SpecificEntropyMixInv "Compute temperature from property value"
+        //input Correlation corrData;
+        input Real y "Property value";
+        input MassFraction[nS] X "composition as mass fractions";
+        output Temperature T "Temperature that gives the property";
+      protected
+        package Internal "Solve h(data,T) for T with given h (use only indirectly via temperature_phX)"
+          extends Modelica.Media.Common.OneNonLinearEquation;
+  
+          redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
+          end f_nonlinear_Data;
+  
+          redeclare function extends f_nonlinear
+            algorithm
+              y := SpecificEntropyMix(x,X);
+          end f_nonlinear;
+  
+          // Dummy definition has to be added for current Dymola??
+  
+          redeclare function extends solve
+          end solve;
+        end Internal;
+  
+        Internal.f_nonlinear_Data fd;
+      algorithm
+        T := Internal.solve(y, 50.0, min(data.Cp0LimS), 1.0e5, X, fd);
+      end SpecificEntropyMixInv;
+  
+  
     //BaseProperties model
     //--------------------
-
+  
     redeclare model extends BaseProperties(T(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates then StateSelect.prefer else StateSelect.default), final standardOrderComponents = true)
         Real nMols "number of moles in a kg";
-
+  
       algorithm
         nMols := 1000 * sum(X ./ data.MW);
         h := SpecificEnthalpyMix(T, X);
       equation
         assert(T >= 200.0 and T <= 1500.0, "Temperature T = " + String(T) + " K is not in the allowed range 200 K <= T <= 1500 K of the medium model  \"" + mediumName + "\"",AssertionLevel.warning);
         assert(p <= 1.0e6, "Ideal gas EOS is not adequate for pressure higher than 10 bars", AssertionLevel.warning);
-//nMols={data[i].MW for i in 1:nS};
-//MM = 1.0/(1000*nMols) "in kg";
+  //nMols={data[i].MW for i in 1:nS};
+  //MM = 1.0/(1000*nMols) "in kg";
         MM = 1 / nMols;
         R = Modelica.Constants.R * nMols;
         u = h - R * state.T;
@@ -145,24 +147,24 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         state.h = h;
         state.d = d;
     end BaseProperties;
-
+  
     //Thermodynamic state definition and constructors
     //-----------------------------------------------
-
+  
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         Density d(displayUnit = "kg/m3") "density in kg/m3";
         SpecificEnthalpy h "specific enthalpy";
         MolarMass MM;
     end ThermodynamicState;
-
+  
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi"
         extends Modelica.Icons.Function;
       protected
         Real nMols "number of moles in a kg";
         SpecificHeatCapacity Rm "mix R in J/(kg·K)";
         AbsolutePressure vp "vapor pressure at given T";
-
+  
       algorithm
         state.X := X;
         nMols := 1000 * sum(state.X ./ data.MW);
@@ -176,15 +178,15 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         assert(state.T >= 200.0 and state.T <= 1500.0, "Temperature T = " + String(state.T) + " K is not in the allowed range 200 K <= T <= 1500 K of the medium model  \"" + mediumName + "\"");
         assert(state.p <= 1.0e6, "Ideal gas EOS is not adequate for pressure higher than 10 bars", AssertionLevel.warning);
     end setState_pTX;
-
+  
     redeclare function extends setState_dTX "Return ThermodynamicState record as function of T,d and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real nMols "number of moles in a kg";
         SpecificHeatCapacity Rm "mix R in J/(kg·K)";
         AbsolutePressure vp "vapor pressure at given T";
-
+  
       algorithm
         state.X := X;
         nMols := 1000 * sum(state.X ./ data.MW);
@@ -197,15 +199,15 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         assert(state.T >= 200.0 and state.T <= 1500.0, "Temperature T = " + String(state.T) + " K is not in the allowed range 200 K <= T <= 1500 K of the medium model  \"" + mediumName + "\"");
         assert(state.p <= 1.0e6, "Ideal gas EOS is not adequate for pressure higher than 10 bars", AssertionLevel.warning);
     end setState_dTX;
-
+  
     redeclare function extends setState_phX "Return ThermodynamicState record as function of p,H and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real nMols "number of moles in a kg";
         SpecificHeatCapacity Rm "mix R in J/(kg·K)";
         AbsolutePressure vp "vapor pressure at given T";
-
+  
       algorithm
         state.X := X;
         nMols := 1000 * sum(state.X ./ data.MW);
@@ -218,15 +220,15 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         assert(state.T >= 200.0 and state.T <= 1500.0, "Temperature T = " + String(state.T) + " K is not in the allowed range 200 K <= T <= 1500 K of the medium model  \"" + mediumName + "\"");
         assert(state.p <= 1.0e6, "Ideal gas EOS is not adequate for pressure higher than 10 bars", AssertionLevel.warning);
     end setState_phX;
-
+  
     redeclare function extends setState_psX "Return ThermodynamicState record as function of p,S and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real nMols "number of moles in a kg";
         SpecificHeatCapacity Rm "mix R in J/(kg·K)";
         AbsolutePressure vp "vapor pressure at given T";
-
+  
       algorithm
         state.X := X;
         nMols := 1000 * sum(state.X ./ data.MW);
@@ -239,106 +241,106 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         assert(state.T >= 200.0 and state.T <= 1500.0, "Temperature T = " + String(state.T) + " K is not in the allowed range 200 K <= T <= 1500 K of the medium model  \"" + mediumName + "\"",AssertionLevel.warning);
         assert(state.p <= 1.0e6, "Ideal gas EOS is not adequate for pressure higher than 10 bars", AssertionLevel.warning);
     end setState_psX;
-
+  
     //Properties calculation from thermodynamic state
     //-----------------------------------------------
-
+  
     redeclare function extends molarMass "Return the molar mass of the medium"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         MM := state.MM;
     end molarMass;
-
+  
     redeclare function extends pressure "Return pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         p := state.p;
     end pressure;
-
+  
     redeclare function extends temperature "Return temperature"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         T := state.T;
     end temperature;
-
+  
     redeclare function extends density "Return density"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         d := state.d;
     end density;
-
+  
     redeclare function extends specificEnthalpy "Return specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         h := state.h;
     end specificEnthalpy;
-
+  
     redeclare function extends specificInternalEnergy "Return specific internal energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         u := state.h - state.p / state.d;
       annotation(
         Inline = true,
         smoothOrder = 2);
     end specificInternalEnergy;
-
+  
     redeclare function extends specificEntropy "Return specific entropy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         s := SpecificEntropyMix(state.T, state.X) - R * Modelica.Math.log(state.p / reference_p) / state.MM;
     end specificEntropy;
-
+  
     redeclare function extends specificGibbsEnergy "Return specific Gibbs energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         g := state.h - state.T * specificEntropy(state);
       annotation(
         Inline = true,
         smoothOrder = 2);
     end specificGibbsEnergy;
-
+  
     redeclare function extends specificHelmholtzEnergy "Return specific Helmholtz energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         f := state.h - state.p / state.d - state.T * specificEntropy(state);
       annotation(
         Inline = true,
         smoothOrder = 2);
     end specificHelmholtzEnergy;
-
+  
     redeclare function extends specificHeatCapacityCp "Return specific heat capacity at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         cp:= state.X*FreeFluids.MediaCommon.Functions.Cp0Corr(data, state.T);
-
+  
     end specificHeatCapacityCp;
-
+  
     redeclare function extends specificHeatCapacityCv "Compute specific heat capacity at constant volume from temperature and gas data"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         cv := specificHeatCapacityCp(state) - R / state.MM;
       annotation(
         Inline = true,
         smoothOrder = 2);
     end specificHeatCapacityCv;
-
+  
     redeclare function extends isentropicExponent "Return isentropic exponent"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real cp;
-
+  
       algorithm
         cp := specificHeatCapacityCp(state);
         gamma := cp / (cp - R / state.MM);
@@ -346,63 +348,63 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         Inline = true,
         smoothOrder = 2);
     end isentropicExponent;
-
+  
     redeclare function extends isobaricExpansionCoefficient "Returns overall the isobaric expansion coefficient beta"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         beta := 1 / state.T;
       annotation(
         Inline = true,
         smoothOrder = 2);
     end isobaricExpansionCoefficient;
-
+  
     redeclare function extends isothermalCompressibility "Returns overall the isothermal compressibility factor"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         kappa := 1.0 / state.p;
       annotation(
         Inline = true,
         smoothOrder = 2);
     end isothermalCompressibility;
-
+  
     redeclare function extends density_derp_T "Returns the partial derivative of density with respect to pressure at constant temperature"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         ddpT := state.MM / (state.T * R);
       annotation(
         Inline = true,
         smoothOrder = 2);
     end density_derp_T;
-
+  
     redeclare function extends density_derT_p "Returns the partial derivative of density with respect to temperature at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         ddTp := -state.MM * state.p / (state.T * state.T * R);
       annotation(
         Inline = true,
         smoothOrder = 2);
     end density_derT_p;
-
+  
     redeclare function extends isentropicEnthalpy "Return an approximation of isentropic enthalpy (gamma is considered constant)"
         extends Modelica.Icons.Function;
-
+  
       protected
         IsentropicExponent gamma "Isentropic exponent";
-
+  
       algorithm
         gamma := isentropicExponent(refState);
         h_is := refState.h + gamma / (gamma - 1.0) * refState.p / refState.d * ((p_downstream / refState.p) ^ ((gamma - 1) / gamma) - 1.0);
       annotation(
         smoothOrder = 2);
     end isentropicEnthalpy;
-
+  
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real cp;
       algorithm
@@ -412,7 +414,7 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         Inline = true,
         smoothOrder = 2);
     end velocityOfSound;
-
+  
     redeclare function extends dynamicViscosity "Return dynamic viscosity"
         extends Modelica.Icons.Function;
     protected
@@ -426,7 +428,7 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
         MF:=massToMoleFractions(state.X, data[:].MW);
         eta:=FreeFluids.MediaCommon.Functions.gasMixViscosityWilke(state.T,MF,etaX,data[:].MW);
     end dynamicViscosity;
-
+  
     redeclare function extends thermalConductivity "Return thermal conductivity"
         extends Modelica.Icons.Function;
     protected
@@ -560,7 +562,7 @@ package IdealGasMixture "IdealGasMixture.mo by Carlos Trujillo
   annotation(
     Documentation(info = "<html>
 <body>
-<p>The medium is designed for a mixture of substances in the gas phase, at a pressure low enough to allow for the ideal gas equation to be used. It extends the Modelica PartialMixtureMedium. The definition is similar to that of the Modelica.Media.IdealGases.Common.MixtureGasNasa, but uses several ecuations for the Cp0 correlation, as the Nasa Glenn coefficients are not available for many organic compounds. The use of a single equation for Cp0 limits somewhat the temperature range.</p>
+<p>The medium is designed for a mixture of substances in the gas phase, at a pressure low enough to allow for the ideal gas equation to be used. It extends the Modelica PartialMixtureMedium. The definition is similar to that of the Modelica.Media.IdealGases.Common.MixtureGasNasa, but uses several equations for the Cp0 correlation, as the NASA Glenn coefficients are not available for many organic compounds. The use of a single equation for Cp0 limits somewhat the temperature range.</p>
 <p> It shares the substances data with the other medium models. Look at the MediaData package information for details on how to use the database to create new substances.</p>
 <p>It uses also correlations for gas viscosity and thermal conductivity.</p>
 <p>Density is calculated using the ideal gas equation of state. Enthalpy and entropy are calculated from the ideal gas constant pressure heat capacity Cp0, using specific temperature correlations.</p>

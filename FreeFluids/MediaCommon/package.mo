@@ -21,32 +21,81 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
     Integer family = 0 "6=water, 7=alcohol, 8=polyol, 17=haloalkane, 18=haloalkene";
     Real MW = 0.0, molarMass = 0.0, Tc = 0.0, criticalPressure = 0.0, Vc = 0.0, Zc = 0.0, w = 0.0, Tb = 0.0, mu = 0.0, IsothComp = 6.667e-10, lnuA = 0.0, lnuB = 0.0;
     Integer Cp0Corr = 0, VpCorr = 0, BtCorr = 0, HvCorr = 0, lDensCorr = 0, lCpCorr = 0, lTfromHsatCorr = 0, lViscCorr = 0, lThCondCorr = 0, lSurfTensCorr = 0, lBulkModRCorr = 0, gSatDensCorr = 0, gViscCorr = 0, gThCondCorr = 0;
-    Real Cp0Coef[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, VpCoef[6] = {0, 0, 0, 0, 0, 0}, BtCoef[6] = {0, 0, 0, 0, 0, 0}, HvCoef[6] = {0, 0, 0, 0, 0, 0}, lDensCoef[6] = {0, 0, 0, 0, 0, 0}, lCpCoef[6] = {0, 0, 0, 0, 0, 0}, lTfromHsatCoef[6] = {0, 0, 0, 0, 0, 0}, lViscCoef[6] = {0, 0, 0, 0, 0, 0}, lThCondCoef[6] = {0, 0, 0, 0, 0, 0}, lSurfTensCoef[6] = {0, 0, 0, 0, 0, 0}, lBulkModRCoef[6] = {0, 0, 0, 0, 0, 0}, gSatDensCoef[6] = {0, 0, 0, 0, 0, 0}, gViscCoef[6] = {0, 0, 0, 0, 0, 0}, gThCondCoef[6] = {0, 0, 0, 0, 0, 0};
+    Real Cp0Coef[:] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, VpCoef[:] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, BtCoef[6] = {0, 0, 0, 0, 0, 0}, HvCoef[6] = {0, 0, 0, 0, 0, 0}, lDensCoef[:] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lCpCoef[6] = {0, 0, 0, 0, 0, 0}, lTfromHsatCoef[6] = {0, 0, 0, 0, 0, 0}, lViscCoef[6] = {0, 0, 0, 0, 0, 0}, lThCondCoef[6] = {0, 0, 0, 0, 0, 0}, lSurfTensCoef[6] = {0, 0, 0, 0, 0, 0}, lBulkModRCoef[6] = {0, 0, 0, 0, 0, 0}, gSatDensCoef[:] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, gViscCoef[6] = {0, 0, 0, 0, 0, 0}, gThCondCoef[6] = {0, 0, 0, 0, 0, 0};
     Real Cp0LimI = 0, VpLimI = 0, BtLimI = 0, HvLimI = 0, lDensLimI = 0, lCpLimI = 0, lTfromHsatLimI = 0, lViscLimI = 0, lThCondLimI = 0, lSurfTensLimI = 0, lBulkModRLimI = 0, gSatDensLimI = 0, gViscLimI = 0, gThCondLimI = 0;
     Real Cp0LimS = 0, VpLimS = 0, BtLimS = 0, HvLimS = 0, lDensLimS = 0, lCpLimS = 0, lTfromHsatLimS = 0, lViscLimS = 0, lThCondLimS = 0, lSurfTensLimS = 0, lBulkModRLimS = 0, gSatDensLimS = 0, gViscLimS = 0, gThCondLimS = 0;
   end DataRecord;
-
-  record HelmholtzDerivatives
-    Real a, av, avv, at, att, avt;
-    Real a, av, avv, at, att, avt;
-    Real a, av, avv, at, att, avt;
-  end HelmholtzDerivatives;
-
-  record IdealThermo
-    Real cp, h, s;
-    Real cp, h, s;
-    Real cp, h, s;
-  end IdealThermo;
 
   constant DataRecord MediaDataTemplate(name = "", description = "", CAS = "", family = 0, MW = 0.0, molarMass = 0.0, Tc = 0.0, criticalPressure = 0.0, Vc = 0.0, Zc = 0.0, w = 0.0, Tb = 0.0, mu = 0.0, IsothComp = 0.0, lnuA = 0.0, lnuB = 0.0, Cp0Corr = 0, Cp0Coef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, Cp0LimI = 0.0, Cp0LimS = 0.0, VpCorr = 0, VpCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, VpLimI = 0.0, VpLimS = 0.0, BtCorr = 0, BtCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, BtLimI = 0.0, BtLimS = 0.0, HvCorr = 0, HvCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, HvLimI = 0.0, HvLimS = 0.0, lDensCorr = 0, lDensCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lDensLimI = 0.0, lDensLimS = 0.0, lCpCorr = 0, lCpCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lCpLimI = 0.0, lCpLimS = 0.0, lTfromHsatCorr = 0, lTfromHsatCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lTfromHsatLimI = 0.0, lTfromHsatLimS = 0.0, lViscCorr = 0, lViscCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lViscLimI = 0.0, lViscLimS = 0.0, lThCondCorr = 0, lThCondCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lThCondLimI = 0.0, lThCondLimS = 0.0, lSurfTensCorr = 0, lSurfTensCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lSurfTensLimI = 0.0, lSurfTensLimS = 0.0, lBulkModRCorr = 0, lBulkModRCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, lBulkModRLimI = 0.0, lBulkModRLimS = 0.0, gSatDensCorr = 0, gSatDensCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, gSatDensLimI = 0.0, gSatDensLimS = 0.0, gViscCorr = 0, gViscCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, gViscLimI = 0.0, gViscLimS = 0.0, gThCondCorr = 0, gThCondCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, gThCondLimI = 0.0, gThCondLimS = 0.0);
 
   package Types
     type InputChoice = enumeration(pT "(p,T) as inputs", ph "(p,h) as inputs", ps "(p,s) as inputs", dT "(d,T) as inputs");
-    type ReferenceState = enumeration(ASHRAE "0 enthalpy and entropy for saturated liquid at -40ºC", NBP "0 enthalpy and entropy for saturated liquid at normal boiling point", IIR "H=200 KJ/kg, and S=1.0 KJ/(kg·K) for saturated liquid at 0ºC", User "User defined reference_T and reference_P");
+    type ReferenceState = enumeration(ASHRAE "0 enthalpy and entropy for saturated liquid at -40ºC", NBP "0 enthalpy and entropy for saturated liquid at normal boiling point", IIR "H=200 KJ/kg, and S=1.0 KJ/(kg·K) for saturated liquid at 0ºC", User "User defined reference_T and reference_P", None "No reference is used");
     type CorrelationEquation = enumeration(FF_DIPPR100, FF_Polynomial, FF_Polynomial2, FF_DIPPR100Ld, FF_expDIPPR100, FF_DIPPR101, FF_DIPPR101Vp, FF_DIPPR101Lv, FF_logDIPPR101, FF_DIPPR102, FF_DIPPR103, FF_DIPPR104, FF_DIPPR105, FF_DIPPR106, FF_DIPPR106Hv, FF_DIPPR106Ld, FF_DIPPR106SurfT, FF_DIPPR107, FF_DIPPR107Cp, FF_DIPPR114, FF_DIPPR115, FF_DIPPR116, FF_DIPPR116Ld, FF_Wilhoit, FF_Cooper, FF_Jaechske, FF_ChemSep16, FF_Antoine1, FF_Antoine2, FF_Wagner25, FF_Wagner36, FF_PPDS9, FF_PPDS10, FF_PCWIN, FF_Rackett, FF_ExtAndrade1, FF_ExtAndrade2, FF_ChericVisc, FF_WagnerGd, FF_Tait, FF_ExtWagner, FF_PPDS15);
   end Types;
 
   package Functions
+  "Contains the functions that could be common to several media packages"
+    partial function CorrelationSolver "Anderson-Bjork modification of Regula Falsi method"
+      input Integer cor;
+      input Real coef[:];
+      input Real MW;
+      input Real y;
+      input Real max=1000;
+      input Real min=50;
+      input Real tol=1.0e-7;
+      output Real x;
+    protected
+      replaceable function f
+      end f;
+      Real xMin,xMax,yMin,yMax,fx;
+      Integer i,side;
+    algorithm
+      xMin:=min;
+      xMax:=max;
+      yMin:=f(cor,coef,MW,xMin);
+      yMax:=f(cor,coef,MW,xMax);
+      side:=0;
+      for i in 1:20 loop
+        x:=xMin+(xMax-xMin)*(y-yMin)/(yMax-yMin);
+        if x<min then
+          x:=min;
+        end if;
+        fx:=f(cor,coef,MW,x);
+        if (abs(y-fx)<abs(y*tol)) then break;    
+        elseif ((y-fx)*(y-yMax)>0)then//the new point is at the same side than yMax
+          if(side==1) then
+            if(((y-fx)/(y-yMax))<0.5) then
+              yMin:=yMin+(y-yMin)*(y-fx)/(y-yMax);
+            else
+              yMin:=yMin+0.5*(y-yMin);
+            end if;
+          end if;
+          xMax:=x;
+          yMax:=fx;
+          side:=1;   
+        else
+          if(side==-1) then
+            if(((y-fx)/(y-yMin))<0.5) then
+              yMax:=yMax+(y-yMax)*(y-fx)/(y-yMin);
+            else
+              yMax:=yMax+0.5*(y-yMax);
+            end if;
+          end if;
+          xMin:=x;
+          yMin:=fx;
+          side:=-1;
+        end if;
+      end for;
+      assert(abs(y-fx)<abs(y*tol), String(x)+" as root for y="+String(y)+" has a relative error of: "+String((y-fx)/y), AssertionLevel.warning);
+      annotation(
+        Documentation(info = "<html>
+        <body>
+        <p>It uses the Anderson-Bjork modification of Regula Falsi method for the inverse solving of a correlation. The correlation (f) is defined as a replaceable function. You must extend the CorrelationSolver redeclaring f as the function you want to use. This function must return a Real value, and must accept the calling parameters that will be used by the solver.</p>
+        </body>
+        </html>"));
+    end CorrelationSolver;
+    
     function PhysPropCorr
       input Integer cor;
       input Real coef[:];
@@ -111,9 +160,12 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       elseif cor == 25 then
         Tm := 1 - x / coef[6];
         y := coef[1] * exp((coef[2] * Tm + coef[3] * Tm ^ 1.5 + coef[4] * Tm ^ 3 + coef[5] * Tm ^ 6) / (1 - Tm)) "FF_Wagner36.ok";
-      elseif cor == 26 then
+      elseif cor == 26 or cor== 102 then
         Tm := 1 - x / coef[2];
         y := coef[1] * exp(coef[2] * (coef[3] * Tm ^ coef[4] + coef[5] * Tm ^ coef[6] + coef[7] * Tm ^ coef[8] + coef[9] * Tm ^ coef[10] + coef[11] * Tm ^ coef[12] + coef[13] * Tm ^ coef[14]) / x) "FF_ExtWagner";
+      elseif cor== 103 then
+        Tm := 1 - x / coef[2];
+        y := coef[1] * exp(coef[3] * Tm ^ coef[4] + coef[5] * Tm ^ coef[6] + coef[7] * Tm ^ coef[8] + coef[9] * Tm ^ coef[10] + coef[11] * Tm ^ coef[12] + coef[13] * Tm ^ coef[14]) "FF_ExtWagner2";    
       elseif cor == 31 or cor == 33 then
         y := exp(coef[1] + coef[2] / x + coef[3] * x + coef[4] * x ^ 2 + coef[5] * x ^ 3) "FF_ExtAndrade1";
       elseif cor == 32 then
@@ -136,6 +188,10 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       elseif cor == 240 then
         Tm := x - 273.15;
         y := (coef[1] + coef[2] * Tm + coef[3] * Tm ^ 2) * (1 - 0.0894 * log(1 + 1e5 / (coef[4] * exp(-coef[5] * Tm)))) "FF_Tait at 1 bar. T in centigrades";
+      elseif cor == 241 then  
+        Tm := 1-x/coef[2];
+        y := coef[1]*(1+coef[3]*Tm^coef[4]+coef[5]*Tm^coef[6]+coef[7]*Tm^coef[8]+coef[9]*Tm^coef[10]+
+                    coef[11]*Tm^coef[12]+coef[13]*Tm^coef[14])"FF_ExtLogWagner";
       end if;
       if cor == 1 or cor == 21 or cor == 48 then
         y := y * 1e3;
@@ -151,7 +207,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
         y := y * 133.32239;
       elseif cor == 31 or cor == 32 or cor == 34 or cor == 36 or cor == 63 then
         y := y * 1e-3;
-      elseif cor == 33 then
+      elseif cor == 33 or cor == 102 or cor== 103 or cor == 241 then
         y := y * MW * 1e-3;
       elseif cor == 49 then
         y := MW * 1e3 / y;
@@ -160,10 +216,21 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       end if;
       annotation(
         Inline = true,
-        smoothOrder = 2);
+        smoothOrder = 2,
+        Documentation(info = "<html>
+        <body>
+        <p>Provides the calculations of physical properties as function of one independent variable (normally T). It needs as input: the number of the correlation to use, the coefficients for the correlation, the molecular weight of the substance, and the value of the independent variable. It returns the value of the physical property. It has an equivalent written in C inside the FFphysprop.c file in the Resources directory.</p>
+        </body>
+        </html>"));
+    
     end PhysPropCorr;
 
+    function PhysPropCorrInv "Performs the inverse solving of the PhysPropCorr function"
+      extends CorrelationSolver(redeclare function f=PhysPropCorr);
+    end PhysPropCorrInv;
+  
     function SpecificEnthalpyCorr
+    "Provides the calculation of the specific enthalpy as function of T. You can use correlations using ideal gas constant pressure heat capacity, or liquid heat capacity"
       input Integer cor;
       input Real coef[:];
       input Real MW;
@@ -220,43 +287,18 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       elseif cor == 3 or cor == 10 then
         H := H * 4.1868 * 1e3 / MW;
       end if;
+      annotation(
+        Inline = true,
+        smoothOrder = 2);
     end SpecificEnthalpyCorr;
 
-    function SpecificEnthalpyCorrInv "Compute temperature from property value"
-      input Integer cor;
-      input Real coef[:];
-      input Real MW;
-      input Real Tmax;
-      input Real y "Property value";
-      output Modelica.SIunits.Temperature T "Temperature";
-    protected
-      package Internal "Solve h(fluidConstants[1],T) for T with given h (use only indirectly via temperature_phX)"
-        extends Modelica.Media.Common.OneNonLinearEquation;
-
-        redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
-            Integer cor;
-            Real coef[:];
-            Real MW;
-        end f_nonlinear_Data;
-
-        redeclare function extends f_nonlinear
-          algorithm
-            y := SpecificEnthalpyCorr(f_nonlinear_data.cor, f_nonlinear_data.coef, f_nonlinear_data.MW, x);
-        end f_nonlinear;
-
-        redeclare function extends solve
-        end solve;
-      end Internal;
-
-      Internal.f_nonlinear_Data fd;
-    algorithm
-      fd.cor := cor;
-      fd.coef := coef;
-      fd.MW := MW;
-      T := Internal.solve(y, 20.0, Tmax, 1.0e5, {1}, fd);
+    function SpecificEnthalpyCorrInv
+    "Performs the inverse solving of the SpecificEnthalpyCorr function"
+      extends CorrelationSolver(redeclare function f=SpecificEnthalpyCorr);
     end SpecificEnthalpyCorrInv;
-
+  
     function SpecificEntropyCorr
+    "Provides the calculation of the specific entropy as function of T. You can use correlations using ideal gas constant pressure heat capacity, or liquid heat capacity"
       input Integer cor;
       input Real coef[:];
       input Real MW;
@@ -322,43 +364,18 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       elseif cor == 3 or cor == 10 then
         S := S * 4.1868 * 1e3 / MW;
       end if;
+      annotation(
+        Inline = true,
+        smoothOrder = 2);
     end SpecificEntropyCorr;
 
-    function SpecificEntropyCorrInv "Compute temperature from property value"
-      input Integer cor;
-      input Real coef[:];
-      input Real MW;
-      input Real Tmax;
-      input Real y "Property value";
-      output Modelica.SIunits.Temperature T "Temperature";
-    protected
-      package Internal
-        extends Modelica.Media.Common.OneNonLinearEquation;
-
-        redeclare record extends f_nonlinear_Data "Data to be passed to non-linear function"
-            Integer cor;
-            Real coef[:];
-            Real MW;
-        end f_nonlinear_Data;
-
-        redeclare function extends f_nonlinear
-          algorithm
-            y := SpecificEntropyCorr(f_nonlinear_data.cor, f_nonlinear_data.coef, f_nonlinear_data.MW, x);
-        end f_nonlinear;
-
-        redeclare function extends solve
-        end solve;
-      end Internal;
-
-      Internal.f_nonlinear_Data fd;
-    algorithm
-      fd.cor := cor;
-      fd.coef := coef;
-      fd.MW := MW;
-      T := Internal.solve(y, 20.0, Tmax, 1.0e5, {1}, fd);
+    function SpecificEntropyCorrInv
+    "Performs the inverse solving of the SpecificEntropyCorr function"
+      extends CorrelationSolver(redeclare function f=SpecificEntropyCorr);
     end SpecificEntropyCorrInv;
     
-      function SpecificEnthalpyCorr2 "Calculates specific enthalpy from a given DataRecord at a given temperature."
+      function SpecificEnthalpyCorr2
+      "Receives a DataRecord record as input instead of correlation parameters. Calls the SpecificEnthalpyCorr to performs the calculation of the ideal gas specific enthalpy"
         input FreeFluids.MediaCommon.DataRecord data;
         input Real T;
         output Real h;
@@ -368,7 +385,8 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       
     end SpecificEnthalpyCorr2;
   
-    function SpecificEntropyCorr2 "Calculates specific enthalpy from a given DataRecord at a given temperature."
+    function SpecificEntropyCorr2
+    "Receives a DataRecord record as input instead of correlation parameters. Calls the SpecificEntropyCorr to performs the calculation of the ideal gas specific entropy"
       input FreeFluids.MediaCommon.DataRecord data;
       input Real T;
       output Real s;
@@ -376,7 +394,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       s:=SpecificEntropyCorr(data.Cp0Corr, data.Cp0Coef, data.MW, T);
     end SpecificEntropyCorr2;
 
-    function Cp0Corr "Calculates ideal gas heat capacity from a given DataRecord and a given temperature, using an external function. The intermediate pass of the protected variable is necessary for OpenModelica 1.14"
+    function Cp0Corr "Calculates ideal gas heat capacity from a given DataRecord and a given temperature."
       input FreeFluids.MediaCommon.DataRecord data;
       input Real T;
       output Real y;
@@ -445,7 +463,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
 
     function gasViscLowPressureChung "Dynamic viscosity of a low pressure gas according to Chung"
       input FreeFluids.MediaCommon.DataRecord data;
-      input SI.Temp_K T "Gas temperature";
+      input SI.Temperature T "Gas temperature";
       output SI.DynamicViscosity eta "Dynamic viscosity";
     protected
       Real Ta, sigma, omega, muR, muR4, Fc, k;
@@ -525,7 +543,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       input FreeFluids.MediaCommon.DataRecord data;
       input Modelica.Media.Interfaces.Types.SpecificHeatCapacity Cp0;
       input SI.DynamicViscosity eta "low pressure dynamic viscosity";
-      input SI.Temp_K T "Gas temperature";
+      input SI.Temperature T "Gas temperature";
       output Modelica.Media.Interfaces.Types.ThermalConductivity lambda;
     protected
       Real R, alpha, beta, Tr, Z, psi;
@@ -540,7 +558,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
     end gasThCondLowPressureChung;
 
     function gasMixViscosityWilke
-      input SI.Temp_K T;
+      input SI.Temperature T;
       input SI.MoleFraction X[:];
       input SI.DynamicViscosity etaX[:];
       input SI.MolarMass MW[:];
@@ -566,11 +584,11 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
     end gasMixViscosityWilke;
 
     function gasMixThCondMason
-      input SI.Temp_K T;
+      input SI.Temperature T;
       input SI.MoleFraction X[:];
       input SI.ThermalConductivity lambdaX[size(X, 1)];
       input SI.MolarMass MW[size(X, 1)];
-      input SI.Temp_K Tc[size(X, 1)];
+      input SI.Temperature Tc[size(X, 1)];
       input SI.AbsolutePressure Pc[size(X, 1)];
       output SI.ThermalConductivity lambda;
     protected
@@ -598,7 +616,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
 
     function liqThCondLatini
       input FreeFluids.MediaCommon.DataRecord data;
-      input SI.Temp_K T;
+      input SI.Temperature T;
       output SI.ThermalConductivity lambda;
     protected
       Real Tr = T / data.Tc, A, alpha, beta, gamma;
@@ -664,7 +682,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
 
     function liqSurfTensSastriRao
       input FreeFluids.MediaCommon.DataRecord data;
-      input SI.Temp_K T;
+      input SI.Temperature T;
       output SI.SurfaceTension sigma;
     protected
       Real k, x, y, z, m;
@@ -690,9 +708,22 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       end if;
       sigma := k * (data.criticalPressure * 1e-5) ^ x * data.Tb ^ y * data.Tc ^ z * ((1 - T / data.Tc) / (1 - data.Tb / data.Tc)) ^ m * 1e-3;
     end liqSurfTensSastriRao;
+    
   end Functions;
 
-
-
-
+  annotation(
+    Documentation(info = "<html>
+    <body>
+    <p>Provides the general data and functions that are common to several media packages. </p>
+    <p><b>DataRecord and associated packages</b></p>
+    <p></p>
+    <p>The DataRecord record in the MediaCommon package defines the container for the individual substance data. This data will be used later by the media packages written directly in Modelica language: IdealGasMedia, IdealGasMixture and TMedia. It contains basic data regarding the substance: name, description, CAS, chemical family,...and correlations for several physical properties, normally as function of temperature. Each correlation has: equation to use for its calculation, coefficients, and limits of usage.</p>
+    <p>The data for each individual fluid is inside the subpackages: MediaDataAL, and MediaDataMZ. Each data is defined as a constant DataRecord, with the name of the substance.</p>
+  <p>You can create a new record, in those subpackages, copying the MediaDataTemplate (it is inside the MediaCommon package) and filling it manually. Nevertheless the faster and more convenient way is to create the record from the FreeFluidsGui program. You need to select the substance from the database, select the correlations you want to be included in the record, and export it in Modelica format. You can put the file in any place, better with the .txt extension. Later you edit the file, copy its content, and paste it inside the MediaData package. You still need to declare the substance inside the Media packages, filling the name and the origin of the data, that will be the record you just copied.</p>
+  <p>When using the data in the IdealGasMedia package, only the Cp0 is needed, but you can use also gas viscosity, and gas thermal conductivity correlations. The vapor pressure correlation is also recommended, in order to check if we are working in the gas state. </p>
+  <p>When using the data in the TMedia package, you will need at least the following correlations: saturated density, vapor pressure, liquid heat capacity. Plus vaporization enthalpy and saturated gas density, if you want to work also with the gas phase. Transport properties correlations as for your needs, and reduced liquid bulk modulus if you want to work at high pressures (till 200 bars). If you want to force the liquid state you can set Tc at a high value, and Pc at a low value (look as example to the MarlothermSH medium).</p>
+    <p></p>
+    <p></p>
+    </body>
+    </html>"));
 end MediaCommon;

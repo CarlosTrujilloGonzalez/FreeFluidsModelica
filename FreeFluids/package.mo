@@ -1,7 +1,7 @@
 within;
 package FreeFluids
   import SI = Modelica.SIunits;
-  import NonSI = Modelica.SIunits.Conversions.NonSIunits;
+  import NonSI = Modelica.Conversions.NonSIunits;
   import pi = Modelica.Constants.pi;
   import g_n = Modelica.Constants.g_n;
   import R = Modelica.Constants.R;
@@ -10,6 +10,6 @@ package FreeFluids
   type Possitive = Real(min = 0.0);
 
   annotation(
-    version="1.1.6",
+    version="2.0.0",
     uses(Modelica(version = "3.2.3")));
 end FreeFluids;
