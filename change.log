@@ -1,3 +1,8 @@
+Version 2.1.0
+- Redefinition of the BaseProperties model
+- Addition of derivative functions needed for the Baseproperties model operation
+- compatible with Modelica.Fluid
+
 Version 2.0.0
 - Indepth review and improvement of the Modelica code, and of the C code used in ExternalMedia. Many bug corrections also.
 - Addition of Extended Corresponding States capability for viscosity and thermal conductivity calculation, using NIST polynomia when available.
