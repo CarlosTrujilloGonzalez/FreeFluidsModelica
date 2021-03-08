@@ -1,3 +1,6 @@
+Version 2.2.0
+- Addition of packages for fluid flow.
+
 Version 2.1.0
 - Redefinition of the BaseProperties model
 - Addition of derivative functions needed for the Baseproperties model operation
