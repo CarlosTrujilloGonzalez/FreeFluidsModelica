@@ -1,10 +1,13 @@
+Version 2.2.1
+- Just a change in packages layout
+
 Version 2.2.0
 - Addition of packages for fluid flow.
 
 Version 2.1.0
 - Redefinition of the BaseProperties model
-- Addition of derivative functions needed for the Baseproperties model operation
-- compatible with Modelica.Fluid
+- Addition of derivative functions needed for the BaseProperties model operation
+- Compatible with Modelica.Fluid
 
 Version 2.0.0
 - Indepth review and improvement of the Modelica code, and of the C code used in ExternalMedia. Many bug corrections also.
