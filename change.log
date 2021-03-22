@@ -1,3 +1,8 @@
+Version 2.3.0
+- TMedia package can work now over the critical temperature
+- Improvement in gas density, enthalpy, and entropy calculation
+- Bug correction in setState_psX function
+
 Version 2.2.1
 - Just a change in packages layout
 
