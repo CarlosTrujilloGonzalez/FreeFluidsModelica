@@ -2,7 +2,7 @@ within FreeFluids;
 
 package MediaCommon "MediaCommon.mo by Carlos Trujillo
       This file is part of the Free Fluids application
-      Copyright (C) 2008-2019  Carlos Trujillo Gonzalez
+      Copyright (C) 2008-2021  Carlos Trujillo Gonzalez
         
       This program is free software; you can redistribute it and/or
       modify it under the terms of the GNU General Public License version 3
@@ -557,6 +557,43 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       lambda := 3.75 * psi * eta * R;
     end gasThCondLowPressureChung;
 
+    function gasThCondTVcorChung
+    "Density correction for low pressure gas thermal conductivity, according to Chung"
+      input SI.Temperature T;
+      input SI.Density d;
+      input FreeFluids.MediaCommon.DataRecord data;
+      input SI.ThermalConductivity ldThCond;
+      output Modelica.Media.Interfaces.Types.ThermalConductivity thCond;
+    protected
+      Real Tr,y,B[7],G1,muR,muR4,k,G2,f;
+      Real coef[7,4]={{2.4166,7.4824e-1,-9.1858e-1,1.2172e2},{-5.0924e-1,-1.5094,-4.9991e1,6.9983e1},{6.6107,5.6207,6.4760e1,2.7039e1},{1.4543e1,-8.9139,-5.6379,7.4344e1},
+                            {7.9274e-1,8.2019e-1,-6.9369e-1,6.3173},{-5.8634,1.2801e1,9.5893,6.5529e1},{9.1089e1,1.2811e2,-5.4217e1,5.2381e2}};
+    algorithm
+      Tr:=T/data.Tc;
+      y:=data.Vc*d/(6*data.molarMass);
+      G1:=(1-0.5*y)/(1-y)^3;
+      muR:= if data.mu>0 then 131.3*data.mu/(data.Vc*1e6*data.Tc)^0.5 else 0;
+      muR4:=muR*muR*muR*muR;
+      if data.family == 6 then
+        k := 0.076 "water";
+      elseif data.family == 7 then
+        k := 0.0682 + 4.74 / data.MW "alcohol";
+      elseif data.family == 8 then
+        k := 0.0682 + 2 * 4.74 / data.MW "polyol";
+      else
+        k := 0.0;
+      end if;
+      for i in 1:7 loop
+        B[i]:=coef[i,1]+coef[i,2]*data.w+coef[i,3]*muR4+coef[i,4]*k;
+      end for;
+      G2:=(B[1]*(1-exp(-B[4]*y))/y+B[2]*G1*exp(B[5]*y)+B[3]*G1)/(B[1]*B[4]+B[2]+B[3]);
+      f:=(1/G2+B[6]*y)+3.586e-3*(data.Tc*1000/data.MW)^0.5*B[7]*y*y*Tr^0.5*G2/(data.Vc*1e6)^0.6667;
+      thCond:=ldThCond*f;
+      if (thCond<ldThCond) then
+        thCond:=ldThCond;
+      end if;
+    end gasThCondTVcorChung;
+  
     function gasMixViscosityWilke
       input SI.Temperature T;
       input SI.MoleFraction X[:];

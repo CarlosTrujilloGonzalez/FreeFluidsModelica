@@ -324,44 +324,6 @@ within FreeFluids.Pipes;
         Line(points = {{10, 0}, {30, 0}, {30, 0}, {30, 0}}, color = {0, 127, 255}));
     end SteamCondensingPartial;
 
-    model ThermalPipesContact
-      FreeFluids.Pipes.PipeForcedConvection Pipe1(redeclare package Medium = Air2, PLossFriction(displayUnit = "Pa"), di = 0.019, lTube = 10, thickness = 0.001, useThermalConnector = true, useTubeLength = true, useWallsResistance = true) annotation(
-        Placement(visible = true, transformation(origin = {0, 26}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeForcedConvection Pipe2(redeclare package Medium = R134a1, PortB(P(start = 10e5)), di = 0.005, lTube = 10, thickness = 0.0005, useThermalConnector = true, useTubeLength = true, useWallsResistance = true) annotation(
-        Placement(visible = true, transformation(origin = {0, -40}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source1(G = 0.222222, redeclare package Medium = Air2, P(displayUnit = "Pa") = 100000, T(displayUnit = "degC") = 353.15, externalG = true, isGsource = true) annotation(
-        Placement(visible = true, transformation(origin = {-58, 26}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source2(G = 0.0555556, H = 250e3, redeclare package Medium = R134a1, P = 1.5e+06, T = 253.15, externalG = true, isGsource = true, sourceOption = FreeFluids.Types.SourceOption.useP_T) annotation(
-        Placement(visible = true, transformation(origin = {-58, -40}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSink Sink1(G = 0.222222, redeclare package Medium = Air2, fix = FreeFluids.Types.BoundaryOption.fixNone) annotation(
-        Placement(visible = true, transformation(origin = {64, 26}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSink Sink2(redeclare package Medium = R134a1, fix = FreeFluids.Types.BoundaryOption.fixNone) annotation(
-        Placement(visible = true, transformation(origin = {64, -40}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Interfaces.ThermalBridge thBridge annotation(
-        Placement(visible = true, transformation(origin = {0, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Sources.Ramp ramp1(duration = 1, height = 0.001, offset = 0.0025) annotation(
-        Placement(visible = true, transformation(extent = {{-110, -14}, {-90, 6}}, rotation = 0)));
-      Modelica.Blocks.Sources.Ramp ramp(duration = 1, height = 0, offset = 0.01) annotation(
-        Placement(visible = true, transformation(extent = {{-110, 58}, {-90, 78}}, rotation = 0)));
-    equation
-      connect(Pipe1.PortB, Sink1.PortA) annotation(
-        Line(points = {{10, 26}, {54, 26}, {54, 26}, {54, 26}}));
-      connect(Source2.PortB, Pipe2.PortA) annotation(
-        Line(points = {{-48, -40}, {-10, -40}}, color = {0, 127, 255}));
-      connect(Pipe2.PortB, Sink2.PortA) annotation(
-        Line(points = {{10, -40}, {54, -40}}, color = {0, 127, 255}));
-      connect(Source1.PortB, Pipe1.PortA) annotation(
-        Line(points = {{-48, 26}, {-10, 26}}, color = {0, 127, 255}));
-      connect(Pipe2.PortH, thBridge.PortA2) annotation(
-        Line(points = {{0, -36}, {0, -36}, {0, -16}, {0, -16}}));
-      connect(Pipe1.PortH, thBridge.PortA1) annotation(
-        Line(points = {{0, 22}, {0, 22}, {0, 4}, {0, 4}}));
-      connect(ramp1.y, Source2.Gext) annotation(
-        Line(points = {{-89, -4}, {-66, -4}, {-66, -28}, {-64, -28}}, color = {0, 0, 127}));
-      connect(ramp.y, Source1.Gext) annotation(
-        Line(points = {{-88, 68}, {-64, 68}, {-64, 38}, {-64, 38}}, color = {0, 0, 127}));
-    end ThermalPipesContact;
-
     model MarlothermSHInAir
       FreeFluids.Interfaces.FlowSink Sink(G = 27.7778, redeclare package Medium = MarlothermSH) annotation(
         Placement(visible = true, transformation(origin = {36, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -437,22 +399,22 @@ within FreeFluids.Pipes;
     end HalfCoilForcedConvection;
 
     model HalfCoilCondensing
-      FreeFluids.Interfaces.FlowSource source(Elevation = 1, redeclare package Medium = Water1, T = 373.15, isGsource = false, sourceOption = FreeFluids.Types.SourceOption.useSatGasT) annotation(
-        Placement(visible = true, transformation(origin = {-42, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSink sink(P = 99999.99999999999, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {40, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.HalfCoilCondensing HalfCoil(redeclare package Medium = Water1, PLossFriction(displayUnit = "Pa"), basePipeDi = 0.05, condensationOption = FreeFluids.Types.CondensationOption.totalCondensation, elevDifference = -1, num = 10, path = 0.15, thickness = 3e-3, useThermalConnector = false) annotation(
-        Placement(visible = true, transformation(origin = {-2, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      //basePipeDi = 0.05, num = 10, path = 0.15,
-    algorithm
-      HalfCoil.HalfCoilDiam := 2;
-      HalfCoil.Twall := 90 + 273.15;
-    equation
-      connect(HalfCoil.PortB, sink.PortA) annotation(
-        Line(points = {{8, 4}, {30, 4}, {30, 4}, {30, 4}}, color = {0, 127, 255}));
-      connect(source.PortB, HalfCoil.PortA) annotation(
-        Line(points = {{-32, 4}, {-12, 4}, {-12, 4}, {-12, 4}}, color = {0, 127, 255}));
-    end HalfCoilCondensing;
+  FreeFluids.Interfaces.FlowSource source(Elevation = 1, redeclare package Medium = Water1, T = 373.15, isGsource = false, sourceOption = FreeFluids.Types.SourceOption.useSatGasT) annotation(
+      Placement(visible = true, transformation(origin = {-42, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Interfaces.FlowSink sink(P = 99999.99999999999, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+      Placement(visible = true, transformation(origin = {40, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.HalfCoilCondensing HalfCoil(redeclare package Medium = Water1, PLossFriction(displayUnit = "Pa"), basePipeDi = 0.05, condensationOption = FreeFluids.Types.CondensationOption.totalCondensation, elevDifference = -1, num = 10, path = 0.15, thickness = 3e-3, useThermalConnector = false) annotation(
+      Placement(visible = true, transformation(origin = {-2, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    //basePipeDi = 0.05, num = 10, path = 0.15,
+  algorithm
+    HalfCoil.HalfCoilDiam := 2;
+    HalfCoil.Twall := 90 + 273.15;
+  equation
+    connect(HalfCoil.PortB, sink.PortA) annotation(
+      Line(points = {{8, 4}, {30, 4}, {30, 4}, {30, 4}}, color = {0, 127, 255}));
+    connect(source.PortB, HalfCoil.PortA) annotation(
+      Line(points = {{-32, 4}, {-12, 4}, {-12, 4}, {-12, 4}}, color = {0, 127, 255}));
+  end HalfCoilCondensing;
 
     model CoilMarlothermSHThermal
       Interfaces.FlowSourceSP Source(Elevation = 0, G = 7.5, redeclare package Medium = MarlothermSH, P(displayUnit = "Pa") = 1e5, T(displayUnit = "K") = 443.15) annotation(
@@ -473,97 +435,97 @@ within FreeFluids.Pipes;
     end CoilMarlothermSHThermal;
 
     model ModelicaPipeTestFF "FreeFluids version of ModelicaPipeTest"
-      FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 0.0, redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, P(displayUnit = "Pa") = 5e+5, T(displayUnit = "K") = 300, isGsource = false) annotation(
-        Placement(visible = true, transformation(origin = {-102, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe2(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-48, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe3(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-48, -22}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      FreeFluids.Valves.ValveIncompressible Valve1(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, aperture = 1, fixedKv = 17.53, useFixedAperture = false) annotation(
-        Placement(visible = true, transformation(origin = {-40, 56}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
-      Modelica.Blocks.Sources.Step valveOpening1(height = -0.999, offset = 1, startTime = 50) annotation(
-        Placement(visible = true, transformation(extent = {{-78, 90}, {-58, 70}}, rotation = 0)));
-      FreeFluids.Valves.ValveIncompressible Valve2(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, fixedKv = 17.53, useFixedAperture = false) annotation(
-        Placement(visible = true, transformation(origin = {-40, -46}, extent = {{-7, 7}, {7, -7}}, rotation = 0)));
-      Modelica.Blocks.Sources.Step valveOpening2(height = -0.5, offset = 1, startTime = 100) annotation(
-        Placement(visible = true, transformation(extent = {{-80, -60}, {-60, -80}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {98, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe4(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 2, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-16, -74}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe5(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 20, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {20, -68}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe6(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 20, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {20, -46}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe7(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-16, 56}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe8(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, PLossFriction(displayUnit = "Pa"), calcEnthalpyDifference = true, di = 0.025, fixedW = 0, lTube = 10, passComposition = true, roughness = 2.5e-05, thermalType = FreeFluids.Types.ThermalType.fixedPower, useElevDifference = true, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {-6, 18}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe9(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {20, 56}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe10(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 10, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {20, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph Pipe11(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Valves.ValveIncompressible Valve3(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, Q(displayUnit = "m3/s"), fixedKv = 17.53, useFixedAperture = false) annotation(
-        Placement(visible = true, transformation(origin = {74, 0}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
-      Modelica.Blocks.Sources.Step valveOpening3(height = -0.5, offset = 1, startTime = 150) annotation(
-        Placement(visible = true, transformation(extent = {{42, 88}, {62, 68}}, rotation = 0)));
-    equation
+  FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 0.0, redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, P(displayUnit = "Pa") = 5e+5, T(displayUnit = "K") = 300, isGsource = false) annotation(
+      Placement(visible = true, transformation(origin = {-102, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe2(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-48, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe3(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-48, -22}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+    FreeFluids.Valves.ValveIncompressible Valve1(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, aperture = 1, fixedKv = 17.53, useFixedAperture = false) annotation(
+      Placement(visible = true, transformation(origin = {-40, 56}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+    Modelica.Blocks.Sources.Step valveOpening1(height = -0.999, offset = 1, startTime = 50) annotation(
+      Placement(visible = true, transformation(extent = {{-78, 90}, {-58, 70}}, rotation = 0)));
+    FreeFluids.Valves.ValveIncompressible Valve2(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, fixedKv = 17.53, useFixedAperture = false) annotation(
+      Placement(visible = true, transformation(origin = {-40, -46}, extent = {{-7, 7}, {7, -7}}, rotation = 0)));
+    Modelica.Blocks.Sources.Step valveOpening2(height = -0.5, offset = 1, startTime = 100) annotation(
+      Placement(visible = true, transformation(extent = {{-80, -60}, {-60, -80}}, rotation = 0)));
+    FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+      Placement(visible = true, transformation(origin = {98, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe4(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 2, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-16, -74}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe5(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 20, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {20, -68}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe6(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 20, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {20, -46}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe7(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-16, 56}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe8(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, PLossFriction(displayUnit = "Pa"), calcEnthalpyDifference = true, di = 0.025, fixedW = 0, lTube = 10, passComposition = true, roughness = 2.5e-05, thermalType = FreeFluids.Types.ThermalType.fixedPower, useElevDifference = true, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {-6, 18}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe9(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 10, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {20, 56}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe10(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, calcEnthalpyDifference = false, di = 0.025, lTube = 10, passComposition = false, roughness = 2.5e-05, useElevDifference = false, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {20, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Pipes.PipeFlow1Ph Pipe11(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, di = 0.025, lTube = 0.5, roughness = 2.5e-05, useTubeLength = true) annotation(
+      Placement(visible = true, transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    FreeFluids.Valves.ValveIncompressible Valve3(redeclare package Medium = Modelica.Media.Incompressible.Examples.Glycol47, Q(displayUnit = "m3/s"), fixedKv = 17.53, useFixedAperture = false) annotation(
+      Placement(visible = true, transformation(origin = {74, 0}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+    Modelica.Blocks.Sources.Step valveOpening3(height = -0.5, offset = 1, startTime = 150) annotation(
+      Placement(visible = true, transformation(extent = {{42, 88}, {62, 68}}, rotation = 0)));
+  equation
 //Pipe8.W = 16000;
-      connect(valveOpening2.y, Valve2.Opening) annotation(
-        Line(points = {{-58, -70}, {-40, -70}, {-40, -52}}, color = {0, 0, 127}));
-      connect(Source.PortB, Pipe1.PortA) annotation(
-        Line(points = {{-92, 0}, {-76, 0}}, color = {0, 127, 255}));
-      connect(Pipe1.PortB, Pipe2.PortA) annotation(
-        Line(points = {{-56, 0}, {-48, 0}, {-48, 20}, {-48, 20}}, color = {0, 127, 255}));
-      connect(Pipe1.PortB, Pipe3.PortA) annotation(
-        Line(points = {{-56, 0}, {-48, 0}, {-48, -12}, {-48, -12}}, color = {0, 127, 255}));
-      connect(Pipe3.PortB, Valve2.PortA) annotation(
-        Line(points = {{-48, -32}, {-47, -32}, {-47, -46}}, color = {0, 127, 255}));
-      connect(Pipe2.PortB, Valve1.PortA) annotation(
-        Line(points = {{-48, 40}, {-47.5, 40}, {-47.5, 56}, {-47, 56}}, color = {0, 127, 255}));
-      connect(Valve1.PortB, Pipe7.PortA) annotation(
-        Line(points = {{-32, 56}, {-26, 56}}, color = {0, 127, 255}));
-      connect(Pipe7.PortB, Pipe9.PortA) annotation(
-        Line(points = {{-6, 56}, {10, 56}}, color = {0, 127, 255}));
-      connect(Valve2.PortB, Pipe4.PortA) annotation(
-        Line(points = {{-32, -46}, {-27, -46}, {-27, -74}, {-26, -74}}, color = {0, 127, 255}));
-      connect(Pipe7.PortB, Pipe8.PortA) annotation(
-        Line(points = {{-6, 56}, {-6, 28}}, color = {0, 127, 255}));
-      connect(Pipe9.PortB, Pipe11.PortA) annotation(
-        Line(points = {{30, 56}, {40, 56}, {40, 0}}, color = {0, 127, 255}));
-      connect(Pipe10.PortB, Pipe11.PortA) annotation(
-        Line(points = {{30, -24}, {40, -24}, {40, 0}}, color = {0, 127, 255}));
-      connect(Pipe6.PortB, Pipe11.PortA) annotation(
-        Line(points = {{30, -46}, {40, -46}, {40, 0}}, color = {0, 127, 255}));
-      connect(Pipe5.PortB, Pipe11.PortA) annotation(
-        Line(points = {{30, -68}, {40, -68}, {40, 0}}, color = {0, 127, 255}));
-      connect(Pipe11.PortB, Valve3.PortA) annotation(
-        Line(points = {{60, 0}, {67, 0}}, color = {0, 127, 255}));
-      connect(Valve3.PortB, Sink.PortA) annotation(
-        Line(points = {{81, 0}, {88, 0}}, color = {0, 127, 255}));
-      connect(valveOpening3.y, Valve3.Opening) annotation(
-        Line(points = {{64, 78}, {74, 78}, {74, 6}, {74, 6}}, color = {0, 0, 127}));
-      connect(valveOpening1.y, Valve1.Opening) annotation(
-        Line(points = {{-56, 80}, {-40, 80}, {-40, 62}, {-40, 62}}, color = {0, 0, 127}));
-      connect(Pipe8.PortB, Pipe10.PortA) annotation(
-        Line(points = {{-6, 8}, {10, 8}, {10, -24}, {10, -24}}, color = {0, 127, 255}));
-      connect(Pipe8.PortB, Pipe6.PortA) annotation(
-        Line(points = {{-6, 8}, {10, 8}, {10, -46}, {10, -46}, {10, -46}}, color = {0, 127, 255}));
-      connect(Pipe8.PortB, Pipe5.PortA) annotation(
-        Line(points = {{-6, 8}, {10, 8}, {10, -68}, {10, -68}}, color = {0, 127, 255}));
-      connect(Pipe4.PortB, Pipe5.PortA) annotation(
-        Line(points = {{-6, -74}, {10, -74}, {10, -68}, {10, -68}}, color = {0, 127, 255}));
-      annotation(
-        experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-6, Interval = 0.4));
-    end ModelicaPipeTestFF;
+    connect(valveOpening2.y, Valve2.Opening) annotation(
+      Line(points = {{-58, -70}, {-40, -70}, {-40, -52}}, color = {0, 0, 127}));
+    connect(Source.PortB, Pipe1.PortA) annotation(
+      Line(points = {{-92, 0}, {-76, 0}}, color = {0, 127, 255}));
+    connect(Pipe1.PortB, Pipe2.PortA) annotation(
+      Line(points = {{-56, 0}, {-48, 0}, {-48, 20}, {-48, 20}}, color = {0, 127, 255}));
+    connect(Pipe1.PortB, Pipe3.PortA) annotation(
+      Line(points = {{-56, 0}, {-48, 0}, {-48, -12}, {-48, -12}}, color = {0, 127, 255}));
+    connect(Pipe3.PortB, Valve2.PortA) annotation(
+      Line(points = {{-48, -32}, {-47, -32}, {-47, -46}}, color = {0, 127, 255}));
+    connect(Pipe2.PortB, Valve1.PortA) annotation(
+      Line(points = {{-48, 40}, {-47.5, 40}, {-47.5, 56}, {-47, 56}}, color = {0, 127, 255}));
+    connect(Valve1.PortB, Pipe7.PortA) annotation(
+      Line(points = {{-32, 56}, {-26, 56}}, color = {0, 127, 255}));
+    connect(Pipe7.PortB, Pipe9.PortA) annotation(
+      Line(points = {{-6, 56}, {10, 56}}, color = {0, 127, 255}));
+    connect(Valve2.PortB, Pipe4.PortA) annotation(
+      Line(points = {{-32, -46}, {-27, -46}, {-27, -74}, {-26, -74}}, color = {0, 127, 255}));
+    connect(Pipe7.PortB, Pipe8.PortA) annotation(
+      Line(points = {{-6, 56}, {-6, 28}}, color = {0, 127, 255}));
+    connect(Pipe9.PortB, Pipe11.PortA) annotation(
+      Line(points = {{30, 56}, {40, 56}, {40, 0}}, color = {0, 127, 255}));
+    connect(Pipe10.PortB, Pipe11.PortA) annotation(
+      Line(points = {{30, -24}, {40, -24}, {40, 0}}, color = {0, 127, 255}));
+    connect(Pipe6.PortB, Pipe11.PortA) annotation(
+      Line(points = {{30, -46}, {40, -46}, {40, 0}}, color = {0, 127, 255}));
+    connect(Pipe5.PortB, Pipe11.PortA) annotation(
+      Line(points = {{30, -68}, {40, -68}, {40, 0}}, color = {0, 127, 255}));
+    connect(Pipe11.PortB, Valve3.PortA) annotation(
+      Line(points = {{60, 0}, {67, 0}}, color = {0, 127, 255}));
+    connect(Valve3.PortB, Sink.PortA) annotation(
+      Line(points = {{81, 0}, {88, 0}}, color = {0, 127, 255}));
+    connect(valveOpening3.y, Valve3.Opening) annotation(
+      Line(points = {{64, 78}, {74, 78}, {74, 6}, {74, 6}}, color = {0, 0, 127}));
+    connect(valveOpening1.y, Valve1.Opening) annotation(
+      Line(points = {{-56, 80}, {-40, 80}, {-40, 62}, {-40, 62}}, color = {0, 0, 127}));
+    connect(Pipe8.PortB, Pipe10.PortA) annotation(
+      Line(points = {{-6, 8}, {10, 8}, {10, -24}, {10, -24}}, color = {0, 127, 255}));
+    connect(Pipe8.PortB, Pipe6.PortA) annotation(
+      Line(points = {{-6, 8}, {10, 8}, {10, -46}, {10, -46}, {10, -46}}, color = {0, 127, 255}));
+    connect(Pipe8.PortB, Pipe5.PortA) annotation(
+      Line(points = {{-6, 8}, {10, 8}, {10, -68}, {10, -68}}, color = {0, 127, 255}));
+    connect(Pipe4.PortB, Pipe5.PortA) annotation(
+      Line(points = {{-6, -74}, {10, -74}, {10, -68}, {10, -68}}, color = {0, 127, 255}));
+    annotation(
+      experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-6, Interval = 0.4));
+  end ModelicaPipeTestFF;
 
-    model ModelicaPipeTest
-      extends Modelica.Fluid.Examples.IncompressibleFluidNetwork(valveOpening1.height = -0.99, each heat8.Q_flow = 0, redeclare package Medium = Modelica.Media.Water.StandardWater);
-      annotation(
-        experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-6, Interval = 0.4));
-    end ModelicaPipeTest;
+  model ModelicaPipeTest
+    extends Modelica.Fluid.Examples.IncompressibleFluidNetwork(valveOpening1.height = -0.99, each heat8.Q_flow = 0, redeclare package Medium = Modelica.Media.Water.StandardWater);
+    annotation(
+      experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-6, Interval = 0.4));
+  end ModelicaPipeTest;
   end Examples;
