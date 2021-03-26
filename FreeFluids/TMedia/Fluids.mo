@@ -19,10 +19,6 @@ within FreeFluids.TMedia;
     package Butanol_n
       extends FreeFluids.TMedia.TMedium(final mediumName = "n-Butanol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Butanol_n});
     end Butanol_n;
-
-    package ConstantMedium
-      extends FreeFluids.TMedia.TMedium(final mediumName = "constantMedium", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.ConstantMedium});
-    end ConstantMedium;
 		
     package CO2
       extends FreeFluids.TMedia.TMedium(final mediumName = "Carbon dioxide", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.CO2});

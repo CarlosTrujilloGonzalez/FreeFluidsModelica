@@ -1,3 +1,7 @@
+Version 2.3.1
+- Pressure correction has been added to the viscosity and thermal conductivity calculationin gas phase.
+- A new package, called LMedia, derived from TMedia and limited to liquid phase calculation has been added.
+
 Version 2.3.0
 - TMedia package can work now over the critical temperature
 - Improvement in gas density, enthalpy, and entropy calculation

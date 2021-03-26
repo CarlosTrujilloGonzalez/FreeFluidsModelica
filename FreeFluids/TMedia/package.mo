@@ -39,19 +39,26 @@ package TMedia "TMedia.mo by Carlos Trujillo
     //constant FreeFluids.MediaCommon.Types.ReferenceState refState=FreeFluids.MediaCommon.Types.ReferenceState.None  "Enthalpy/entropy reference state. Alternatives: ASHRAE, IIR, NBP, User(value at reference_T as 0), otherwise no reference";
     constant String inputChoice = "ph" "Allows to choose the input choise to use for the construction of a BaseProperties object. Alternative are: pT, ph, dT";
     constant Boolean highPressure = false;
-    /*constant SpecificEnthalpy UserRefH = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T);
-                                        constant SpecificEnthalpy ASHRAErefH = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15);
-                                        constant SpecificEnthalpy NBPrefH = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb);
-                                        constant SpecificEnthalpy IIRrefH = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 2.0e5;
-                                        constant SpecificEntropy UserRefS = SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T);
-                                        constant SpecificEntropy ASHRAErefS = SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15);
-                                        constant SpecificEntropy NBPrefS = SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb);
-                                        constant SpecificEntropy IIRrefS = SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 1.0e3;
-                                        constant SpecificEnthalpy critical_h = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tc - 0.01);
-                                        constant SpecificEnthalpy critical_h0 = SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, fluidConstants[1].Tc-0.01);*/
+    /*constant SpecificEnthalpy reference_h= referenceEnthalpy();
+    constant SpecificEntropy reference_s= referenceEntropy();
+    constant SpecificEnthalpy critical_h = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tc - 0.01);
+    constant SpecificEnthalpy critical_h0 = SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, fluidConstants[1].Tc-0.01);*/
+    
     //Auxiliary functions based in correlations
     //-----------------------------------------
   
+    function referenceEnthalpy
+      output SpecificEnthalpy reference_h;
+    algorithm
+      reference_h := if refState == "ASHRAE" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 2.0e5 else if refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
+    end referenceEnthalpy;
+  
+    function referenceEntropy
+      output SpecificEntropy reference_s;
+    algorithm
+      reference_s := if refState == "ASHRAE" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 1.0e3 else if refState == "NBP" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
+    end referenceEntropy;
+      
     redeclare function extends saturationPressure "Return saturation pressure from T"
         extends Modelica.Icons.Function;
   
@@ -161,8 +168,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Density Dls "saturated liquid density at T";
         Density DgsP "saturated gas density at p(Tb)";
         Density Dgi "ideal gas density at T and p";
-        SpecificEnthalpy Href;
-  
+ 
       algorithm
         state.p := p;
         state.T := T;
@@ -188,12 +194,10 @@ package TMedia "TMedia.mo by Carlos Trujillo
           state.h := SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, Tb) "unreference saturated liquid enthalpy at p";
           state.h := state.h + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, Tb) "saturated gas enthalpy at p";
           state.h := state.h + (SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, T) - SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, Tb)) * (1 + 1.2e-7 * p*(fluidConstants[1].Tc/T)^3) "Gas entahlpy at T and p. Adjustement from Tb to T using Cp0";
-          
         else
           assert(false, "A two phases state can't be constructed from p and T. pTX3");
         end if;
-        Href := if refState == "ASHRAE" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 2.0e5 else if refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
-        state.h := state.h - Href "referenced enthalpy";
+        state.h := state.h - referenceEnthalpy() "referenced enthalpy";
     end setState_pTX;
   
     redeclare function extends setState_dTX "Return ThermodynamicState record as function of T,d and composition X or Xi"
@@ -203,7 +207,6 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Density Dls;
         Density Dgs;
         SpecificEnthalpy Hls "enthalpy of the saturated liquid at given T";
-        SpecificEnthalpy Href "reference enthalpy";
         AbsolutePressure Vp "vapor pressure at given T";
         Temperature Tb "boiling temperature at tested pressure";
         Density Dig "ideal gas density at T and p";
@@ -280,8 +283,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
             state.h := state.h + (SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, T) - SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, Tb)) * (1 + 1.2e-7 * state.p*(fluidConstants[1].Tc/T)^3) "Gas entahlpy at T and p. Adjustement from Tb to T using Cp0";
           end if;
         end if;
-        Href := if refState == "ASHRAE" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 2.0e5 else if refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
-        state.h := state.h - Href "referenced enthalpy";
+      state.h := state.h - referenceEnthalpy() "referenced enthalpy";
     end setState_dTX;
   
     redeclare function extends setState_phX "Return ThermodynamicState record as function of p,H and composition X or Xi"
@@ -296,7 +298,6 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Density Dgi "ideal gas density at p, state.T";
         SpecificEnthalpy Hraw "Input enthalpy without reference correction";
         AbsolutePressure Vp;
-        SpecificEnthalpy Href;
         SpecificEnthalpy H0b "ideal gas enthalpy at boiling p";
         SpecificEnthalpy H0t "ideal gas enthalpy at state.T";
         Real error;
@@ -305,8 +306,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
         state.p := p;
         state.h := h;
         Tb := saturationTemperature(p);
-        Href := if refState == "ASHRAE" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 2.0e5 else if refState == "NBP" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
-        Hraw := h + Href;
+        Hraw := h + referenceEnthalpy();
         assert(Tb<=fluidConstants[1].lCpLimS, "Boiling temperature("+String(Tb)+") for pressure "+String(p)+" over the limit("+String(fluidConstants[1].lCpLimS)+") of Cp correlation  phX1", AssertionLevel.warning);
         Hls := SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, Tb) "unreferenced saturated liquid specific enthalpy at Tb";
         if Hls >= Hraw then
@@ -564,7 +564,6 @@ package TMedia "TMedia.mo by Carlos Trujillo
       protected
         SpecificEntropy Sl "entropy of the liquid phase";
         AbsolutePressure Vp;
-        SpecificEntropy Sref;
         Temperature Tb;
   
       algorithm
@@ -583,8 +582,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
           s := s + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, Tb) / Tb "saturated gas entropy at p(Tb)";
           s:= s + (SpecificEntropyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, state.T) - SpecificEntropyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, Tb)) * (1 + 1.2e-7 * state.p * (fluidConstants[1].Tc / state.T)^4);
         end if;
-        Sref := if refState == "ASHRAE" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 233.15) else if refState == "IIR" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, 273.15) - 1.0e3 else if refState == "NBP" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tb) else if refState == "User" then SpecificEntropyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, reference_T) else 0;
-        s := s - Sref "referenced entropy";
+        s := s - referenceEntropy() "referenced entropy";
     end specificEntropy;
   
     redeclare function extends specificGibbsEnergy "Return specific Gibbs energy"
@@ -820,7 +818,8 @@ package TMedia "TMedia.mo by Carlos Trujillo
             eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
           else
             lpVisc := if fluidConstants[1].gViscCorr > 0 then PhysPropCorr(fluidConstants[1].gViscCorr, fluidConstants[1].gViscCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.gasViscLowPressureChung(fluidConstants[1], state.T);
-            eta := lpVisc "no pressure correction seems necessary for gas phase";
+            eta:=FreeFluids.MediaCommon.Functions.gasViscPcorLucas(fluidConstants[1], state.T,state.p,lpVisc);
+            //eta := lpVisc "no pressure correction seems necessary for gas phase";
           end if;
         else
           eta := 0 "no viscosity calculation is done for two phases situation";
@@ -840,6 +839,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
           end if;
         elseif state.gf == 1.0 then
           lambda := if fluidConstants[1].gThCondCorr > 0 then PhysPropCorr(fluidConstants[1].gThCondCorr, fluidConstants[1].gThCondCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.gasThCondLowPressureChung(fluidConstants[1], specificHeatCapacityCp(state), dynamicViscosity(state), state.T);
+          lambda:=FreeFluids.MediaCommon.Functions.gasThCondTVcorChung(state.T, state.d,fluidConstants[1],lambda);     
         else
           lambda := 0 "no thermal conductivity calculation is done in two phases situation";
           assert(false, "no thermal conductivity calculation is done for two phases situation", AssertionLevel.warning);
@@ -1245,18 +1245,18 @@ package TMedia "TMedia.mo by Carlos Trujillo
 
 
 
+
   annotation(
     Documentation(info = "<html>
     <body>
-    <p>There are several very reliable medium packages based en multiparameter equations of state; there are also very simple medium packages based in the ideal gas equation for gases. But for many products we do not have multiparameter EOS, or we do not need their complexity. The TMedia package is based in correlations an offers a good accuracy for liquids till say 200 bars pressure and for gases till 20-30 bars.</p>
+    <p>There are several very reliable medium packages based en multiparameter equations of state; there are also very simple medium packages based in the ideal gas equation for gases, or in constant properties for liquids. But for many products we do not have multiparameter EOS, or we do not need their complexity, and we need need a good approximation of physical properties. The TMedia package is based in correlations an offers good accuracy for liquids till say 200 bars pressure and for gases till 20-30 bars.</p>
     <p>The medium is designed for liquid, liquid/vapor, or gas phases. For liquid or biphasic states, its application is limited to the higher temperature limits of the liquid heat capacity and vaporization enthalpy correlations used, but temperature should be lower than 0.85 Tc, and pressure not higher than 200 bars, because at higher values the influence of pressure on properties becomes very difficult to correct for. For gas state, it is limited to the maximum pressure which saturation temperature is below the maximum temperature limit of the liquid heat capacity correlation, but should be limited to a maximum of 20-30 bars. It can't work with supercritical states. It extends the Modelica PartialTwoPhaseMedium. It is somewhat similar to the Modelica TableBased medium, but uses specific correlations for each physical property, allows to work with gas phase, and adds a density dependent correlation for the reduced bulk modulus of the liquid, that improves a lot the calculation of liquid density at high pressure, isothermal compressibility, and isobaric expansion coefficient. Improving also the calculation of liquid heat capacity at constant volume (Cv) and the speed of sound. The medium properties are obtained using correlations that are mainly functions of T, but different pressure corrections are also used. It uses the substances data stored in the MediaCommon package.</p>
     <p>The use of pressure correction is controlled by the constant Boolean 'highPressure'. Its default value is false. If switched to true, pressure correction will be applied (in plus than to liquid density) to liquid specific enthalpy, specific entropy, heat capacity, viscosity and thermal conductivity. It is interesting to make highPressure=true if we need to work over 20 or 30 bars, but the price is a slower simulation.</p>
     <p>The values of enthalpy and entropy are calculated from a reference state. The reference state to use can be selected giving value to the constant string 'refState'. The values can be: 'ASHRAE', 'IIR', 'NBP' or 'User'. Any other value will eliminate any correction for the reference state. When using 'User', the raw values at reference_T will be used as zero for both enthalpy and entropy.</p>
     <p>The thermodynamic record contains: p,T,gas fraction, d and h. Care must be taken in limiting the use to the temperature limits of the correlations used, as only few checks are done by the media, in order not to interfere with the solver process.</p>
     <p>A constant string 'localInputChoice' has been added to the BaseProperties model in order to specify the independent variables to use in each instance of the BaseProperties model. The default value for this constant is the value given to the constant string 'inputChoice' at package level. The valid alternatives are: 'ph', 'pT', 'dT'.</p>
-    <p>In the package Tests there is a comparison between the medium performance with water and the Modelica WaterIF97_ph medium model (TestA1A/B and TestB1A/B). And with R134A and the Modelica R134a_ph model. The Modelica R134a_ph model seems incorrect. There is also an example taken from ThermoPower(you will need to load the ThermoPower package).</p>
     <p>The global idea has been not to use the Modelica files for the storage of substances data, but to store the data in a database, from which we can recover and use them when needed. A database is provided with more than 400 substances that can be enlarged, and the FreeFluids GUI can retrieve the data from the data base, treat it as needed (for example creating EOS from saturated vapor pressure and/or densities, or creating correlations from the EOS), store the results in the database, and export the data in Modelica format when needed. Nevertheless, in order to make life easier for users, many common substances have been exported, and their packages included in the TMedia.Fluids package.</p>
-    <p>As a resume: The medium is for fast calculation of liquid phase, condensation, evaporation, and gas phase below the critical point. In the liquid and saturated phases, the results are quite good. In the gas phase, the results are better than the ideal gas approach in density and enthalpy. The medium is compatible with OpenModelica 1.16 old frontend, and many times also with the new one. The medium is also compatible, since the addition of derivative functions calculation, with the ThermoPower library and with Modelica.Fluid.</p>
+    <p>As a resume: The medium is for fast calculation of liquid phase, condensation, evaporation, and gas phase below the critical point. In the liquid and saturated phases, the results are quite good. In the gas phase, the results are better than the ideal gas approach in density and enthalpy. The medium is compatible with OpenModelica 1.17 old and new frontends. The medium is also compatible, since the addition of derivative functions calculation, with the ThermoPower library and with Modelica.Fluid.</p>
     <b><p>Liquid phase properties</p></b>                
     <p>The saturated density is calculated using a dedicated correlation. This density is corrected for pressure influence. If the coefficients for the reduced bulk modulus calculation, as function of density, are available, the correction is done using a very accurate Tait like equation. In other case, a substance specific isothermal compressibility factor (with a default value of 6.667 e-10) is used. The parameters for the reduced bulk modulus correlation (with liquid density as independent variable) are normally not available, but can be calculated from a good equation of state of the multiparameter or SAFT types. This can be done easily with the FreeFluids GUI: you make the calculation with the EOS, transfer the results (density and the natural logarithm of the reduced bulk modulus) to the correlations tab, make the regression of the coefficients, and store the result in the database. It is good to calculate the reduced bulk modulus at a pressure close to 50 bars but, if necessary in order to have liquid phase at the temperature of interest, it can be done at higher pressure. Check that all density data used correspond to the liquid state.</p>
     <p>A dedicated correlation is used also for the saturated heat capacity. The use of the saturated liquid Cp correlation, instead of ideal Cp correlation plus vaporization enthalpy, makes possible the use of the medium with substances for which we do not have Cp0 data, and improves the liquid phase thermal properties calculation. This correlation can be also a problem, as many times we only find it with a temperature limit of the normal boiling point. This can be solved using a Cp correlation constructed from a good EOS, using the FreeFluids GUI. It is important not to use data too close to the Tc for the regression (use data till 10 K below the Tc). The best equation for the regression of the liquid heat capacity is the PPDS15 equation. Do not use the ChemSep equations as they are not integrated by the medium to obtain enthalpy or entropy. If highPressure has been made equal to true, a density dependent correction is applied to the Cp.</p>
@@ -1268,7 +1268,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
     <b><p>Gas phase properties</p></b>
     <p>Saturated gas density is calculated using a dedicated correlation. At temperature higher than saturation, for a given pressure, a temperature correction is introduced.</p>
     <p>Enthalpy and entropy are calculated from the saturated values at the given pressure (obtained from liquid Cp and vaporization enthalpy correlations), by adding the increase from the saturated temperature to the given temperature, calculated according to the ideal gas Cp, but with a pressure and temperature correction.</p> 
-    <p>Viscosity and thermal conductivity are calculated by correlations or, when not available, by the Chung method.</p>
+    <p>Viscosity and thermal conductivity are calculated by correlations or, when not available, by the Chung method. Pressure correction is later applied.</p>
     <b><p>Two phases properties</p></b>
     <p>Transport properties are not calculated for the two phases situation.</p>
     </body>
