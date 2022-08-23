@@ -91,18 +91,14 @@ package Tests
           extends TestA2A(redeclare package Medium = FreeFluids.TMedia.Fluids.R134A(highPressure = true, refState = "IIR", reference_T = 100.0, inputChoice = "pT"));
         end TestA2B;
 
-    model TestA2C
-      extends TestA2A(redeclare replaceable package Medium = HelmholtzMedia.HelmholtzFluids.R134a(inputChoice = Medium.InputChoice.pT));
-    end TestA2C;
-
   model TestModel
-    extends Modelica.Media.Examples.Tests.Components.PartialTestModel(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
+    extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
   equation
   
   end TestModel;
 
     model TestModel2
-      extends Modelica.Media.Examples.Tests.Components.PartialTestModel2(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
+      extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
     equation
 
     end TestModel2;
@@ -115,33 +111,33 @@ package Tests
         experiment(StartTime = 0, StopTime = 140, Tolerance = 1e-06, Interval = 0.4));
     end ThreeTanks;
 
-    model HeatingSystem
-      extends Modelica.Fluid.Examples.HeatingSystem(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "ph"));
-    equation
-    
-      annotation(
-        experiment(StartTime = 0, StopTime = 6000, Tolerance = 1e-6, Interval = 12));
-    end HeatingSystem;
+  model HeatingSystem
+    extends Modelica.Fluid.Examples.HeatingSystem(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "ph"));
+  equation
+  
+    annotation(
+      experiment(StartTime = 0, StopTime = 6000, Tolerance = 1e-6, Interval = 12));
+  end HeatingSystem;
     
     model TestModelS
-        extends Modelica.Media.Examples.Tests.Components.PartialTestModel(redeclare package Medium = Modelica.Media.Water.StandardWater);
+        extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = Modelica.Media.Water.StandardWater);
     equation
     
     end TestModelS;
     
     model TestModel2S
-      extends Modelica.Media.Examples.Tests.Components.PartialTestModel2(redeclare package Medium = Modelica.Media.Water.StandardWater);
+      extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = Modelica.Media.Water.StandardWater);
     equation
     
     end TestModel2S;
     
-    model ThreeTanksS
-      extends Modelica.Fluid.Examples.Tanks.ThreeTanks(redeclare package Medium = Modelica.Media.Water.StandardWater);
-    equation
-    
-      annotation(
-        experiment(StartTime = 0, StopTime = 140, Tolerance = 1e-06, Interval = 0.4));
-    end ThreeTanksS;
+  model ThreeTanksS
+    extends Modelica.Fluid.Examples.Tanks.ThreeTanks(redeclare package Medium = Modelica.Media.Water.StandardWater);
+  equation
+  
+    annotation(
+      experiment(StartTime = 0, StopTime = 140, Tolerance = 1e-06, Interval = 0.4));
+  end ThreeTanksS;
     
     model HeatingSystemS
       extends Modelica.Fluid.Examples.HeatingSystem(redeclare package Medium = Modelica.Media.Water.StandardWater);

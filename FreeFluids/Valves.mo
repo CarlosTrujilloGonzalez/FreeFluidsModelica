@@ -22,15 +22,15 @@ package Valves "Valves.mo by Carlos Trujillo
     extends FreeFluids.Interfaces.TwoFluidPorts(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
     parameter FreeFluids.Types.ValveFixOption fix = FreeFluids.Types.ValveFixOption.fixKv "select the value to fix: Kv, pressure drop, or flow" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.Area fixedKv = 1.0 "Kv value if it is fixed" annotation(
+    parameter Modelica.Units.SI.Area fixedKv = 1.0 "Kv value if it is fixed" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.PressureDifference fixedDP(displayUnit = "bar") = -0.5e5 "negative if PortB.P<PortA.P" annotation(
+    parameter Modelica.Units.SI.PressureDifference fixedDP(displayUnit = "bar") = -0.5e5 "negative if PortB.P<PortA.P" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.MassFlowRate fixedFlow(displayUnit = "kg/h") "fixed mass flow to maintain at Port A. Possitive if flow is in" annotation(
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") "fixed mass flow to maintain at Port A. Possitive if flow is in" annotation(
       Dialog(tab = "Flow"));
-    Modelica.SIunits.Area Kv(min = 0.0001, max = 2000, start = 1);
-    Modelica.SIunits.Area Cv(min = 0.0001, max = 2000, start = 1);
-    Modelica.SIunits.VolumeFlowRate Q(displayUnit = "m3/h", start = 1);
+    Modelica.Units.SI.Area Kv(min = 0.0001, max = 2000, start = 1);
+    Modelica.Units.SI.Area Cv(min = 0.0001, max = 2000, start = 1);
+    Modelica.Units.SI.VolumeFlowRate Q(displayUnit = "m3/h", start = 1);
     Medium.ThermodynamicState State;
     Medium.Density Rho(displayUnit = "kg/m3");
     Medium.Temperature T(displayUnit = "degC") "Temperature";
@@ -43,10 +43,10 @@ package Valves "Valves.mo by Carlos Trujillo
     else
       Kv = fixedKv;
     end if;
-    Rho = Medium.density(State);
+  Rho = Medium.density(State);
     Q = PortA.G / Rho;
     T = Medium.temperature(State);
-    annotation();
+  annotation(defaultComponentName = "Valve");
   end ValveBase;
 
   partial model ValvePartial "General control valve model"
@@ -87,7 +87,7 @@ package Valves "Valves.mo by Carlos Trujillo
     annotation(
       Placement(visible = true, transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90), iconTransformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90)),
       defaultComponentName = "FV",
-      Icon(coordinateSystem(initialScale = 0.07), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-154, -52}, {150, -120}}, textString = "%name"), Polygon(lineColor = {0, 57, 172}, fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-90, 10}, {-70, 10}, {-70, 60}, {0, 0}, {70, 60}, {70, 10}, {90, 10}, {90, -10}, {70, -10}, {70, -60}, {0, 0}, {-70, -60}, {-70, -10}, {-90, -10}, {-90, 10}}), Line(origin = {0.328629, 1.31454}, points = {{0, 86}, {0, 0}}, color = {0, 0, 127}), Text(origin = {35, 121}, extent = {{-31, 31}, {89, -19}}, textString = "Opening")}));
+      Icon(coordinateSystem(initialScale = 0.07), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-154, -52}, {150, -120}}, textString = "%name"), Polygon(lineColor = {0, 57, 172}, fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-90, 10}, {-70, 10}, {-70, 60}, {0, 0}, {70, 60}, {70, 10}, {90, 10}, {90, -10}, {70, -10}, {70, -60}, {0, 0}, {-70, -60}, {-70, -10}, {-90, -10}, {-90, 10}}), Line(origin = {0.328629, 1.31454}, points = {{0, 86}, {0, 0}}, color = {0, 0, 127}), Text(origin = {40, 121}, extent = {{-38, 25}, {110, -15}}, textString = "Opening")}));
   end ValvePartial;
 
   model ValveIncompressible "Control valve model for incompresible liquid flow"
@@ -103,25 +103,26 @@ package Valves "Valves.mo by Carlos Trujillo
         0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "adiabatic incompressible";
       end if;
     end if;
+  annotation(defaultComponentName = "Valve");
   end ValveIncompressible;
 
   model ValveCompressible "Control valve model for compresible liquid flow"
     extends ValvePartial(final isCompressibleFlow = true);
-    parameter SI.Length di = 0.0 annotation(
+    parameter SI.Length di = 0.0 "if >0, kinetic energy is taken into account"annotation(
       Dialog(tab = "Physical data"));
     Medium.ThermodynamicState StateA "thermodynamic state at PortA";
     Medium.ThermodynamicState StateB "thermodynamic state at PortB";
     Medium.Density RhoA(displayUnit = "kg/m3") "density at PortA";
     Medium.Density RhoB(displayUnit = "kg/m3") "density at PortB";
-    Modelica.SIunits.Velocity Va(start = 1);
-    Modelica.SIunits.Velocity Vb(start = -1);
+    Modelica.Units.SI.Velocity Va(start = 1);
+    Modelica.Units.SI.Velocity Vb(start = -1);
     Medium.Temperature Ta(displayUnit = "degC") "Temperature at PortA";
     Medium.Temperature Tb(displayUnit = "degC") "Temperature at PortB";
   equation
     if PortA.P >= PortB.P then
-      State = Medium.setState_phX(max(PortB.P, PortA.P / 2), max(PortA.H, PortB.H), PortA.X) "for compressible flow max. discharge is 0.5*PortA.P";
+      State = Medium.setState_phX(max(PortB.P, PortA.P / 2),PortA.H, PortA.X) "for compressible flow max. discharge is 0.5*PortA.P";
     else
-      State = Medium.setState_phX(max(PortA.P, PortB.P / 2), max(PortA.H, PortB.H), PortA.X);
+      State = Medium.setState_phX(max(PortA.P, PortB.P / 2), PortB.H, PortA.X);
     end if;
     StateA = Medium.setState_phX(PortA.P, PortA.H, PortA.X);
     StateB = Medium.setState_phX(PortB.P, PortB.H, PortB.X);
@@ -129,17 +130,26 @@ package Valves "Valves.mo by Carlos Trujillo
     Tb = Medium.temperature(StateB);
     RhoA = Medium.density(StateA);
     RhoB = Medium.density(StateB);
-    Va = PortA.G * 4 / (RhoA * pi * di ^ 2);
-    Vb = PortB.G * 4 / (RhoB * pi * di ^ 2);
-    if calcEnthalpyDifference == true then
-      0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n + 0.5 * (abs(Vb) ^ 2 - abs(Va) ^ 2) "energy conservation for adiabatic compressible";
+    if di>0 then
+      Va = PortA.G * 4 / (RhoA * pi * di ^ 2);
+      Vb = PortB.G * 4 / (RhoB * pi * di ^ 2);
+      if calcEnthalpyDifference == true then
+        0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n + 0.5 * (abs(Vb) ^ 2 - abs(Va) ^ 2) "energy conservation for adiabatic compressible";
+      end if;
+    else
+      Va=0;
+      Vb=0;
+      if calcEnthalpyDifference == true then
+        0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "energy conservation for adiabatic incompressible";
+      end if;
     end if;
+  annotation(defaultComponentName = "Valve");
   end ValveCompressible;
 
   model CheckValve
     extends ValveBase(useElevDifference = true, final elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
   equation
-    State = Medium.setState_phX(PortA.P, PortA.H);
+    State = Medium.setState_phX(PortA.P, PortA.H, PortA.X);
     if noEvent(PortA.P > PortB.P) then
       Pdiff + Hdiff * Rho * g_n = -sign(PortA.G) * abs(1.296e9 * (abs(PortA.G) / Kv) ^ 2 / Rho) "1.296e9=3600^2*100";
     else
@@ -155,30 +165,30 @@ package Valves "Valves.mo by Carlos Trujillo
 
   model SafetyValve "Single phase flow calculation using Medium's physical properties, and adiabatic, isentropic, flow"
     extends FreeFluids.Interfaces.TwoFluidPorts(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
-    parameter Modelica.SIunits.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5;
+    parameter Modelica.Units.SI.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5;
     parameter Boolean balancedValve = false "If balanced, Kb must be applied";
     parameter Boolean useFixedArea = true "if false, the flow will be fixed";
-    parameter Modelica.SIunits.Area fixedArea = 0.0 "area to use if useFixedArea=true";
-    parameter Modelica.SIunits.MassFlowRate fixedFlow(displayUnit = "kg/h") "flow to use if useFixedArea=false";
+    parameter Modelica.Units.SI.Area fixedArea = 0.0 "area to use if useFixedArea=true";
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") "flow to use if useFixedArea=false";
     parameter Real kd = 0.975 "discharge coefficient. Default gas:0.975, rup.disk: 0.62, liquid=0.65, biphasic=0.85";
     parameter Real kc = 1.0 "0.9 if it is a safety valve with an upstream bursting disk";
-    Modelica.SIunits.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
-    Modelica.SIunits.Area Aeff(displayUnit = "cm2", start = 0.00001) "Effective orifice area";
+    Modelica.Units.SI.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
+    Modelica.Units.SI.Area Aeff(displayUnit = "cm2", start = 0.00001) "Effective orifice area";
     Medium.ThermodynamicState StateA "thermodynamic state at inlet";
-    Modelica.SIunits.Density RhoA(displayUnit = "kg/m3");
-    Modelica.SIunits.DynamicViscosity MuA;
-    Modelica.SIunits.AbsolutePressure Pc(displayUnit = "bar", start = 1.0e5) "orifice outlet pressure for critical flow";
+    Modelica.Units.SI.Density RhoA(displayUnit = "kg/m3");
+    Modelica.Units.SI.DynamicViscosity MuA;
+    Modelica.Units.SI.AbsolutePressure Pc(displayUnit = "bar", start = 1.0e5) "orifice outlet pressure for critical flow";
     Medium.ThermodynamicState StateC "orifice thermodynamic state at critical flow";
-    Modelica.SIunits.SpecificEnthalpy Hc "orifice specific enthalpy at critical flow";
-    Modelica.SIunits.Density RhoC(displayUnit = "kg/m3") "orifice density at critical flow";
-    Modelica.SIunits.Velocity Vc(start = 340) "velocity of sound at orifice discharge";
-    Modelica.SIunits.MassFlowRate Gc(displayUnit = "kg/h") "critical flow";
+    Modelica.Units.SI.SpecificEnthalpy Hc "orifice specific enthalpy at critical flow";
+    Modelica.Units.SI.Density RhoC(displayUnit = "kg/m3") "orifice density at critical flow";
+    Modelica.Units.SI.Velocity Vc(start = 340) "velocity of sound at orifice discharge";
+    Modelica.Units.SI.MassFlowRate Gc(displayUnit = "kg/h") "critical flow";
     Medium.ThermodynamicState StateB "thermodynamic state at orifice at PortB pressure";
-    Modelica.SIunits.Density RhoB(displayUnit = "kg/m3") "orifice density at PortB pressure";
-    Modelica.SIunits.SpecificEnthalpy Hb "orifice specific enthalpy at P";
-    Modelica.SIunits.Velocity Vb(start = 340) "velocity at orifice discharge";
-    Modelica.SIunits.MassFlowRate Gb(displayUnit = "kg/h");
-    Modelica.SIunits.ReynoldsNumber Re "Reynolds number at orifice";
+    Modelica.Units.SI.Density RhoB(displayUnit = "kg/m3") "orifice density at PortB pressure";
+    Modelica.Units.SI.SpecificEnthalpy Hb "orifice specific enthalpy at P";
+    Modelica.Units.SI.Velocity Vb(start = 340) "velocity at orifice discharge";
+    Modelica.Units.SI.MassFlowRate Gb(displayUnit = "kg/h");
+    Modelica.Units.SI.ReynoldsNumber Re "Reynolds number at orifice";
     Real Kb "correction coefficient for back pressure";
     Real Kv "viscosity correction factor for liquids";
   algorithm
@@ -252,13 +262,13 @@ package Valves "Valves.mo by Carlos Trujillo
     extends FreeFluids.Interfaces.TwoFluidPorts(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
     parameter Integer selectStd = 2 "1=ISO 4126-1, 2=API 520" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5 "set pressure" annotation(
+    parameter Modelica.Units.SI.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5 "set pressure" annotation(
       Dialog(tab = "Basic"));
     parameter Boolean useFixedArea = true "if false, the flow will be fixed" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.Area fixedArea = 0.0 "area to use if useFixedArea=true" annotation(
+    parameter Modelica.Units.SI.Area fixedArea = 0.0 "area to use if useFixedArea=true" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.MassFlowRate fixedFlow(displayUnit = "kg/h") = 0.0 "flow to use if useFixedArea=false" annotation(
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") = 0.0 "flow to use if useFixedArea=false" annotation(
       Dialog(tab = "Basic"));
     parameter Real kd = 0.975 "discharge coefficient(API). Default gas:0.975, rup.disk: 0.62, liquid=0.65" annotation(
       Dialog(tab = "Basic"));
@@ -271,33 +281,33 @@ package Valves "Valves.mo by Carlos Trujillo
     parameter Real kb = 1.0 "Only for API: backpressure correction factor from manufacturer" annotation(
       Dialog(tab = "Basic"));
     parameter Boolean useFixedDensity = false "if true, density is taken from manually fixed value. If false, from Medium calculation" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.Density rhoA(displayUnit = "kg/m3") = 1e3 "manually fixed density at inlet" annotation(
-      Dialog(tab = "Physical properties"));
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.Density rhoA(displayUnit = "kg/m3") = 1e3 "manually fixed density at inlet" annotation(
+      Dialog(tab = "User phys. prop."));
     parameter Real z = 1.0 "if useFixedDensity=true and rhoA=0, density is calculated from Z and MW" annotation(
-      Dialog(tab = "Physical properties"));
+      Dialog(tab = "User phys. prop."));
     parameter Real mw = 18.015 "molar mass. Used if useFixedDensity=true and rhoA=0" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.IsentropicExponent gamma = 1.0 "isentropic coefficient" annotation(
-      Dialog(tab = "Physical properties"));
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.IsentropicExponent gamma = 1.0 "isentropic coefficient" annotation(
+      Dialog(tab = "User phys. prop."));
     parameter Boolean useFixedViscosity = false "if true, viscosity is taken from manually fixed value. If false, from Medium calculation" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.DynamicViscosity muA = 1e-3 "fixed viscosity at inlet" annotation(
-      Dialog(tab = "Physical properties"));
-    Modelica.SIunits.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.DynamicViscosity muA = 1e-3 "fixed viscosity at inlet" annotation(
+      Dialog(tab = "User phys. prop."));
+    Modelica.Units.SI.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
     Medium.ThermodynamicState StateA "thermodynamic state at inlet";
-    Modelica.SIunits.Temperature Ta(displayUnit = "degC") "inlet temperature";
-    Modelica.SIunits.Density RhoA(displayUnit = "kg/m3");
-    Modelica.SIunits.DynamicViscosity MuA;
-    Modelica.SIunits.IsentropicExponent Gamma "isentropic exponent";
-    Modelica.SIunits.AbsolutePressure Pc(displayUnit = "bar") "discharge pressure for critical flow";
+    Modelica.Units.SI.Temperature Ta(displayUnit = "degC") "inlet temperature";
+    Modelica.Units.SI.Density RhoA(displayUnit = "kg/m3");
+    Modelica.Units.SI.DynamicViscosity MuA;
+    Modelica.Units.SI.IsentropicExponent Gamma "isentropic exponent";
+    Modelica.Units.SI.AbsolutePressure Pc(displayUnit = "bar") "discharge pressure for critical flow";
     Real Overpressure;
     Real C "isentropic exponent dependent coefficient";
     Real Kb "correction coefficient for gas back pressure";
     Real F2 "correction coefficent for subcritical gas flow (API)";
     Real Kw "correction coefficient for liquid back pressure";
     Real Kv "correction coefficient for liquid viscosity";
-    Modelica.SIunits.ReynoldsNumber Re "Reynolds number at orifice";
+    Modelica.Units.SI.ReynoldsNumber Re "Reynolds number at orifice";
   algorithm
     StateA := Medium.setState_phX(PortA.P, PortA.H, PortA.X);
     Ta := Medium.temperature(StateA);
@@ -398,31 +408,31 @@ package Valves "Valves.mo by Carlos Trujillo
 
   model SafetyValveFlash "Safety valve calculation for flashing liquids, according to API standard 520 Annex C.2.1"
     extends FreeFluids.Interfaces.TwoFluidPorts(redeclare replaceable package Medium = Modelica.Media.Water.StandardWater constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
-    parameter Modelica.SIunits.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5;
+    parameter Modelica.Units.SI.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5;
     parameter Boolean balancedValve = false "If balanced, Kb must be applied";
     parameter Boolean useFixedArea = true "if false, the flow will be fixed";
-    parameter Modelica.SIunits.Area fixedArea = 0.0 "area to use if useFixedArea=true";
-    parameter Modelica.SIunits.MassFlowRate fixedFlow(displayUnit = "kg/h") "flow to use if useFixedArea=false";
+    parameter Modelica.Units.SI.Area fixedArea = 0.0 "area to use if useFixedArea=true";
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") "flow to use if useFixedArea=false";
     parameter Real kd = 0.975 "discharge coefficient. Default gas:0.975, rup.disk: 0.62, liquid=0.65, biphasic=0.85";
     parameter Real kc = 1.0 "0.9 if it is a safety valve with an upstream bursting disk";
-    Modelica.SIunits.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
-    Modelica.SIunits.Area Aeff(displayUnit = "cm2", start = 0.00001) "Effective orifice area";
+    Modelica.Units.SI.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
+    Modelica.Units.SI.Area Aeff(displayUnit = "cm2", start = 0.00001) "Effective orifice area";
     Medium.ThermodynamicState StateA "thermodynamic state at inlet";
-    Modelica.SIunits.Density RhoA(displayUnit = "kg/m3") "inlet density";
-    Modelica.SIunits.DynamicViscosity MuA "inlet viscosity";
-    Modelica.SIunits.Temperature Ta(displayUnit = "degC") "inlet temperature";
-    Modelica.SIunits.SpecificEnthalpy Ha;
+    Modelica.Units.SI.Density RhoA(displayUnit = "kg/m3") "inlet density";
+    Modelica.Units.SI.DynamicViscosity MuA "inlet viscosity";
+    Modelica.Units.SI.Temperature Ta(displayUnit = "degC") "inlet temperature";
+    Modelica.Units.SI.SpecificEnthalpy Ha;
     Real GFa "gas fraction at inlet";
     Real GFc[25] "orifice gas fractions at testing pressures";
-    Modelica.SIunits.AbsolutePressure Pc[25] "orifice outlet pressures to find for critical flow";
-    Modelica.SIunits.AbsolutePressure Pmax(displayUnit = "bar") "orifice outlet pressure for critical flow";
+    Modelica.Units.SI.AbsolutePressure Pc[25] "orifice outlet pressures to find for critical flow";
+    Modelica.Units.SI.AbsolutePressure Pmax(displayUnit = "bar") "orifice outlet pressure for critical flow";
     Medium.ThermodynamicState StateC "orifice thermodynamic state";
-    Modelica.SIunits.SpecificEnthalpy Hc[25] "orifice specific enthalpy at testing pressures";
-    Modelica.SIunits.Density RhoC[25] "orifice density at testing pressures";
-    Modelica.SIunits.Velocity Vc[25] "orifice velocity at testing pressures";
+    Modelica.Units.SI.SpecificEnthalpy Hc[25] "orifice specific enthalpy at testing pressures";
+    Modelica.Units.SI.Density RhoC[25] "orifice density at testing pressures";
+    Modelica.Units.SI.Velocity Vc[25] "orifice velocity at testing pressures";
     Real Gc[25] "orifice mass velocity at testing pressures";
     Real Gmax(displayUnit = "kg/h") "critical mass velocity";
-    Modelica.SIunits.ReynoldsNumber Re "Reynolds number at orifice";
+    Modelica.Units.SI.ReynoldsNumber Re "Reynolds number at orifice";
     Real Kb "correction coefficient for back pressure";
     Real Kv "viscosity correction factor for liquids";
   algorithm
@@ -495,13 +505,13 @@ package Valves "Valves.mo by Carlos Trujillo
     extends FreeFluids.Interfaces.TwoFluidPorts(redeclare replaceable package Medium = Modelica.Media.Water.StandardWater constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
     parameter Boolean liquidInlet = true "if false, a biphasic inlet calculation is used" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5 "set pressure" annotation(
+    parameter Modelica.Units.SI.AbsolutePressure pSet(displayUnit = "bar") = 1.01325e5 "set pressure" annotation(
       Dialog(tab = "Basic"));
     parameter Boolean useFixedArea = true "if false, the flow will be fixed" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.Area fixedArea = 0.0 "area to use if useFixedArea=true" annotation(
+    parameter Modelica.Units.SI.Area fixedArea = 0.0 "area to use if useFixedArea=true" annotation(
       Dialog(tab = "Basic"));
-    parameter Modelica.SIunits.MassFlowRate fixedFlow(displayUnit = "kg/h") = 0.0 "flow to use if useFixedArea=false" annotation(
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") = 0.0 "flow to use if useFixedArea=false" annotation(
       Dialog(tab = "Basic"));
     parameter Real kd = 0.85 "discharge coefficient(API). Default two phases: 0.85, gas:0.975, rup.disk: 0.62, liquid=0.65" annotation(
       Dialog(tab = "Basic"));
@@ -510,34 +520,34 @@ package Valves "Valves.mo by Carlos Trujillo
     parameter Boolean balancedValve = false "If balanced, Kb must be applied for API critical flow" annotation(
       Dialog(tab = "Basic"));
     parameter Boolean useFixedDensities = false "if true, density is taken from manually fixed value. If false, from Medium calculation" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.AbsolutePressure pSatur(displayUnit = "bar") = 0.0 "manually fixed saturation pressure of the inlet. Only if liquidInlet=true" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.Density rhoA(displayUnit = "kg/m3") = 1e3 "manually fixed density at inlet" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.Density rhoA9(displayUnit = "kg/m3") = 1e3 "manually fixed density at 0.9 of inlet pressure/saturation pressure" annotation(
-      Dialog(tab = "Physical properties"));
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.AbsolutePressure pSatur(displayUnit = "bar") = 0.0 "manually fixed saturation pressure of the inlet. Only if liquidInlet=true" annotation(
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.Density rhoA(displayUnit = "kg/m3") = 1e3 "manually fixed density at inlet" annotation(
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.Density rhoA9(displayUnit = "kg/m3") = 1e3 "manually fixed density at 0.9 of inlet pressure/saturation pressure" annotation(
+      Dialog(tab = "User phys. prop."));
     parameter Boolean useFixedViscosity = false "if true, viscosity is taken from manually fixed value. If false, from Medium calculation" annotation(
-      Dialog(tab = "Physical properties"));
-    parameter Modelica.SIunits.DynamicViscosity muA = 1e-3 "fixed viscosity at inlet" annotation(
-      Dialog(tab = "Physical properties"));
-    Modelica.SIunits.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
+      Dialog(tab = "User phys. prop."));
+    parameter Modelica.Units.SI.DynamicViscosity muA = 1e-3 "fixed viscosity at inlet" annotation(
+      Dialog(tab = "User phys. prop."));
+    Modelica.Units.SI.Area A(displayUnit = "cm2", start = 0.00001) "Discharge orifice area";
     Medium.ThermodynamicState StateA "thermodynamic state at inlet";
-    Modelica.SIunits.Temperature Ta(displayUnit = "degC") "inlet temperature";
-    Modelica.SIunits.AbsolutePressure Ps(displayUnit = "bar") "saturation pressure of the inlet";
+    Modelica.Units.SI.Temperature Ta(displayUnit = "degC") "inlet temperature";
+    Modelica.Units.SI.AbsolutePressure Ps(displayUnit = "bar") "saturation pressure of the inlet";
     Real Nst " transition saturation pressure ratio";
     Real Ns "saturation pressure ratio: Ps/P inlet";
-    Modelica.SIunits.Density RhoA(displayUnit = "kg/m3") "inlet density";
-    Modelica.SIunits.Density RhoA9(displayUnit = "kg/m3") "inlet density at 0.9 of inlet pressure/saturation pressure";
-    Modelica.SIunits.DynamicViscosity MuA "inlet viscosity";
+    Modelica.Units.SI.Density RhoA(displayUnit = "kg/m3") "inlet density";
+    Modelica.Units.SI.Density RhoA9(displayUnit = "kg/m3") "inlet density at 0.9 of inlet pressure/saturation pressure";
+    Modelica.Units.SI.DynamicViscosity MuA "inlet viscosity";
     Real Omega;
     Real Nc "critical ratio of pressures";
-    Modelica.SIunits.AbsolutePressure Pc(displayUnit = "bar") "discharge pressure for critical flow";
+    Modelica.Units.SI.AbsolutePressure Pc(displayUnit = "bar") "discharge pressure for critical flow";
     Real Overpressure;
     Real Kb "correction coefficient for gas back pressure";
     Real Kw "correction coefficient for liquid back pressure";
     Real Kv "correction coefficient for liquid viscosity";
-    Modelica.SIunits.ReynoldsNumber Re "Reynolds number at orifice";
+    Modelica.Units.SI.ReynoldsNumber Re "Reynolds number at orifice";
   algorithm
     StateA := Medium.setState_phX(PortA.P, PortA.H, PortA.X);
     Ta := Medium.temperature(StateA);
@@ -549,10 +559,10 @@ package Valves "Valves.mo by Carlos Trujillo
       RhoA := Medium.density(StateA);
       if liquidInlet == true then
         Ps := Medium.saturationPressure(Medium.temperature(StateA));
-        RhoA9 := Medium.density(Medium.setState_psX(0.9 * Ps, Medium.specificEntropy(StateA)));
+        RhoA9 := Medium.density(Medium.setState_psX(0.9 * Ps, Medium.specificEntropy(StateA), PortA.X));
       else
         Ps := 0.0;
-        RhoA9 := Medium.density(Medium.setState_psX(0.9 * PortA.P, Medium.specificEntropy(StateA)));
+        RhoA9 := Medium.density(Medium.setState_psX(0.9 * PortA.P, Medium.specificEntropy(StateA), PortA.X));
       end if;
     end if;
     Omega := 9 * (RhoA / RhoA9 - 1);
@@ -643,31 +653,9 @@ package Valves "Valves.mo by Carlos Trujillo
       Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)));
   end SafetyValveOmega;
 
-model Dampener
-  //replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium "Medium model";
-  replaceable FreeFluids.Interfaces.FluidPortA PortA annotation(
-    Placement(visible = true, transformation(extent = {{-10, -110}, {10, -90}}, rotation = 0), iconTransformation(extent = {{-10, -110}, {10, -90}}, rotation = 0)));
-  parameter Modelica.SIunits.Volume v0(displayUnit="l")=1e-3;
-  parameter Modelica.SIunits.AbsolutePressure p0(displayUnit = "bar") = 1e5;
-  parameter Real kv=1.0, rho=1000.0;
-  Modelica.SIunits.AbsolutePressure P(displayUnit = "bar");
-  Modelica.SIunits.Volume V(displayUnit="l", start=0);
-equation
-  P*(v0-V)=p0*v0;
-  sign(PortA.G) * abs(1.296e9 * (abs(PortA.G) / kv) ^ 2 /rho)=PortA.P-P;
-  der(V)=PortA.G*1e-3;
-  annotation(
-    defaultComponentName = "Volume",
-    Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {0, 48, 144}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-90, -90}, {90, 90}}, endAngle = 360), Text(origin = {-33, 3}, extent = {{-45, 29}, {115, -33}}, textString = "Volume"), Text(origin = {54, -128}, lineColor = {0, 0, 255}, extent = {{-154, 40}, {44, -20}}, textString = "%name")}),
-experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
-
-end Dampener;
-
   package Examples
-    package Water1 = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = false) "alias for TMedia water";
-    package WaterExt = FreeFluids.ExternalMedia.Fluids.WaterRef(thermoModel = 1, inputChoice = "ph") "alias for ExternalMedia water";
+    package Water1 = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = true) "alias for TMedia water";
     package WaterS = Modelica.Media.Water.StandardWater;
-    package Air1 = FreeFluids.IdealGasMedia.Air;
     package Air2 = Modelica.Media.Air.DryAirNasa;
     package N2 = Modelica.Media.IdealGases.SingleGases.N2;
     package R134a1 = FreeFluids.TMedia.Fluids.R134A(refState = "User", reference_T = 100, highPressure = false);
@@ -675,7 +663,7 @@ end Dampener;
 
     model ValveWaterTest1 "Very simple model using external connectors for flow"
       FreeFluids.Valves.ValveIncompressible FV(redeclare package Medium = Water1, Q(displayUnit = "m3/s"), aperture = 1, fix = FreeFluids.Types.ValveFixOption.fixFlow, fixedFlow(displayUnit = "kg/s") = 3.88889, isLinear = false, useFixedAperture = true) annotation(
-        Placement(visible = true, transformation(origin = {-6, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-18, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = Water1, G = 3.88889, P = 160000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {36, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(Elevation = 1, G = 3.88889, redeclare package Medium = Water1, P = 300000, T(displayUnit = "degC") = 298.15, externalG = false, externalP = true, externalT = true, isGsource = false) annotation(
@@ -685,14 +673,14 @@ end Dampener;
       Modelica.Blocks.Sources.Ramp RampP(duration = 1, height = 3e5, offset = 2e5) annotation(
         Placement(visible = true, transformation(origin = {-94, 88}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
-      connect(FV.PortB, Sink.PortA) annotation(
-        Line(points = {{1, 0}, {26, 0}}, color = {0, 127, 255}));
       connect(Source.PortB, FV.PortA) annotation(
-        Line(points = {{-40, 0}, {-13, 0}}, color = {0, 127, 255}));
+        Line(points = {{-40, 0}, {-25, 0}}, color = {0, 127, 255}));
       connect(const1.y, Source.Text) annotation(
         Line(points = {{-83, 54}, {-50, 54}, {-50, 11}}, color = {0, 0, 127}));
       connect(RampP.y, Source.Pext) annotation(
         Line(points = {{-82, 88}, {-44, 88}, {-44, 12}}, color = {0, 0, 127}));
+  connect(FV.PortB, Sink.PortA) annotation(
+        Line(points = {{-10, 0}, {26, 0}}, color = {0, 127, 255}));
       annotation(
         Documentation(info = "<html>
     <body>
@@ -703,20 +691,24 @@ end Dampener;
 
     model ValveAirTest1
       FreeFluids.Valves.ValveCompressible FV(redeclare package Medium = Air2, Q(displayUnit = "m3/h"), di = 0.02, fix = FreeFluids.Types.ValveFixOption.fixKv, fixedFlow(displayUnit = "kg/h") = 0.006944444444444444, fixedKv = 2.3404) annotation(
-        Placement(visible = true, transformation(origin = {-6, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-32, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink sink(redeclare package Medium = Air2, P = 499999.9999999999, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {36, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 1, G = 0.0555556, redeclare package Medium = Air2, P(displayUnit = "bar") = 200000, T(displayUnit = "degC") = 298.15, externalP = true) annotation(
         Placement(visible = true, transformation(origin = {-72, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Sources.Ramp Ramp(duration = 1, height = 10e5, offset = 2e5) annotation(
+      Modelica.Blocks.Sources.Ramp Ramp(duration = 1, height = 12e5, offset = 2e5) annotation(
         Placement(visible = true, transformation(origin = {-96, 52}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Instruments.Reader Reader1 annotation(
+        Placement(visible = true, transformation(origin = {-2, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
-      connect(FV.PortB, sink.PortA) annotation(
-        Line(points = {{1, 0}, {26, 0}}, color = {0, 127, 255}));
-      connect(Source.PortB, FV.PortA) annotation(
-        Line(points = {{-62, 0}, {-13, 0}}, color = {0, 127, 255}));
+    connect(Source.PortB, FV.PortA) annotation(
+        Line(points = {{-62, 0}, {-39, 0}}, color = {0, 127, 255}));
       connect(Ramp.y, Source.Pext) annotation(
         Line(points = {{-84, 52}, {-66, 52}, {-66, 12}, {-66, 12}}, color = {0, 0, 127}));
+  connect(FV.PortB, Reader1.PortA) annotation(
+        Line(points = {{-24, 0}, {-12, 0}}, color = {0, 127, 255}));
+  connect(Reader1.PortB, sink.PortA) annotation(
+        Line(points = {{8, 0}, {26, 0}}, color = {0, 127, 255}));
     end ValveAirTest1;
 
     model SafetyValveLeser7_5_10_3 "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation"
@@ -734,7 +726,7 @@ end Dampener;
     end SafetyValveLeser7_5_10_3;
 
     model SafetyValveStdLeser7_5_10_3 "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by standard calculation"
-      FreeFluids.Valves.SafetyValveStd SaftValv1(A(displayUnit = "m2"), kd = 0.84, kdr = 0.84, redeclare package Medium = WaterS, pSet = 11040000, fixedArea = 1298e-6, gamma = 0.966, rhoA = 72.02, selectStd = 1, useFixedDensity = true) annotation(
+      FreeFluids.Valves.SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow = 19.3846, gamma = 0.966, kd = 0.84, kdr = 0.84, pSet = 11040000, rhoA = 72.02, selectStd = 1, useFixedArea = false, useFixedDensity = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(G = 6.3, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -804,7 +796,7 @@ end Dampener;
     end SafetyValveStdAPI5;
 
     model SafetyValveFlashTest1 "example of flashing water using API Annex C 2.2.1 methodology"
-      SafetyValveFlash SaftValv1(A(displayUnit = "m2"), Aeff(displayUnit = "m2"), redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
+      SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = WaterS, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -832,7 +824,7 @@ end Dampener;
     end SafetyValveOmegaTest1;
 
     model SafetyValveFlashTest2 "example of flashing water using API Annex C 2.2.3 methodology"
-      SafetyValveFlash SaftValv1(A(displayUnit = "m2"), Aeff(displayUnit = "m2"), redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 13.27444444444444, kd = 0.85, pSet = 990000, useFixedArea = true) annotation(
+      SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 13.27444444444444, kd = 0.85, pSet = 990000, useFixedArea = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(redeclare package Medium = WaterS, P = 999999.9999999999, T = 452.65, sourceOption = FreeFluids.Types.SourceOption.useP_T) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -886,5 +878,37 @@ end Dampener;
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     end SafetyValveOmegaC232;
+    
+    model SafetyValveFlashTest1TMedia "example of flashing water using API Annex C 2.2.1 methodology"
+      SafetyValveFlash SaftValv1(redeclare package Medium = Water1, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
+        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = Water1, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
+        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = Water1, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
+      connect(SaftValv1.PortB, Sink.PortA) annotation(
+        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
+    end SafetyValveFlashTest1TMedia;
+    
+    model SVPlusPipeSteam "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation"
+      FreeFluids.Valves.SafetyValve SaftValv1(A(displayUnit = "m2"), Aeff(displayUnit = "m2"), redeclare package Medium = WaterS, Pc(displayUnit = "Pa"), fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 19.44444444444444, kd = 0.84, pSet = 11040000) annotation(
+        Placement(visible = true, transformation(origin = {-52, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source(G = 0.2777777777777778, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
+        Placement(visible = true, transformation(origin = {-96, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = WaterS, PLossFriction(displayUnit = "Pa"), di = 0.05000000000000001, lTube = 10) annotation(
+        Placement(visible = true, transformation(origin = {2, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-86, 0}, {-62, 0}}, color = {0, 127, 255}));
+  connect(SaftValv1.PortB, Pipe1.PortA) annotation(
+        Line(points = {{-42, 0}, {-8, 0}}, color = {0, 127, 255}));
+  connect(Pipe1.PortB, Sink.PortA) annotation(
+        Line(points = {{12, 0}, {56, 0}}, color = {0, 127, 255}));
+    end SVPlusPipeSteam;
   end Examples;
 end Valves;

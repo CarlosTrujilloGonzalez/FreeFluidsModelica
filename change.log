@@ -1,3 +1,9 @@
+Version 2.4.0
+- The package has been made compatible with MSL 4.0.0
+- The ideal gas packages have been removed
+- The ExternalMedia package has been removed due to lack of compatibility with OpenModelica.
+- A new package (Columns) covering distillation and packed columns has been added.
+- A new package (Instruments) with some instrumentation has been added.
 Version 2.3.1
 - Pressure correction has been added to the viscosity and thermal conductivity calculationin gas phase.
 - A new package, called LMedia, derived from TMedia and limited to liquid phase calculation has been added.

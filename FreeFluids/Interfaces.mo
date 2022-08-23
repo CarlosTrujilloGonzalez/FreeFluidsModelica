@@ -21,8 +21,8 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
   connector FluidPort "for the connection of fluid flow, without reference to the mechanical characteristics of the connection"
     replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium;
     Medium.AbsolutePressure P(displayUnit = "bar") "Pressure";
-    flow Modelica.SIunits.MassFlowRate G(displayUnit = "kg/h") "Mass flow";
-    replaceable Modelica.SIunits.Height Elevation(start = 0) "Port Height";
+    flow Modelica.Units.SI.MassFlowRate G(displayUnit = "kg/h") "Mass flow";
+    replaceable Modelica.Units.SI.Height Elevation(start = 0) "Port Height";
     replaceable Medium.SpecificEnthalpy H "Specific enthalpy";
     replaceable Medium.MassFraction X[Medium.nX] "mass fractions composition";
     annotation(
@@ -60,16 +60,16 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
       Dialog(tab = "Ports links"));
     parameter FreeFluids.Types.ElevationOption elevCalcMethod = FreeFluids.Types.ElevationOption.differential "if useElevDifference==true, selects the equation to use: differential, or absolute for PortB" annotation(
       Dialog(tab = "Ports links"));
-    parameter Modelica.SIunits.Length elevDifference = 0.0 "used only if previously selected. Positive if PortB higher than PortA" annotation(
+    parameter Modelica.Units.SI.Length elevDifference = 0.0 "used only if previously selected. Positive if PortB higher than PortA" annotation(
       Dialog(tab = "Ports links"));
-    parameter Modelica.SIunits.Length portBelevation = 0.0 "used only if previously selected." annotation(
+    parameter Modelica.Units.SI.Length portBelevation = 0.0 "used only if previously selected." annotation(
       Dialog(tab = "Ports links"));
     parameter Boolean calcEnthalpyDifference = true "if true, will calculate the enthalpy difference between ports. Use only in one connector" annotation(
       Dialog(tab = "Ports links"));
     parameter Boolean passComposition = true "if true, the equation PortA.X=PortB.X will be activated" annotation(
       Dialog(tab = "Ports links"));
-    Modelica.SIunits.SpecificEnthalpy Hdiff "specific enthalpy difference: Port B - Port A";
-    Modelica.SIunits.PressureDifference Pdiff(displayUnit = "bar") "pressure difference: Port B - Port A";
+    Modelica.Units.SI.SpecificEnthalpy Hdiff "specific enthalpy difference: Port B - Port A";
+    Modelica.Units.SI.PressureDifference Pdiff(displayUnit = "bar") "pressure difference: Port B - Port A";
   equation
     0 = PortA.G + PortB.G;
     if useElevDifference == true then
@@ -99,17 +99,17 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
     parameter FreeFluids.Types.SourceOption sourceOption = FreeFluids.Types.SourceOption.useP_T "how to generate port pressure and enthalpy";
     parameter Boolean isElevSource = true "use specified gravitational height";
     parameter Boolean isGsource = false "use specified mass flow";
-    parameter Modelica.SIunits.Height Elevation = 0 annotation(
+    parameter Modelica.Units.SI.Height Elevation = 0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.MassFlowRate G(displayUnit = "kg/h") = 0 annotation(
+    parameter Modelica.Units.SI.MassFlowRate G(displayUnit = "kg/h") = 0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.AbsolutePressure P(displayUnit = "bar") = 1e5 annotation(
+    parameter Modelica.Units.SI.AbsolutePressure P(displayUnit = "bar") = 1e5 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.Temperature T(displayUnit = "degC") = 298.15 annotation(
+    parameter Modelica.Units.SI.Temperature T(displayUnit = "degC") = 298.15 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOption.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOption.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) else Medium.h_default annotation(
+    parameter Modelica.Units.SI.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOption.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOption.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) else Medium.h_default annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.Density D(displayUnit = "kg/m3") = 100 annotation(
+    parameter Modelica.Units.SI.Density D(displayUnit = "kg/m3") = 100 annotation(
       Dialog(tab = "Local values"));
     parameter Medium.MassFraction X[Medium.nX] = Medium.X_default annotation(
       Dialog(tab = "Local values"));
@@ -191,17 +191,17 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
     parameter FreeFluids.Types.SourceOptionS sourceOption = FreeFluids.Types.SourceOptionS.useP_T "how to generate port pressure and enthalpy";
     parameter Boolean isElevSource = true "use specified gravitational height";
     parameter Boolean isGsource = false "use specified mass flow";
-    parameter Modelica.SIunits.Height Elevation = 0.0 annotation(
+    parameter Modelica.Units.SI.Height Elevation = 0.0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.MassFlowRate G(displayUnit = "kg/h") = 0.0 annotation(
+    parameter Modelica.Units.SI.MassFlowRate G(displayUnit = "kg/h") = 0.0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.AbsolutePressure P(displayUnit = "bar") = if sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.pressure(Medium.setState_dTX(D, T, X)) else 0.0 annotation(
+    parameter Modelica.Units.SI.AbsolutePressure P(displayUnit = "bar") = if sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.pressure(Medium.setState_dTX(D, T, X)) else 0.0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.Temperature T(displayUnit = "degC") annotation(
+    parameter Modelica.Units.SI.Temperature T(displayUnit = "degC") annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOptionS.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) else Medium.h_default annotation(
+    parameter Modelica.Units.SI.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOptionS.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) else Medium.h_default annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.Density D(displayUnit = "kg/m3") = 100 annotation(
+    parameter Modelica.Units.SI.Density D(displayUnit = "kg/m3") = 100 annotation(
       Dialog(tab = "Local values"));
     parameter Medium.MassFraction X[Medium.nX] = Medium.X_default annotation(
       Dialog(tab = "Local values"));
@@ -271,7 +271,7 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
 
   model PressureReference "Introduces a pressure reference for the connected ports"
     extends FreeReference;
-    parameter Modelica.SIunits.AbsolutePressure refP(displayUnit = "bar") = 1e5;
+    parameter Modelica.Units.SI.AbsolutePressure refP(displayUnit = "bar") = 1e5;
   equation
     PortB.P = refP;
     annotation(
@@ -281,7 +281,7 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
 
   model ElevationReference "Introduces a elevation reference for the connected ports"
     extends FreeReference;
-    parameter Modelica.SIunits.Height refElev;
+    parameter Modelica.Units.SI.Height refElev;
   equation
     PortB.Elevation = refElev;
     annotation(
@@ -291,8 +291,8 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
 
   model PressureElevationReference
     extends FreeReference;
-    parameter Modelica.SIunits.AbsolutePressure refP(displayUnit = "bar") = 1e5;
-    parameter Modelica.SIunits.Height refElev = 0.0;
+    parameter Modelica.Units.SI.AbsolutePressure refP(displayUnit = "bar") = 1e5;
+    parameter Modelica.Units.SI.Height refElev = 0.0;
   equation
     PortB.P = refP;
     PortB.Elevation = refElev;
@@ -301,59 +301,76 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {170, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, lineThickness = 0.5, extent = {{-90, 90}, {90, -90}}, endAngle = 360), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -150}}, textString = "%name"), Text(origin = {-2, 18}, extent = {{-82, 56}, {96, -10}}, textString = "P,El."), Text(origin = {-4, -50}, extent = {{-82, 56}, {96, -10}}, textString = "ref.")}));
   end PressureElevationReference;
 
-  model FlowSink "just to specify the pressure, or the flow, at one boundary"
+  model FlowSink "Just to specify the pressure, or the flow, at one boundary"
     replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium "Medium model";
     replaceable FreeFluids.Interfaces.FluidPortA PortA(redeclare package Medium = Medium) annotation(
       Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
     parameter FreeFluids.Types.BoundaryOption fix = FreeFluids.Types.BoundaryOption.fixFlow "indicates if pressure or flow must be fixed";
-    parameter Modelica.SIunits.AbsolutePressure P(displayUnit = "bar") = 1e5;
-    parameter Modelica.SIunits.MassFlowRate G(displayUnit = "kg/h") = 0 "possitive if flow enters the sink";
+    parameter Modelica.Units.SI.AbsolutePressure P(displayUnit = "bar") = 1e5;
+    parameter Modelica.Units.SI.MassFlowRate G(displayUnit = "kg/h") = 0 "possitive if flow enters the sink";
+    parameter Boolean externalG = false annotation(
+      Dialog(tab = "External values"));
+    parameter Boolean externalP = false annotation(
+      Dialog(tab = "External values"));
+    Modelica.Blocks.Interfaces.RealInput Gext(unit = "kg/s", displayUnit = "kg/h") if externalG == true annotation(
+      Placement(visible = true, transformation(origin = {-60, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90), iconTransformation(origin = {-68, 112}, extent = {{-20, -20}, {20, 20}}, rotation = -90)));
+    Modelica.Blocks.Interfaces.RealInput Pext(unit = "Pa", displayUnit = "bar") if externalP == true annotation(
+      Placement(visible = true, transformation(origin = {60, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90), iconTransformation(origin = {66, 112}, extent = {{-20, -20}, {20, 20}}, rotation = -90)));
+  protected
+    Modelica.Blocks.Interfaces.RealInput GextIn "to connect with the conditional input block";
+    Modelica.Blocks.Interfaces.RealInput PextIn;
   equation
+    connect(Gext, GextIn);
+    connect(Pext, PextIn);
+    if externalG==false then
+        GextIn=G;
+    end if;
+    if externalP==false then
+        PextIn=P;
+    end if;
     if fix == FreeFluids.Types.BoundaryOption.fixPressure then
-      PortA.P = P;
+      PortA.P=PextIn;
     elseif fix == FreeFluids.Types.BoundaryOption.fixFlow then
-      PortA.G = G;
+      PortA.G=GextIn;
     end if;
     annotation(
       defaultComponentName = "Sink",
-      Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {0, 48, 144}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-90, -90}, {90, 90}}, endAngle = 360), Text(origin = {-33, 7}, extent = {{-45, 29}, {115, -33}}, textString = "Sink"), Text(origin = {54, -128}, lineColor = {0, 0, 255}, extent = {{-154, 40}, {44, -20}}, textString = "%name")}));
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {0, 48, 144}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-90, -90}, {90, 90}}, endAngle = 360), Text(origin = {-33, 7}, extent = {{-45, 29}, {115, -33}}, textString = "Sink"), Text(origin = {54, -128}, lineColor = {0, 0, 255}, extent = {{-154, 40}, {44, -20}}, textString = "%name"), Text(origin = {-111, 115}, extent = {{-33, 23}, {33, -23}}, textString = "G"), Text(origin = {107, 115}, extent = {{-33, 23}, {33, -23}}, textString = "P")}));
   end FlowSink;
 
   connector HeatPort "for the connection of heat interchange. With additional information regarding a pipe"
-    Modelica.SIunits.Temperature T(displayUnit = "degC", start = 298.15) "Port temperature";
-    flow Modelica.SIunits.HeatFlowRate W(start = 0.0) "Heat flow. Possitive if entering the element";
-    replaceable Modelica.SIunits.Area S(start = 1) "surface of heat transfer";
-    replaceable Modelica.SIunits.Length L(start = 1) "individual tube length";
-    replaceable Modelica.SIunits.Diameter D(start = 0.05) "external pipe diameter";
+    Modelica.Units.SI.Temperature T(displayUnit = "degC", start = 298.15) "Port temperature";
+    flow Modelica.Units.SI.HeatFlowRate W(start = 0.0) "Heat flow. Possitive if entering the element";
+    replaceable Modelica.Units.SI.Area S(start = 1) "surface of heat transfer";
+    replaceable Modelica.Units.SI.Length L(start = 1) "individual tube length";
+    replaceable Modelica.Units.SI.Diameter D(start = 0.05) "external pipe diameter";
     replaceable Fraction Slope "pipe slope H/L";
     annotation(
       defaultComponentName = "HeatPort",
       Documentation(info = "<html>
   <body>
-  <p>The connector is not conforming to Modelica 3.x.x specification, that establishes that the number of potential and flow variables must be the same in order to make easier the debugging of applications. Although it is true, it introduces extra complexity if we use the recommended stream variables, and it is relatively simple to avoid the problems associated to the extra potential variables: H and Elevation. The finality of H is evident, and Elevation has been added in order to allow for easy input of geodesical heights.</p>
-  <p>If we use the connector for isenthalpic applications the connection is straight, and the only consideration to take into account is to allow H and Elevation specification in just only one of the possible parallel paths.</p>
-  <p>For non-isenthalpic applications, H and Elevation will be declared as causal, making the connector to conform to Modelica 3.x.x specification, but forcing the flow to be non-reversible. A mixer model will be used for the connection of several outputs.</p>
+  <p></p>
   </body>
   </html>"));
   end HeatPort;
 
   connector HeatPortA "will receive the causal variables"
-    extends HeatPort(redeclare input Modelica.SIunits.Area S, redeclare input Modelica.SIunits.Length L, redeclare input Modelica.SIunits.Diameter D, redeclare input Fraction Slope);
+    extends HeatPort(redeclare input Modelica.Units.SI.Area S, redeclare input Modelica.Units.SI.Length L, redeclare input Modelica.Units.SI.Diameter D, redeclare input Fraction Slope);
     annotation(
       Icon(graphics = {Rectangle(lineColor = {255, 0, 0}, fillColor = {255, 0, 0}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}})}, coordinateSystem(initialScale = 0.1)));
   end HeatPortA;
 
   connector HeatPortB "will supply the causal variables"
-    extends HeatPort(redeclare output Modelica.SIunits.Area S, redeclare output Modelica.SIunits.Length L, redeclare output Modelica.SIunits.Diameter D, redeclare output Fraction Slope);
+    extends HeatPort(redeclare output Modelica.Units.SI.Area S, redeclare output Modelica.Units.SI.Length L, redeclare output Modelica.Units.SI.Diameter D, redeclare output Fraction Slope);
     annotation(
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(origin = {-2, 4}, lineColor = {255, 0, 0}, lineThickness = 10, extent = {{-78, 78}, {82, -84}})}));
   end HeatPortB;
 
   model ThermalSource
     parameter Boolean isTsource = true "if true, temperature is forced, otherwise power is forced";
-    parameter Modelica.SIunits.Temperature T(displayUnit = "degC") = 298.15 annotation(
+    parameter Modelica.Units.SI.Temperature T(displayUnit = "degC") = 298.15 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.SIunits.HeatFlowRate W = 0 "if positive will inject heat in the connection" annotation(
+    parameter Modelica.Units.SI.HeatFlowRate W = 0 "if positive will inject heat in the connection" annotation(
       Dialog(tab = "Local values"));
     FreeFluids.Interfaces.HeatPortA PortH annotation(
       Placement(visible = true, transformation(origin = {1.77636e-15, 80}, extent = {{-20, -20}, {20, 20}}, rotation = 0), iconTransformation(origin = {1.77636e-15, 80}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
