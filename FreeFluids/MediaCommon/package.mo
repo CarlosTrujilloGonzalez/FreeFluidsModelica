@@ -404,7 +404,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
 
     function liqViscPcorLucas "Lucas liquid viscosity pressure correction."
       input FreeFluids.MediaCommon.DataRecord data;
-      input Real T, p, Pref, rpVisc;
+      input Real T, p, Pref, rpVisc "temperature, pressure, reference pressure and viscosity at reference pressure";
       output Real visc;
     protected
       Real Tr, Tr2, Tr3, Tr4, A, C, D, dPr;
@@ -485,6 +485,49 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       Fc := 1 - 0.2756 * data.w + 0.059035 * muR4 + k;
       eta := 26.692 * Fc * (data.MW * T) ^ 0.5 * 1e-11 / (sigma * sigma * omega);
     end gasViscLowPressureChung;
+    
+    function gasViscTVcpChung "Dynamic viscosity prediction with density correction. Chung method. Fails because the molar volume V is not supplied "
+      input FreeFluids.MediaCommon.DataRecord data;
+      input SI.Temperature T "Gas temperature";
+      input SI.DynamicViscosity eta0In=0 "low density viscosity, if known";
+      output SI.DynamicViscosity eta "Dynamic viscosity";
+    protected
+      Real Ta, sigma, omega, muR, muR4, Fc, k, eta0;
+      Real E[10],y,G1,G2,eta2,eta1;
+      Real coef[10,4]={{6.324,50.412,-51.680,1189.0},{1.210e-3,-1.154e-3,-6.257e-3,0.03728},{5.283,254.209,-168.48,3898},{6.623,38.096,-8.464,31.42},
+                            {19.745,7.63,-14.354,31.53},{-1.9,-12.537,4.985,-18.15},{24.275,3.45,-11.291,69.35},{0.7972,1.117,0.01235,-4.117},
+                            {-0.2382,0.0677,-0.8163,4.025},{0.06863,0.3479,0.5926,-0.727}};
+    algorithm
+      Ta := 1.2593 * T / data.Tc;
+      if data.family == 6 then
+          k := 0.076 "water";
+        elseif data.family == 7 then
+          k := 0.0682 + 4.74 / data.MW "alcohol";
+        elseif data.family == 8 then
+          k := 0.0682 + 2 * 4.74 / data.MW "polyol";
+        else
+          k := 0.0;
+      end if;
+      muR := if data.mu < 999.0 and data.mu > 0.0 then 131.3 * data.mu / (data.Vc * 1e6 * data.Tc) ^ 0.5 else 0.0;
+        muR4 := muR * muR * muR * muR;
+      if eta0In==0 then 
+        sigma := 0.809 * data.Vc ^ 0.33333;
+        omega := 1.16145 * Ta ^ (-0.14874) + 0.52487 * exp(-0.7732 * Ta) + 2.16178 * exp(-2.43787 * Ta);
+        Fc := 1 - 0.2756 * data.w + 0.059035 * muR4 + k;
+        eta0 := 26.692 * Fc * (data.MW * T) ^ 0.5 * 1e-11 / (sigma * sigma * omega);
+      else
+        eta0:=eta0In;
+      end if;
+      for i in 1:10 loop
+        E[i]:=coef[i,1]+coef[i,2]*data.w+coef[i,3]*muR4+coef[i,4]*k;
+      end for;
+      y:=data.Vc/(6* V);
+      G1:=(1-0.5*y)/(1-y)^3;
+      G2:=(E[0]*((1-exp(-E[3]*y))/y)+E[1]*G1*exp(E[4]*y)+E[2]*G1)/(E[0]*E[3]+E[1]+E[2]);
+      eta2:=E[6]*y*y*G2*exp(E[7]+E[8]/Ta+E[9]/(Ta*Ta));
+      eta1:=pTa^0.5*(Fc*(1/G2+E[5]*y))/omega+eta2;
+      eta:= if(eta1>1) then eta0*eta1 else eta0;
+    end gasViscTVcpChung;
 
     function gasViscPcorLucas
       input FreeFluids.MediaCommon.DataRecord data;
@@ -565,7 +608,7 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
       input SI.ThermalConductivity ldThCond;
       output Modelica.Media.Interfaces.Types.ThermalConductivity thCond;
     protected
-      Real Tr,y,B[7],G1,muR,muR4,k,G2,f;
+      Real Tr,y,B[7],G1,muR,muR4,k,G2;
       Real coef[7,4]={{2.4166,7.4824e-1,-9.1858e-1,1.2172e2},{-5.0924e-1,-1.5094,-4.9991e1,6.9983e1},{6.6107,5.6207,6.4760e1,2.7039e1},{1.4543e1,-8.9139,-5.6379,7.4344e1},
                             {7.9274e-1,8.2019e-1,-6.9369e-1,6.3173},{-5.8634,1.2801e1,9.5893,6.5529e1},{9.1089e1,1.2811e2,-5.4217e1,5.2381e2}};
     algorithm
@@ -587,19 +630,18 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
         B[i]:=coef[i,1]+coef[i,2]*data.w+coef[i,3]*muR4+coef[i,4]*k;
       end for;
       G2:=(B[1]*(1-exp(-B[4]*y))/y+B[2]*G1*exp(B[5]*y)+B[3]*G1)/(B[1]*B[4]+B[2]+B[3]);
-      f:=(1/G2+B[6]*y)+3.586e-3*(data.Tc*1000/data.MW)^0.5*B[7]*y*y*Tr^0.5*G2/(data.Vc*1e6)^0.6667;
-      thCond:=ldThCond*f;
+      thCond:=ldThCond*(1/G2+B[6]*y)+3.586e-3*(data.Tc*1000/data.MW)^0.5*B[7]*y*y*Tr^0.5*G2/(data.Vc*1e6)^0.6667;
       if (thCond<ldThCond) then
         thCond:=ldThCond;
       end if;
     end gasThCondTVcorChung;
   
     function gasMixViscosityWilke
-      input SI.Temperature T;
-      input SI.MoleFraction X[:];
-      input SI.DynamicViscosity etaX[:];
-      input SI.MolarMass MW[:];
-      output SI.DynamicViscosity eta;
+      input Modelica.Units.SI.Temperature T;
+      input Modelica.Units.SI.MoleFraction X[:];
+      input Modelica.Units.SI.DynamicViscosity etaX[:];
+      input Modelica.Units.SI.MolarMass MW[:];
+      output Modelica.Units.SI.DynamicViscosity eta;
     protected
       Real phi[size(MW, 1), size(MW, 1)];
       Real sigma;
@@ -749,18 +791,16 @@ package MediaCommon "MediaCommon.mo by Carlos Trujillo
   end Functions;
 
   annotation(
-    Documentation(info = "<html>
-    <body>
+    Documentation(info = "<html><head></head><body>
     <p>Provides the general data and functions that are common to several media packages. </p>
     <p><b>DataRecord and associated packages</b></p>
     <p></p>
-    <p>The DataRecord record in the MediaCommon package defines the container for the individual substance data. This data will be used later by the media packages written directly in Modelica language: IdealGasMedia, IdealGasMixture and TMedia. It contains basic data regarding the substance: name, description, CAS, chemical family,...and correlations for several physical properties, normally as function of temperature. Each correlation has: equation to use for its calculation, coefficients, and limits of usage.</p>
+    <p>The DataRecord record in the MediaCommon package defines the container for the individual substance data. This data will be used later by the media packages written directly in Modelica language: LMedia and TMedia. It contains basic data regarding the substance: name, description, CAS, chemical family,...and correlations for several physical properties, normally as function of temperature. Each correlation has: equation to use for its calculation, coefficients, and limits of usage.</p>
     <p>The data for each individual fluid is inside the subpackages: MediaDataAL, and MediaDataMZ. Each data is defined as a constant DataRecord, with the name of the substance.</p>
   <p>You can create a new record, in those subpackages, copying the MediaDataTemplate (it is inside the MediaCommon package) and filling it manually. Nevertheless the faster and more convenient way is to create the record from the FreeFluidsGui program. You need to select the substance from the database, select the correlations you want to be included in the record, and export it in Modelica format. You can put the file in any place, better with the .txt extension. Later you edit the file, copy its content, and paste it inside the MediaData package. You still need to declare the substance inside the Media packages, filling the name and the origin of the data, that will be the record you just copied.</p>
-  <p>When using the data in the IdealGasMedia package, only the Cp0 is needed, but you can use also gas viscosity, and gas thermal conductivity correlations. The vapor pressure correlation is also recommended, in order to check if we are working in the gas state. </p>
-  <p>When using the data in the TMedia package, you will need at least the following correlations: saturated density, vapor pressure, liquid heat capacity. Plus vaporization enthalpy and saturated gas density, if you want to work also with the gas phase. Transport properties correlations as for your needs, and reduced liquid bulk modulus if you want to work at high pressures (till 200 bars). If you want to force the liquid state you can set Tc at a high value, and Pc at a low value (look as example to the MarlothermSH medium).</p>
+  <p>When using the data in the TMedia package, you will need at least the following correlations: saturated density, vapor pressure, liquid heat capacity. Plus vaporization enthalpy and saturated gas density, if you want to work also with the gas phase. Transport properties correlations as for your needs, and reduced liquid bulk modulus if you want to work at high pressures (till 200 bars). If you want to force the liquid state you can set Tc at a high value, and Pc at a low value (look as example to the MarlothermSH medium), but is better to use LMedia package.</p>
     <p></p>
     <p></p>
-    </body>
-    </html>"));
+    
+    </body></html>"));
 end MediaCommon;

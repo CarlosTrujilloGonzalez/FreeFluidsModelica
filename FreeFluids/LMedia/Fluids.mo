@@ -20,6 +20,14 @@ within FreeFluids.LMedia;
       extends FreeFluids.LMedia.LMedium(final mediumName = "Carbon dioxide", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.CO2});
     end CO2;
 
+  package D4
+    extends FreeFluids.LMedia.LMedium(final mediumName = "D4", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.D4}, refState="IIR", reference_T=273.15);
+  end D4;
+
+  package D5
+    extends FreeFluids.LMedia.LMedium(final mediumName = "D5", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.D5}, refState="IIR", reference_T=273.15);
+  end D5;
+
     package DecanoicAcid
       extends FreeFluids.LMedia.LMedium(final mediumName = "DecanoicAcid", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.DecanoicAcid}, refState = "IIR", reference_T = 273.15);
     end DecanoicAcid;

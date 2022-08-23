@@ -112,7 +112,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
   
       equation
         MM = fluidConstants[1].MW / 1000 "in kg/mol";
-        R = Modelica.Constants.R / MM;
+        R_s = Modelica.Constants.R / MM;
         if localInputChoice == "ph" then
           T = temperature_ph(p=p, h=h);
           d = density_ph(p=p, h=h);
@@ -257,8 +257,9 @@ package TMedia "TMedia.mo by Carlos Trujillo
           else
             state.phase := 1 "gas phase";
             state.gf := 1;
-            Tb:=fluidConstants[1].lCpLimS/2;
-            state.p:=saturationPressure(Tb) "pressure initialization at half of max. lCp)";
+            Tb:=0.6*fluidConstants[1].lCpLimS;
+            state.p:=saturationPressure(Tb) "pressure initialization at 0.6 of max. lCp)";
+            //assert(false,"hola gas. Tb:"+String(Tb)+" P:"+String(state.p),AssertionLevel.warning);
             Dig := state.p * fluidConstants[1].MW / (1000 * R * T);
             Dgs:=PhysPropCorr(fluidConstants[1].gSatDensCorr, fluidConstants[1].gSatDensCoef, fluidConstants[1].MW, Tb);
             Dsim:=Dig+(Dgs-Dig)*(Tb/T)^9;
@@ -846,12 +847,20 @@ package TMedia "TMedia.mo by Carlos Trujillo
         end if;
     end thermalConductivity;
   
-    redeclare function extends surfaceTension "Return surface tension"
-        extends Modelica.Icons.Function;
-  
-      algorithm
-        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
-    end surfaceTension;
+    redeclare             function extends surfaceTension "Return surface tension"
+            extends Modelica.Icons.Function;
+          algorithm
+            sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, sat.Tsat) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+    //PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, sat.Tsat)
+    //FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+        end surfaceTension;
+    
+    //PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, sat.Tsat)
+    //FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+    
+    //FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
+
+//FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], sat.Tsat);
   
     //Saturation properties
     //-------------------------

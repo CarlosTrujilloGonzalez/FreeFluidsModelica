@@ -1,9 +1,7 @@
 within FreeFluids.Pipes;
   package Examples
     package Water1 = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = false) "alias for TMedia water";
-    package WaterExt = FreeFluids.ExternalMedia.Fluids.WaterRef(thermoModel = 3, refState = 4, reference_T = 273.16, reference_p = 101325) "alias for ExternalMedia water";
     package WaterS = Modelica.Media.Water.StandardWater;
-    package Air1 = FreeFluids.IdealGasMedia.Air;
     package Air2 = Modelica.Media.Air.DryAirNasa;
     package R134a1 = FreeFluids.TMedia.Fluids.R134A(refState = "User", reference_T = 100, highPressure = false);
     package R134aS = Modelica.Media.R134a.R134a_ph;
@@ -365,9 +363,9 @@ within FreeFluids.Pipes;
         Placement(visible = true, transformation(origin = {38, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(Elevation = 0, redeclare package Medium = Water1, P = 200000, T = 120 + 273, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-74, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeCondensing Pipe(redeclare package Medium = Water1, PLossFriction(displayUnit = "Pa"), condensationOption = FreeFluids.Types.CondensationOption.partialCondensation, di = 0.02, emissionCoef = 0.46, kInsul = 0.052, lTube = 100, thickness = 0.001, thicknessInsul = 0, useTubeLength = true) annotation(
+      FreeFluids.Pipes.PipeCondensing Pipe(redeclare package Medium = Water1, PLossFriction, condensationOption = FreeFluids.Types.CondensationOption.partialCondensation, di = 0.02, emissionCoef = 0.46, kInsul = 0.052, lTube = 100, thickness = 0.001, thicknessInsul = 0, useTubeLength = true) annotation(
         Placement(visible = true, transformation(origin = {-14, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFluidBoundary Boundary(redeclare package Medium = Air1, pMedia = 100000, tMedia = 323.15, vMedia = 0) annotation(
+      FreeFluids.Pipes.PipeFluidBoundary Boundary(redeclare package Medium = Air2, pMedia = 100000, tMedia = 323.15, vMedia = 0) annotation(
         Placement(visible = true, transformation(origin = {-14, -38}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(Pipe.PortB, Sink.PortA) annotation(

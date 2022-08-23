@@ -43,7 +43,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
         constant String localInputChoice = inputChoice;
       equation
         MM = fluidConstants[1].MW / 1000 "in kg/mol";
-        R = Modelica.Constants.R / MM;
+        R_s = Modelica.Constants.R / MM;
         if localInputChoice == "ph" then
 //state = setState_phX(p, h);
           T = temperature_ph(p, h);
@@ -433,7 +433,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
         end if;
     end thermalConductivity;
 
-    function extends molarMass
+    redeclare function extends molarMass
         "Return the molar mass of the medium"
     algorithm
         MM := fluidConstants[1].molarMass;
@@ -464,8 +464,9 @@ package LMedia "LMedia.mo by Carlos Trujillo
     algorithm
       d := density_pT_state(p, T, setState_pTX(p, T));
       annotation(
-        Inline = true,
-        inverse(p = pressure_dT(d, T), T = temperature_pd(p, d)));
+        Inline = true);
+        //Inline = true,
+        //inverse(p = pressure_dT(d, T), T = temperature_pd(p, d)));
     end density_pT;
 
     function density_pT_state
@@ -544,8 +545,10 @@ package LMedia "LMedia.mo by Carlos Trujillo
     algorithm
       d := density_ph_state(p, h, setState_phX(p, h));
       annotation(
-        Inline = true,
-        inverse(h = specificEnthalpy_pd(p, d)));
+        Inline = true);
+        //Inline = true,
+        //inverse(h = specificEnthalpy_pd(p, d)));
+        
     end density_ph;
 
     function density_ph_state
@@ -621,8 +624,9 @@ package LMedia "LMedia.mo by Carlos Trujillo
     algorithm
       p := pressure_dT_state(d, T, setState_dTX(d, T));
       annotation(
-        Inline = true,
-        inverse(d = density_pT(p, T), T = temperature_pd(p, d)));
+        Inline = true);
+        //Inline = true,
+        //inverse(d = density_pT(p, T), T = temperature_pd(p, d)));
     end pressure_dT;
 
     function pressure_dT_state

@@ -25,25 +25,27 @@ package Pumps "Pumps.mo by Carlos Trujillo
       Dialog(tab = "Flow"));
     parameter Boolean useExternalSpeed = false "If true, the connector speed will be used" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.Frequency fixedSpeed = 2900.0 / 60.0 "internally fixed speed for the pump" annotation(
+    parameter Modelica.Units.SI.Frequency fixedSpeed = 2900.0 / 60.0 "internally fixed speed for the pump" annotation(
       Dialog(tab = "Flow"));
     parameter Integer numParallelUnits = 1 annotation(
       Dialog(tab = "Flow"));
     parameter Boolean directFlow = true "if false, reverse flow" annotation(
       Dialog(tab = "Flow"));
-    Modelica.SIunits.Frequency N "Rotational speed in 1/s";
+    parameter Modelica.Units.SI.Density rho(displayUnit = "kg/m3")=0 "fixed average density to use in calculations" annotation(
+      Dialog(tab = "User phys. prop."));
+    Modelica.Units.SI.Frequency N "Rotational speed in 1/s";
     Real Efficiency(start = 0.6) "efficiency";
-    Modelica.SIunits.Power Wabs "total absorbed power";
-    Modelica.SIunits.SpecificEnergy SE;
-    Modelica.SIunits.VolumeFlowRate Qunit(start = 0.01, min = 0, displayUnit = "m3/h");
-    Modelica.SIunits.VolumeFlowRate Qtotal(min = 0, displayUnit = "m3/h");
+    Modelica.Units.SI.Power Wabs "total absorbed power";
+    Modelica.Units.SI.SpecificEnergy SE;
+    Modelica.Units.SI.VolumeFlowRate Qunit(start = 0.01, min = 0, displayUnit = "m3/h");
+    Modelica.Units.SI.VolumeFlowRate Qtotal(min = 0, displayUnit = "m3/h");
     Medium.ThermodynamicState State;
-    Modelica.SIunits.Density Rho(start = 1000.0, displayUnit = "kg/m3");
+    Modelica.Units.SI.Density Rho(start = 1000.0, displayUnit = "kg/m3");
     Medium.Temperature T(displayUnit = "degC") "Temperature at PortA";
-    Modelica.SIunits.Height Dh "differential pressure as liquid height";
+    Modelica.Units.SI.Height Dh "differential pressure as liquid height";
     Modelica.Blocks.Interfaces.RealInput Speed if useExternalSpeed == true annotation(
       Placement(visible = true, transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90), iconTransformation(origin = {0, 110}, extent = {{-20, -20}, {20, 20}}, rotation = -90)));
-    Modelica.Blocks.Interfaces.RealOutput Ta annotation(
+    FreeFluids.Various.TemperatureOutput Ta(displayUnit="degC") annotation(
       Placement(visible = true, transformation(origin = {-100, 80}, extent = {{-16, -16}, {16, 16}}, rotation = 90), iconTransformation(origin = {-120, 44}, extent = {{-16, -16}, {16, 16}}, rotation = 90)));
   protected
     Modelica.Blocks.Interfaces.RealInput SpeedIn;
@@ -61,8 +63,8 @@ package Pumps "Pumps.mo by Carlos Trujillo
       Hdiff = homotopy(SE, 0);
     end if;
     Qtotal = Qunit * numParallelUnits;
-    State = Medium.setState_phX(PortA.P, PortA.H, fill(0, 0));
-    Rho = Medium.density(State);
+    State = Medium.setState_phX(PortA.P, PortA.H, PortA.X);
+    Rho = if rho>0 then rho else Medium.density(State);
     T = Medium.temperature(State);
     Ta = T;
     PortA.G = Qtotal * Rho;
@@ -73,26 +75,26 @@ package Pumps "Pumps.mo by Carlos Trujillo
   end PumpBase;
 
   partial model BumpPumpBase "General bump pump model.We have as parameters three points of the curve, includig that at 0 flow"
-    extends PumpBase(final directFlow = true, fixedSpeed = n0, Qunit.start = q1, Qtotal.start = numParallelUnits * q1, Dh.start = h1, Efficiency.start = r1, PortB.G(start = -numParallelUnits * q1 * 1e-3));
-    parameter Modelica.SIunits.Frequency n0 "rotational speed of the pump at which the next values are taken (1/s)" annotation(
+    extends PumpBase(final directFlow = true, fixedSpeed = n0, Qunit.start = q1, Qtotal.start = numParallelUnits * q1, Dh.start = h1, Efficiency.start = r1, PortB.G(start = -numParallelUnits * q1 * 1e3));
+    parameter Modelica.Units.SI.Frequency n0 "rotational speed of the pump at which the next values are taken (1/s)" annotation(
       Dialog(tab = "Pump curve"));
-    parameter Modelica.SIunits.Height h0 "pressure height at q=0" annotation(
+    parameter Modelica.Units.SI.Height h0 "pressure height at q=0" annotation(
       Dialog(tab = "Pump curve"));
-    parameter Modelica.SIunits.Height h1 "pressure height at q1" annotation(
+    parameter Modelica.Units.SI.Height h1 "pressure height at q1" annotation(
       Dialog(tab = "Pump curve"));
-    parameter Modelica.SIunits.VolumeFlowRate q1(displayUnit = "m3/h") annotation(
+    parameter Modelica.Units.SI.VolumeFlowRate q1(displayUnit = "m3/h") annotation(
       Dialog(tab = "Pump curve"));
     parameter Real r1 "efficiency at q1 point" annotation(
       Dialog(tab = "Pump curve"));
-    parameter Modelica.SIunits.Height h2 "pressure height at q2" annotation(
+    parameter Modelica.Units.SI.Height h2 "pressure height at q2" annotation(
       Dialog(tab = "Pump curve"));
-    parameter Modelica.SIunits.VolumeFlowRate q2(displayUnit = "m3/h") annotation(
+    parameter Modelica.Units.SI.VolumeFlowRate q2(displayUnit = "m3/h") annotation(
       Dialog(tab = "Pump curve"));
     parameter Real r2 "efficiency at q2 point" annotation(
       Dialog(tab = "Pump curve"));
     Real[5] coef "pump characteristic coefficients";
-    Modelica.SIunits.VolumeFlowRate QunitNV(min = 0, start = q1, displayUnit = "m3/h") "pump flow in non viscous conditions";
-    Modelica.SIunits.Height DhNV "differential pressure as liquid height in non viscous conditions";
+    Modelica.Units.SI.VolumeFlowRate QunitNV(min = 0, start = q1, displayUnit = "m3/h") "pump flow in non viscous conditions";
+    Modelica.Units.SI.Height DhNV "differential pressure as liquid height in non viscous conditions";
     Real EfficiencyNV(start = 0.6) "efficiency in non viscous conditions";
   algorithm
     coef[1] := h0 / n0 ^ 2;
@@ -128,9 +130,9 @@ package Pumps "Pumps.mo by Carlos Trujillo
 
   model BumpPumpViscous "Bump pump for viscous flow"
     extends BumpPumpBase(QunitNV.start = q1);
-    Modelica.SIunits.DynamicViscosity Mu(start = 1.0);
-    Modelica.SIunits.KinematicViscosity Nu(start = 0.001);
-    Modelica.SIunits.VolumeFlowRate Qopt(start = q1, min = 0, displayUnit = "m3/h") "pump optimal flow";
+    Modelica.Units.SI.DynamicViscosity Mu(start = 1.0);
+    Modelica.Units.SI.KinematicViscosity Nu(start = 0.001);
+    Modelica.Units.SI.VolumeFlowRate Qopt(start = q1, min = 0, displayUnit = "m3/h") "pump optimal flow";
     Possitive bhi(start = 6.0) "positive auxiliary variable";
     Fraction Fq(min = 0.01, max = 1.0, start = 0.9) "viscous correction factor for flow";
     Fraction Fh(min = 0.01, max = 1.0, start = 0.8) "viscous correction factor for pressure";
@@ -151,17 +153,17 @@ package Pumps "Pumps.mo by Carlos Trujillo
 
   model PositivePump "Possitive desplacement pump with volumetric flow proportional to speed"
     extends PumpBase(directFlow = true, fixedSpeed = n0);
-    parameter Modelica.SIunits.Frequency n0 "nominal rotational speed (1/s)" annotation(
+    parameter Modelica.Units.SI.Frequency n0 "nominal rotational speed (1/s)" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.VolumeFlowRate q0(displayUnit = "m3/h") "individual pump flow at nominal speed" annotation(
+    parameter Modelica.Units.SI.VolumeFlowRate q0(displayUnit = "m3/h") "individual pump flow at nominal speed" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.SIunits.VolumeFlowRate qLeak(displayUnit = "m3/h", min = 0) = 0 "individual leak flow at given differential pressure" annotation(
+    parameter Modelica.Units.SI.VolumeFlowRate qLeak(displayUnit = "m3/h", min = 0) = 0 "individual leak flow at given differential pressure" annotation(
       Dialog(tab = "Flow"));
     parameter Medium.AbsolutePressure pLeak(displayUnit = "bar", min = 1e-6) = 1e-3 "differential pressure at which the leak is referenced" annotation(
       Dialog(tab = "Flow"));
     parameter Fraction r = 0.7 "fixed pump efficiency" annotation(
       Dialog(tab = "Flow"));
-    Modelica.SIunits.VolumeFlowRate Qleak(displayUnit = "m3/h", min = 0);
+    Modelica.Units.SI.VolumeFlowRate Qleak(displayUnit = "m3/h", min = 0);
   equation
     Efficiency = r;
     Qleak = qLeak * Pdiff / pLeak;
@@ -183,20 +185,20 @@ package Pumps "Pumps.mo by Carlos Trujillo
       Placement(visible = true, transformation(origin = {-100, -80}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -80}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     FreeFluids.Interfaces.FluidPortB PortB annotation(
       Placement(visible = true, transformation(origin = {100, -80}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -80}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    parameter Modelica.SIunits.Area section(displayUnit = "mm2");
-    parameter Modelica.SIunits.Volume v0(displayUnit = "l") "chamber volume at position 0 of piston. Must be higher than pulse volume";
+    parameter Modelica.Units.SI.Area section(displayUnit = "mm2");
+    parameter Modelica.Units.SI.Volume v0(displayUnit = "l") "chamber volume at position 0 of piston. Must be higher than pulse volume";
     
     Modelica.Mechanics.Translational.Interfaces.Flange_b Flange annotation(
       Placement(visible = true, transformation(origin = {0, 94}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {1.77636e-15, 88}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    Modelica.SIunits.Volume Vch (displayUnit="l") "chamber volume";
-    Modelica.SIunits.Volume Vpumped (displayUnit="l", start=0) "pumped volume";
+    Modelica.Units.SI.Volume Vch (displayUnit="l") "chamber volume";
+    Modelica.Units.SI.Volume Vpumped (displayUnit="l", start=0) "pumped volume";
     Medium.ThermodynamicState State;
-    Modelica.SIunits.Density rho;
-    Modelica.SIunits.Mass Mpumped;
+    Modelica.Units.SI.Density rho;
+    Modelica.Units.SI.Mass Mpumped;
   
   equation
     PortB.H=PortA.H+(PortB.P-PortA.P)/rho;
-    State=Medium.setState_phX(PortA.P,PortA.H);
+    State=Medium.setState_phX(PortA.P,PortA.H, PortA.X);
     rho=Medium.density(State);
     Vch = v0 - section * Flange.s;
     PortA.G = max(rho * der(Vch), 0);
@@ -211,7 +213,7 @@ package Pumps "Pumps.mo by Carlos Trujillo
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -150}}, textString = "%name"), Text(origin = {-84, 68}, extent = {{-56, 42}, {60, -22}}, textString = "Pump"), Rectangle(origin = {0, -49}, fillColor = {43, 111, 205}, fillPattern = FillPattern.Solid, extent = {{-32, 41}, {32, -41}}), Rectangle(origin = {-7.10543e-15, -6}, fillColor = {170, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-32, -2}, {32, 2}}), Rectangle(origin = {-0.169112, 20.2121}, extent = {{-31.8309, -24.2121}, {31.8309, 24.2121}}), Rectangle(origin = {0, 36}, fillColor = {170, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-2, -40}, {2, 40}}), Line(origin = {-61, -80}, points = {{29, 0}, {-29, 0}}, thickness = 1), Line(origin = {61, -80}, points = {{-29, 0}, {29, 0}}, thickness = 1), Polygon(origin = {65, -79}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Solid, points = {{-13, 9}, {-13, -11}, {9, -1}, {-13, 9}})}),
       Documentation(info = "<html>
     <body>
-    <p>The pump provides the function of a possitive displacement pump with a moving piston or membrane. the pump movement and speed is governed by the position of the mechanical interface. Reverse flow inhibition is incorporated inside the pump</p>
+    <p>The pump provides the function of a possitive displacement pump with a moving piston or membrane. The pump movement and speed is governed by the position of the mechanical interface. Reverse flow inhibition is incorporated inside the pump</p>
     </body>
     </html>"));
   end PistonPump;
@@ -360,9 +362,9 @@ package Pumps "Pumps.mo by Carlos Trujillo
     
     model PistonPumpTest
   replaceable package medium = FreeFluids.TMedia.Fluids.Water;
-  constant Modelica.SIunits.Frequency freq = 46;
-  parameter Modelica.SIunits.Length amplitude = 0.005567;
-  Modelica.Blocks.Sources.Sine Pulse(amplitude = amplitude, freqHz = freq, offset = amplitude, phase(displayUnit = "rad")) annotation(
+  constant Modelica.Units.SI.Frequency freq = 46;
+  parameter Modelica.Units.SI.Length amplitude = 0.005567;
+  Modelica.Blocks.Sources.Sine Pulse(amplitude = amplitude, f = freq, offset = amplitude, phase(displayUnit = "rad")) annotation(
     Placement(visible = true, transformation(extent = {{-113.9, -2.89999}, {-90.2, 20.9}}, rotation = 0)));
   Modelica.Mechanics.Translational.Sources.Position Pump_Position(exact = true, useSupport = false, s(start = 0)) annotation(
     Placement(visible = true, transformation(extent = {{-53.8, -1.2}, {-27.9, 19.2}}, rotation = 0)));
