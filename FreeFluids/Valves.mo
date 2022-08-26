@@ -2,7 +2,7 @@ within FreeFluids;
 
 package Valves "Valves.mo by Carlos Trujillo
   This file is part of the Free Fluids application
-  Copyright (C) 2008-2021  Carlos Trujillo Gonzalez
+  Copyright (C) 2008-2022  Carlos Trujillo Gonzalez
     
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License version 3
@@ -849,7 +849,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveOmegaTest2;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example of flashing water, low subcooling, critical flow, using API Annex C.2.2.3 methodology.</body></html>"));end SafetyValveOmegaTest2;
 
     model SafetyValveOmegaC222 "Example C.2.2.2(crude oil) from API RP520 Annex C, biphasic inlet"
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 60.15555555555556, liquidInlet = false, muA = 0.001, pSet = 514700, rhoA = 1 / 0.01945, rhoA9 = 1 / 0.02265, useFixedArea = false, useFixedDensities = true, useFixedViscosity = true) annotation(
@@ -863,7 +864,9 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveOmegaC222;
+    annotation(
+        Documentation(info = "<html><head></head><body>
+<pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.2 (crude oil) from API RP520 Annex C, biphasic inlet.</span><!--EndFragment--></pre></body></html>"));end SafetyValveOmegaC222;
 
     model SafetyValveOmegaC232 "Example C.2.2.3(Propane) from API standard 520 Annex C, liquid inlet"
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 378.5 / 60 * 511.3 * 1e-3, kd = 0.65, liquidInlet = true, muA = 0.001, pSatur = 741899.9999999999, pSet = 1893600, rhoA = 511.3, rhoA9 = 262.7, useFixedArea = false, useFixedDensities = true, useFixedViscosity = true) annotation(
@@ -877,7 +880,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveOmegaC232;
+    annotation(
+        Documentation(info = "<html><head></head><body><pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.3 (Propane) from API RP520 Annex C, liquid inlet.</span></pre></body></html>"));end SafetyValveOmegaC232;
     
     model SafetyValveFlashTest1TMedia "example of flashing water using API Annex C 2.2.1 methodology"
       SafetyValveFlash SaftValv1(redeclare package Medium = Water1, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
@@ -909,6 +913,7 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-42, 0}, {-8, 0}}, color = {0, 127, 255}));
   connect(Pipe1.PortB, Sink.PortA) annotation(
         Line(points = {{12, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SVPlusPipeSteam;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, solved by direct isentropic flow calculation.</body></html>"));end SVPlusPipeSteam;
   end Examples;
 end Valves;
