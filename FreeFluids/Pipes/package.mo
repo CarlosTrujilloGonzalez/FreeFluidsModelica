@@ -26,10 +26,10 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Placement(transformation(extent = {{-110, -55}, {-90, -35}})));
     replaceable FreeFluids.Interfaces.FluidPortB PortC(redeclare package Medium = Medium, G(max = 0, start = -2), H(start = Medium.specificEnthalpy(Medium.setState_pTX(Medium.p_default, Medium.T_default, Medium.X_default)))) annotation(
       Placement(transformation(extent = {{90, -10}, {110, 10}})));
-  FreeFluids.Various.TemperatureOutput Tout(displayUnit="degC") annotation(
+    FreeFluids.Various.TemperatureOutput Tout(displayUnit = "degC") annotation(
       Placement(visible = true, transformation(origin = {92, 80}, extent = {{-12, -12}, {12, 12}}, rotation = 90), iconTransformation(origin = {92, 62}, extent = {{-18, -18}, {18, 18}}, rotation = 90)));
   algorithm
-    Tout:=Medium.temperature(Medium.setState_phX(PortA.P,PortC.H));
+    Tout := Medium.temperature(Medium.setState_phX(PortA.P, PortC.H));
   equation
     PortC.Elevation = PortA.Elevation;
     PortC.X = PortA.X;
@@ -51,10 +51,10 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Placement(visible = true, transformation(extent = {{-110, -79}, {-90, -59}}, rotation = 0), iconTransformation(extent = {{-110, -77}, {-90, -57}}, rotation = 0)));
     replaceable FreeFluids.Interfaces.FluidPortB PortD(redeclare package Medium = Medium, G(max = 0, start = -3), H(start = Medium.specificEnthalpy(Medium.setState_pTX(Medium.p_default, Medium.T_default, Medium.X_default)))) annotation(
       Placement(transformation(extent = {{90, -10}, {110, 10}})));
-    FreeFluids.Various.TemperatureOutput Tout(displayUnit="degC") annotation(
+    FreeFluids.Various.TemperatureOutput Tout(displayUnit = "degC") annotation(
       Placement(visible = true, transformation(origin = {92, 80}, extent = {{-12, -12}, {12, 12}}, rotation = 90), iconTransformation(origin = {92, 62}, extent = {{-18, -18}, {18, 18}}, rotation = 90)));
   algorithm
-    Tout:=Medium.temperature(Medium.setState_phX(PortA.P,PortD.H));
+    Tout := Medium.temperature(Medium.setState_phX(PortA.P, PortD.H));
   equation
     PortD.Elevation = PortA.Elevation;
     PortD.X = PortA.X;
@@ -79,10 +79,10 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Placement(visible = true, transformation(extent = {{-110, -91}, {-90, -71}}, rotation = 0), iconTransformation(extent = {{-110, -89}, {-90, -69}}, rotation = 0)));
     replaceable FreeFluids.Interfaces.FluidPortB PortE(redeclare package Medium = Medium, G(max = 0, start = -4), H(start = Medium.specificEnthalpy(Medium.setState_pTX(Medium.p_default, Medium.T_default, Medium.X_default)))) annotation(
       Placement(transformation(extent = {{90, -10}, {110, 10}})));
-    FreeFluids.Various.TemperatureOutput Tout(displayUnit="degC") annotation(
+    FreeFluids.Various.TemperatureOutput Tout(displayUnit = "degC") annotation(
       Placement(visible = true, transformation(origin = {92, 80}, extent = {{-12, -12}, {12, 12}}, rotation = 90), iconTransformation(origin = {92, 62}, extent = {{-18, -18}, {18, 18}}, rotation = 90)));
   algorithm
-    Tout:=Medium.temperature(Medium.setState_phX(PortA.P,PortE.H));
+    Tout := Medium.temperature(Medium.setState_phX(PortA.P, PortE.H));
   equation
     PortE.Elevation = PortA.Elevation;
     PortE.X = PortA.X;
@@ -222,25 +222,25 @@ package Pipes "Pipes.mo by Carlos Trujillo
 
   model Dampener
     replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium "Medium model";
-    replaceable FreeFluids.Interfaces.FluidPortA PortA(redeclare package Medium=Medium) annotation(
-    Placement(visible = true, transformation(extent = {{-10, -110}, {10, -90}}, rotation = 0), iconTransformation(extent = {{-10, -110}, {10, -90}}, rotation = 0)));
-    parameter Modelica.Units.SI.Volume v0(displayUnit="l")=1e-3 "total volume filled with gas";
+    replaceable FreeFluids.Interfaces.FluidPortA PortA(redeclare package Medium = Medium) annotation(
+      Placement(visible = true, transformation(extent = {{-10, -110}, {10, -90}}, rotation = 0), iconTransformation(extent = {{-10, -110}, {10, -90}}, rotation = 0)));
+    parameter Modelica.Units.SI.Volume v0(displayUnit = "l") = 1e-3 "total volume filled with gas";
     parameter Modelica.Units.SI.AbsolutePressure p0(displayUnit = "bar") = 1e5 "initial pressure of the gas";
-    parameter Real kv=10.0 "Kv of the dampener connection";
+    parameter Real kv = 10.0 "Kv of the dampener connection";
     Medium.AbsolutePressure P(displayUnit = "bar") "dampener pressure";
-    Modelica.Units.SI.Volume V(displayUnit="l", start=0) "volume filled with liquid";
+    Modelica.Units.SI.Volume V(displayUnit = "l", start = 0) "volume filled with liquid";
     Medium.ThermodynamicState State "thermodynamic state for the liquid";
     Medium.Density Rho "liquid density";
   equation
-    State=Medium.setState_phX(PortA.P, PortA.H, PortA.X);
-    Rho=Medium.density(State);
-    P*(v0-V)=p0*v0;
-    sign(PortA.G) * abs(1.296e9 * (abs(PortA.G) / kv) ^ 2 /Rho)=PortA.P-P;
-    der(V)=PortA.G/Rho;
-  annotation(
-    defaultComponentName = "Volume",
-    Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {0, 48, 144}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-90, -90}, {90, 90}}, endAngle = 360), Text(origin = {-33, 3}, extent = {{-45, 29}, {115, -33}}, textString = "Volume"), Text(origin = {54, -128}, lineColor = {0, 0, 255}, extent = {{-154, 40}, {44, -20}}, textString = "%name")}),
-experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
+    State = Medium.setState_phX(PortA.P, PortA.H, PortA.X);
+    Rho = Medium.density(State);
+    P * (v0 - V) = p0 * v0;
+    sign(PortA.G) * abs(1.296e9 * (abs(PortA.G) / kv) ^ 2 / Rho) = PortA.P - P;
+    der(V) = PortA.G / Rho;
+    annotation(
+      defaultComponentName = "Volume",
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {0, 48, 144}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Sphere, extent = {{-90, -90}, {90, 90}}, endAngle = 360), Text(origin = {-33, 3}, extent = {{-45, 29}, {115, -33}}, textString = "Volume"), Text(origin = {54, -128}, lineColor = {0, 0, 255}, extent = {{-154, 40}, {44, -20}}, textString = "%name")}),
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   end Dampener;
 
   model PipePhysical "Physical description of a pipe of flexible shape, without fluid characteristics."
@@ -452,7 +452,7 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
       end if;
     end if;
     assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
-  //assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
+//assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
     annotation(
       defaultComponentName = "Pipe",
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {0, 63, 191}, fillColor = {0, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}),
@@ -566,8 +566,8 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     StateAvg = Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X);
     Rho = abs(Medium.density(StateAvg));
     Mu = Medium.dynamicViscosity(StateAvg);
-    //Rho = abs(Medium.density(StateAvg));
-    //Mu = Medium.dynamicViscosity(StateAvg);
+//Rho = abs(Medium.density(StateAvg));
+//Mu = Medium.dynamicViscosity(StateAvg);
     Q = PortA.G / Rho;
     V = abs(Q / (PathSectionActive * NumActiveTubes));
     MassProductTotal = ViTotal * Rho;
@@ -606,16 +606,16 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
 
   model PipeFlow2Ph "Single pipe(not double) for two phases flow. With no detailed heat transfer model. Muller-Steinhagen and Heck method"
     extends FreeFluids.Pipes.PipeFlowBase(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = true, thermalType = ThermalType.adiabatic);
-    parameter Modelica.Units.SI.Density rhoL(displayUnit = "kg/m3")=0 "fixed liquid density to use in calculations" annotation(
+    parameter Modelica.Units.SI.Density rhoL(displayUnit = "kg/m3") = 0 "fixed liquid density to use in calculations" annotation(
       Dialog(tab = "User phys. prop."));
-    parameter Medium.DynamicViscosity muL=0 "fixed liquid dynamic viscosity to use in calculations" annotation(
+    parameter Medium.DynamicViscosity muL = 0 "fixed liquid dynamic viscosity to use in calculations" annotation(
       Dialog(tab = "User phys. prop."));
-    parameter Modelica.Units.SI.Density rhoG(displayUnit = "kg/m3")=0 "fixed gas density to use in calculations" annotation(
+    parameter Modelica.Units.SI.Density rhoG(displayUnit = "kg/m3") = 0 "fixed gas density to use in calculations" annotation(
       Dialog(tab = "User phys. prop."));
-    parameter Medium.DynamicViscosity muG=0 "fixed gas dynamic viscosity to use in calculations" annotation(
-      Dialog(tab = "User phys. prop."));  
-    parameter Real x=0 "fixed mass gas fraction at average conditions" annotation(
-      Dialog(tab = "User phys. prop."));  
+    parameter Medium.DynamicViscosity muG = 0 "fixed gas dynamic viscosity to use in calculations" annotation(
+      Dialog(tab = "User phys. prop."));
+    parameter Real x = 0 "fixed mass gas fraction at average conditions" annotation(
+      Dialog(tab = "User phys. prop."));
     Medium.Density RhoL(displayUnit = "kg/m3") "density of liquid phase";
     Medium.DynamicViscosity MuL "dynamic viscosity of liquid phase";
     Modelica.Units.SI.Velocity Vl(start = 1) "velocity in each active tube if all was liquid";
@@ -632,19 +632,19 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     Medium.ThermodynamicState StateL;
     Medium.ThermodynamicState StateG;
   algorithm
-    X := if x>0 then x else RhoG * (RhoL - (RhoA + RhoB) / 2) / ((RhoA + RhoB) / 2 * (RhoL - RhoG));
+    X := if x > 0 then x else RhoG * (RhoL - (RhoA + RhoB) / 2) / ((RhoA + RhoB) / 2 * (RhoL - RhoG));
     if X < 0 then
       X := 0;
     end if;
   equation
     MassProductTotal = ViTotal * (RhoA + RhoB) / 2;
     StateL = Medium.setBubbleState(Medium.setSat_p(PortA.P));
-    RhoL = if rhoL>0 then rhoL else Medium.density(StateL);
-    MuL = if muL>0 then muL else Medium.dynamicViscosity(StateL);
+    RhoL = if rhoL > 0 then rhoL else Medium.density(StateL);
+    MuL = if muL > 0 then muL else Medium.dynamicViscosity(StateL);
     Vl = PortA.G / RhoL / PathSectionActive / NumActiveTubes;
     StateG = Medium.setDewState(Medium.setSat_p(PortA.P));
-    RhoG = if rhoG>0 then rhoG else Medium.density(StateG);
-    MuG = if muG>0 then muG else Medium.dynamicViscosity(StateG);
+    RhoG = if rhoG > 0 then rhoG else Medium.density(StateG);
+    MuG = if muG > 0 then muG else Medium.dynamicViscosity(StateG);
     Vg = PortA.G / RhoG / PathSectionActive / NumActiveTubes;
     ReL = Dh * (abs(PortA.G) / PathSectionActive / NumActiveTubes) / MuL;
     Fl = 8 * ((8 / ReL) ^ 12 + ((37530 / ReL) ^ 16 + (-2.457 * log((7 / ReL) ^ 0.9 + 0.27 * roughness / Dh)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
@@ -767,47 +767,35 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     end if;
     Re := Dh * abs(PortA.G) / PathSectionActive / NumActiveTubes / Mu + 0.01;
     F := 8 * ((8 / Re) ^ 12 + ((37530 / Re) ^ 16 + (-2.457 * log((7 / Re) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
-  //F=0.0791/(Re)^0.25"alternative turbulent";
+//F=0.0791/(Re)^0.25"alternative turbulent";
     PLossFriction := homotopy(0.5 * V ^ 2 * Rho * PLossWallCorr * (F * LeTube / Dh + numVelocityHeads), 0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads));
     if Rho > 300 and useHTWallCorrFactor == true then
       HTWallCorrFactor := (Mu / MuWall) ^ 0.11 "liquids wall temperature correction factor";
     else
       HTWallCorrFactor := 1;
     end if;
-  //HTWallCorrFactor := max((Mu / MuWall) ^ 0.11, 0.25) "liquids wall temperature correction factor";
+//HTWallCorrFactor := max((Mu / MuWall) ^ 0.11, 0.25) "liquids wall temperature correction factor";
   equation
     if noEvent(Re > 10000) then
       Fsmooth = (0.78173 * log(Re) - 1.5) ^ (-2);
       H = OpenModelica.Internal.realAbs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) "Pethukov/Gnielinsky equation for smooth tubes";
-  //H = abs(K / Di * 0.023 * Re ^ 0.8 * Pr ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for turbulent flow in smooth pipes";
+//H = abs(K / Di * 0.023 * Re ^ 0.8 * Pr ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for turbulent flow in smooth pipes";
     elseif noEvent(Re < 2100) then
       Fsmooth = 0;
       H = abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (Re * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) "Gnielinsky-Martin correlation: VDI mean";
-  //H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
-  //H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
+//H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
+//H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
     else
-  //interpolation between turbulent and laminar flow
+//interpolation between turbulent and laminar flow
       Fsmooth = (0.78173 * log(Re) - 1.5) ^ (-2);
       H = abs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (Re * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) * HTWallCorrFactor * (10000 - Re) / 7900;
-  //H = abs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.65 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) * (Mu / MuWall) ^ 0.14) * (10000 - Re) / 7900;
-  //H = abs(K / Di * 0.023 * 10000 ^ 0.8 * Pr ^ 0.333 * PLossWallCorr) * (Re - 2100) / 7900 + abs(K / Di * 1.86 * (2100 * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor)* (10000 - Re) / 7900;
+//H = abs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.65 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) * (Mu / MuWall) ^ 0.14) * (10000 - Re) / 7900;
+//H = abs(K / Di * 0.023 * 10000 ^ 0.8 * Pr ^ 0.333 * PLossWallCorr) * (Re - 2100) / 7900 + abs(K / Di * 1.86 * (2100 * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor)* (10000 - Re) / 7900;
     end if;
     W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * LMTD "Twall is only an approximate average, in order to evaluate wall viscosity correction factor";
     annotation(
       defaultComponentName = "Pipe");
   end PipeForcedConvection;
-
-  model PipeForcedConvectionM
-    extends PipeThermalBase(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.adiabatic);
-    FHModels.ForcedConvectionModel thermalModel(final roughness = roughness, final kv = kv, final aperture = aperture, final isCompressibleFlow = isCompressibleFlow, usePLossWallCorr = usePLossWallCorr, useHTWallCorr = useHTWallCorrFactor, redeclare final package Medium = Medium, State = Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X), L = LeTube, Dh = Dh, S = PathSectionActive, G = PortA.G / NumActiveTubes, PLossFriction = PLossFriction, StateW = Medium.setState_pTX((PortA.P + PortB.P) / 2, Twall, PortA.X), Twall = Twall, Di = Di, H = H);
-    parameter Boolean usePLossWallCorr = true annotation(
-      Dialog(tab = "Flow"));
-    parameter Boolean useHTWallCorrFactor = true annotation(
-      Dialog(tab = "Heat transfer"));
-  equation
-    MassProductTotal = ViTotal * thermalModel.Rho;
-    W = H * SusedHT * LMTD;
-  end PipeForcedConvectionM;
 
   model PipeFallingFilm "heat exchanged between a flowing fluid and the internal wall. It uses all the active pipe surface"
     extends PipeThermalBase(useElevDifference = true, calcEnthalpyDifference = true, fullBore = false, final isCompressibleFlow = false, fullHTperimeter = true, fullHTlength = true);
@@ -846,7 +834,7 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     FilmThickness = 0.451 * ((Mu / Rho) ^ 2 / 9.81) ^ 0.3333 * ReVDI ^ 0.538 "Karapantsios et al. 1989";
 //Re = Di * abs(PortA.G) / (NumActiveTubes * PathSection * Mu);
     HTWallCorrFactor = (Mu / MuWall) ^ 0.25;
-  if Slope > 0.25 then
+    if Slope > 0.25 then
       if FilmThickness < Di / 2 then
         Nup[1] = 1.3 * ReVDI ^ (-0.3333) "laminar Nusselt";
         Nup[2] = 0.912 * (Pr * ((Mu / Rho) ^ 2 / 9.81 * ReVDI) ^ 0.3333 / Ltube) ^ 0.3333 "development Nusselt";
@@ -870,133 +858,6 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     end if;
     W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * LMTD "Twall is only approximate";
   end PipeFallingFilm;
-
-  partial model PipeCondensingBaseOld "Condensation of pure vapors inside pipes"
-    //Jung:2344; Boyko:4.66; Shah:2344; VDI:P08S; Kutateladze:P08S
-    extends PipeThermalBase(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, calcEnthalpyDifference = true, fullHTperimeter = true, final fullHTlength = false, isCompressibleFlow = true);
-    Medium.ThermodynamicState StateAvg "average state for physical properties calculation, at film temperature";
-    Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "liquid density at film temperature";
-    Medium.Density RhoG(displayUnit = "kg/m3") "saturated gas density";
-    Medium.DynamicViscosity MuG "dynamic viscosity of saturated gas";
-    Modelica.Units.SI.SpecificEnergy Hvc "gas cooling plus condensation heat(J/kg). Inlet can be sligthly superheated";
-    Medium.MassFraction Xin "vapor quality at inlet as fraction in mass";
-    Medium.MassFraction Xout(start = 0.5) "vapor quality at outlet as fraction in mass";
-    Fraction XlCond(start = 0.5) "fraction of pipe length used for condensation";
-    Medium.Temperature Tfilm "liquid film average absolute temperature";
-    Modelica.Units.SI.SpecificHeatCapacity Cp(start = 2000.0) "liquid specific heat capacity at film temperature";
-    Modelica.Units.SI.ThermalConductivity K(start = 0.1) "liquid thermal conductivity at film temperature";
-    Modelica.Units.SI.PrandtlNumber Pr "liquid Prandt number at film temperature";
-    Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "liquid viscosity at film temperature";
-    Medium.DynamicViscosity MuWall(min = 1e-6, start = 1e-3, max = 1e3) "average wall viscosity";
-    Modelica.Units.SI.ReynoldsNumber Re(min = 0.01, start = 20000) "Reynolds number at average conditions";
-    Modelica.Units.SI.ReynoldsNumber ReVDI(min = 0.1, start = 200) "Uses mass flow per unit perimeter length =condensate outlet Reynolds/4";
-    Real Xm "mean vapor quality";
-    Real NuL, NuT, Nu "Nusselt(special) number laminar, turbulent, combined, for gravity governed";
-    Modelica.Units.SI.CoefficientOfHeatTransfer Hcg "gravity governed heat transfer coefficient";
-    Modelica.Units.SI.CoefficientOfHeatTransfer Hcs "gas shear governed heat transfer coefficient";
-    Modelica.Units.SI.CoefficientOfHeatTransfer U(min = 1, start = 1000) "overqall heat transfer coefficient";
-    Modelica.Units.SI.Power Wc(start = -1) "heat transfer between fluid and wall along condensation. Positive if fluid inputs heat";
-    Medium.ThermodynamicState StateG "saturated gas state";
-    Medium.ThermodynamicState StateW "Thermodynamic state at wall";
-  algorithm
-
-  equation
-    Xin = Medium.vapourQuality(StateA);
-//PLossFriction = (PortA.Elevation - PortB.Elevation) * Rho * g_n "The friction loss is the same as the gravitational energy loss";
-    Tfilm = (Ta + Twall) / 2;
-    StateAvg = Medium.setState_pTX(PortA.P, Tfilm, PortA.X) "state average is at inlet pressure and film temperature";
-    StateW = Medium.setState_pTX(PortA.P, Twall, PortA.X);
-    Rho = abs(Medium.density(StateAvg));
-    Mu = Medium.dynamicViscosity(StateAvg);
-    Cp = Medium.specificHeatCapacityCp(StateAvg);
-    K = Medium.thermalConductivity(StateAvg);
-    Pr = Cp * Mu / K;
-    MuWall = Medium.dynamicViscosity(StateW);
-    StateG = Medium.setDewState(Medium.setSat_p(PortA.P));
-    RhoG = abs(Medium.density(StateG));
-    MuG = Medium.dynamicViscosity(StateG);
-    Hvc = Medium.specificEnthalpy(StateA) - Medium.specificEnthalpy(StateAvg) "Liquid outlet is at film temperature";
-    SusedHT = SactiveHT * XlCond;
-    Re = Di * abs(PortA.G) * min(1, 1 - Xout) / (NumActiveTubes * PathSection * Mu) "Reynolds of the liquid phase at outlet";
-    Xm = (Xin + max(0, Xout)) / 2;
-    ReVDI = abs(PortA.G) * min(1, 1 - Xout) / (NumActiveTubes * PathPerimeter * Mu) "should be equivalent to Re / 4";
-  if Slope > 0.25 then
-      NuL = 0.925 * ((1 - RhoG / Rho) / ReVDI) ^ 0.333;
-      NuT = 0.02 * ReVDI ^ (7 / 24) * Pr ^ 0.333 / (1 + 20.52 * ReVDI ^ (-3 / 8) * Pr ^ (-1 / 6));
-      Nu = ((ReVDI ^ 0.04 * NuL) ^ 1.2 + NuT ^ 1.2) ^ (1 / 1.2) * (Mu / MuWall) ^ 0.25 "VDI mean Nusselt for vertical tubes";
-      Hcg = Nu * K * (Rho ^ 2 * 9.81 / Mu ^ 2) ^ 0.333;
-//Alternative for laminar HgL=1.47*K*(Rho*(Rho-RhoG)*9.81/(Mu^2*Re))^(1/3);
-    else
-      NuL = 0;
-      NuT = 0;
-      Nu = 0;
-      Hcg = 0.761 * K * (Rho * (Rho - RhoG) * 9.81 * Ltube * NumActiveTubes / (PortA.G * (1 - Xout) * Mu)) ^ 0.333 "horizontal tubes";
-    end if;
-//For Xout=0, Hs=abs(K / Mu * 0.065 * (Rho * Pr * 0.078*(MuG/Di/Vm)^0.25 * Vm ^2/2/RhoG)^0.5), with Vm = abs(0.58 * PortA.G / NumActiveTubes / PathSection)
-    Hcs = 0.021 * K / Di * Re ^ 0.8 * Pr ^ 0.43 * (1 + Xm * (Rho / RhoG - 1)) ^ 0.5 "Boyko equation valid between Re=1500-15000";
-//Dobson=0.023*K/Di*ReLM^0.8*Pr^0.4*(1+2.22/(((1-Xm)/Xm)^0.9*(RhoG/Rho)^0.5*(Mu/MuG)^0.1))^0.89;
-//Shah=0.023*K/Di*Re*0.5^0.8*Pr^0.4*(1-Xm)^0.8*(1.8/((1/Xm-1)^0.8*(RhoG/Rho)^0.5)^0.8)"Re>350";
-    if Hcg > Hcs then
-      H = Hcg;
-    else
-      H = Hcs;
-    end if;
-    1 / U = 1 / H + foulingF + Di * 0.5 * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul);
-    Wc = SusedHT * U * (Tsurf - Ta) "Twall is only approximate, in order to evaluate wall viscosity correction factor";
-    Wc = -abs(PortA.G) * (Xin - Xout) * Hvc;
-//If we force the flow as per having Xout>0. The gas fraction in PortB will be sligthly lower than Xout. Due to condensation for heating the liquid from Tfilm to T boil.
-    annotation(
-      defaultComponentName = "pipe",
-      Documentation(info = "<html>
-  <body>
-  <p>As the pressure drop has been set to 0, it is not possible the calculation of the massic flow from it. But it is possible its calculation outlet gas fraction.</p>
-  
-  </body>
-  </html>"));
-  end PipeCondensingBaseOld;
-
-  model PipeCondensingOld
-    extends PipeCondensingBaseOld;
-    parameter CondensationOption condensationOption = FreeFluids.Types.CondensationOption.totalCondensation annotation(
-      Dialog(tab = "Heat transfer"));
-  algorithm
-//MassProductTotal := ViTotal * XlCond * (Xm * RhoG + (1 - Xm) * Rho) + ViTotal * (1 - XlCond) * Rho;
-    MassProductTotal := ViTotal * XlCond * Rho * RhoG / (Xm * Rho + (1 - Xm) * RhoG) "the pipe liquid after total condensation is not evaluated";
-//falta retocar Xout
-  equation
-    if condensationOption == CondensationOption.partialCondensation then
-      Pdiff = 0 "This makes the friction pressure loss equal to velocity and height loss";
-      XlCond = 1;
-      assert(Xout >= 0.0, "Partial condensation has been selected, but total happened: choose subcooling", AssertionLevel.warning);
-    elseif condensationOption == CondensationOption.subcooling then
-      Pdiff = 0 "This makes the friction pressure loss equal to velocity and height loss";
-      Xout = 0;
-      assert(XlCond <= 1.0, "Subcooling has been selected, but pipe is too short: choose partialCondensation", AssertionLevel.warning);
-    else
-      XlCond = 1 "total condensation";
-      Xout = 0;
-    end if;
-    W = Wc "all exchanged heat is due to condensation";
-  end PipeCondensingOld;
-
-  model PipeCondensingM
-    extends PipeThermalBase(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, fullHTperimeter = true, final fullHTlength = false, isCompressibleFlow = true);
-    FHModels.CondensationModel thermalModel(final roughness = roughness, final kv = kv, final aperture = aperture, redeclare final package Medium = Medium, StateG = Medium.setDewState(Medium.setSat_p(PortA.P)), StateA = StateA, StateB = StateB, L = LeTube, Dh = Dh, S = PathSectionActive, G = PortA.G / NumActiveTubes, PLossFriction = PLossFriction, Ta = Ta, Twall = Twall, PortA = PortA, Slope = Slope, W = W);
-    Fraction XlCond(start = 0.5) "fraction of pipe length used for condensation";
-  equation
-    MassProductTotal = ViTotal * (RhoA + RhoB) / 2;
-//W=max(thermalModel.Wmax, thermalModel.H * SactiveHT * LMTD);
-    XlCond = W / (thermalModel.H * SactiveHT * LMTD);
-    SusedHT = XlCond * SactiveHT;
-  if thermalModel.H * SactiveHT * LMTD < thermalModel.Wmax then
-      W = thermalModel.Wmax;
-      thermalModel.Xout = 0.0;
-    else
-      W = thermalModel.H * SactiveHT * LMTD;
-      thermalModel.Xout = 0;
-//W= -abs(PortA.G) * (thermalModel.Xin-thermalModel.Xout)  * thermalModel.Hvc;
-    end if;
-  end PipeCondensingM;
 
   partial model PipeCondensingBase "Condensation of pure vapors inside pipes. Twall, Tsurf and H are those of condensation step"
     //Jung:2344; Boyko:4.66; Shah:2344; VDI:P08S; Kutateladze:P08S
@@ -1087,7 +948,7 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     ReC = Di * abs(PortA.G) * min(1, 1 - Xout) / (NumActiveTubes * PathSection * MuFilm) "Reynolds of the liquid phase at outlet";
     Xm = (Xin + max(0, Xout)) / 2;
     ReVDIc = abs(PortA.G) * min(1, 1 - Xout) / (NumActiveTubes * PathPerimeter * MuFilm) "should be equivalent to ReC / 4";
-  if Slope > 0.25 then
+    if Slope > 0.25 then
       NuL = 0.925 * ((1 - RhoG / RhoFilm) / ReVDIc) ^ 0.333;
       NuT = 0.02 * ReVDIc ^ (7 / 24) * PrFilm ^ 0.333 / (1 + 20.52 * ReVDIc ^ (-3 / 8) * PrFilm ^ (-1 / 6));
       Nu = ((ReVDIc ^ 0.04 * NuL) ^ 1.2 + NuT ^ 1.2) ^ (1 / 1.2) * (MuFilm / MuWallC) ^ 0.25 "VDI mean Nusselt for vertical tubes";
@@ -1103,11 +964,11 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     Hcs = 0.021 * Kfilm / Di * ReC ^ 0.8 * PrFilm ^ 0.43 * (1 + Xm * (RhoFilm / RhoG - 1)) ^ 0.5 "Boyko equation valid between ReC=1500-15000";
 //Dobson=0.023*Kfilm/Di*ReLM^0.8*PrFilm^0.4*(1+2.22/(((1-Xm)/Xm)^0.9*(RhoG/RhoFilm)^0.5*(MuFilm/MuG)^0.1))^0.89;
 //Shah=0.023*Kfilm/Di*ReC*0.5^0.8*PrFilm^0.4*(1-Xm)^0.8*(1.8/((1/Xm-1)^0.8*(RhoG/RhoFilm)^0.5)^0.8)"ReC>350";
-    if Hcg > Hcs then
-      H = Hcg "H is that of condensation";
-    else
-      H = Hcs "H is that of condensation";
-    end if;
+//if Hcg > Hcs then
+    H = max(Hcg, Hcs) "H is that of condensation";
+//else
+//H = Hcs "H is that of condensation";
+//end if;
     1 / Uc = 1 / H + foulingF + Di * 0.5 * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul);
     Wc = SusedHT * Uc * (Tsurf - Ta) "main relation between Tsurf and W";
     Wc = -abs(PortA.G) * (Xin - Xout) * Hvc;
@@ -1230,6 +1091,7 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   end PipeCondSubcool;
 
   //***COIL MODELS***
+
   partial model CoilPhysical "Gives pipes additional information regarding the coil shape"
     parameter Modelica.Units.SI.Diameter coilDiam = 1.5 "Coil diameter" annotation(
       Dialog(tab = "Physical data"));
@@ -1334,80 +1196,10 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(origin = {0, -19.72}, points = {{-90, 19.7236}, {-80, 19.7236}, {-60, -20.2764}, {-40, 19.7236}, {-20, -20.2764}, {0, 19.7236}, {20, -20.2764}, {40, 19.7236}, {60, -20.2764}, {80, 19.7236}, {90, 19.7236}, {90, 19.7236}}, color = {255, 85, 255}, thickness = 1)}));
   end HalfCoilCondensing;
 
-  partial model PipeThermalBaseOld "Pipe of flexible shape for non compressible flow, with temperature variation between ends. Calculates friction factor, but not friction loss"
-    extends Pipe(equalP = false, equalT = false, equalElevation = true, equalFlow = true, functionality = 3, PortB.T(start = 298));
-    parameter Boolean isVertical = false "put to true if the pipe is vertical";
-    parameter SI.ThermalConductivity kWall = 16 "Wall thermal conductivity. typical value for SS=16.7";
-    parameter SI.ThermalConductivity kInsul = 0.04 "Insulation thermal conductivity. Typical value for glass fiber=0.04 W/(K·m)";
-    parameter Boolean useWallsResistance = false;
-    parameter SI.ThermalInsulance foulingF = 0.0002 "Tube side fouling factor.Typical: 0.00018 for thermal oil, or treated cooling water";
-    parameter Boolean fullHTperimeter = true "indicates if all active surface is used in heat transfer. It is false for halfpipes";
-    SI.Temp_K Tm "mean absolute temperature between ends";
-    SI.Temp_K Twall(start = 373, min = 220) "average wall temperature (tube inside)";
-    SI.Temp_K Tsurf(start = 350, min = 220) "average superficial temperature (tube outside)";
-    SI.Temp_K T "absolute temperature used for physical properties calc.";
-    SI.Density Rho(displayUnit = "kg/m3") "average density";
-    SI.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e3) "average viscosity";
-    SI.DynamicViscosity MuWall(min = 1e-6, start = 1e-3, max = 1e3) "average wall viscosity";
-    SI.HeatCapacity Cp;
-    SI.ThermalConductivity K;
-    SI.PrandtlNumber Pr;
-    SI.VolumeFlowRate Q(displayUnit = "m3/h") "volumetric flow at mean temperature";
-    SI.Velocity V(start = 1) "velocity at mean temperature. Normally between 0.9 and 3.0 m/s for liquids";
-    Real F(start = 0.02) "Friction factor";
-    SI.ReynoldsNumber Re(min = 0.1, start = 10000) "Reynolds of liquid";
-    SI.CoefficientOfHeatTransfer H(min = 1, start = 1000) "average heat transfer coefficient";
-    SI.Area SactiveHT "internal surface potentially active for heat transfer, due to partial perimeter usage";
-    SI.Area SusedHT "internal surface used for heat transfer, due to partial length usage";
-    SI.Power W "heat transfer between fluid and wall. Positive if fluid inputs heat";
-    Medium.ThermodynamicState StateAvg "Average Thermodynamic State";
-    Medium.ThermodynamicState StateW "Thermodynamic state at wall";
-  equation
-    StateAvg = Medium.setState_pTX(PortA.P, T, PortA.X);
-    StateW = Medium.setState_pTX(PortA.P, Twall, PortA.X);
-    Tm = (PortA.T + PortB.T) / 2;
-    V = Q / PathSection / NumActiveTubes;
-    Rho = Medium.density(StateAvg);
-    Mu = Medium.dynamicViscosity(StateAvg);
-    MuWall = Medium.dynamicViscosity(StateW);
-    Cp = Medium.specificHeatCapacityCp(StateAvg);
-    if functionality > 2 then
-      K = Medium.thermalConductivity(StateAvg);
-      Pr = Cp * Mu / K;
-    else
-      K = 1;
-      Pr = 1;
-    end if;
-    if functionality > 1 then
-      F = 8 * ((8 / Re) ^ 12 + ((37530 / Re) ^ 16 + (-2.457 * log((7 / Re) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
-//F=0.0791/(Re)^0.25"alternative turbulent";
-      if PortA.G >= 0 then
-        Pdiff = (-PLossFriction) + (PortA.Elevation - PortB.Elevation) * Rho * g_n;
-      else
-        Pdiff = PLossFriction + (PortA.Elevation - PortB.Elevation) * Rho * g_n;
-      end if;
-    else
-      F = 0;
-      PLossFriction = 0;
-      PortA.G = 0 "This can be used only with a parallel path";
-    end if;
-    if fullHTperimeter == true then
-      SactiveHT = SiActive;
-    end if;
-  end PipeThermalBaseOld;
-
   //*****OLD SYSTEM*****
   //******************* *
   //This pipe gives the base for future models. There is no fluid pressure loss model, it models the sensible heat exchange inside the pipe
   //---------------------------------------------------------------------------------------------------------------------------------------
-
-  partial model PipeFMnoLoss "Calculates PLossFriction if functionality>1"
-  equation
-    if functionality > 1 then
-      PLossFriction = 0;
-    end if;
-  end PipeFMnoLoss;
-
   //***FLOW MODELS***
   //here we model the pressure loss
   //-------------------------------
@@ -1423,358 +1215,32 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   //------------------------------------------------------------------
   //Models conductive/convective heat transfer in films. Needs an external heat flow model
   //--------------------------------------------------------------------------------------
-
-  model PipeCondensBaseOld
-    //Jung:2344; Boyko:4.66; Shah:2344; VDI:P08S; Kutateladze:P08S
-    extends PipeThermalBaseOld(redeclare replaceable package Medium = Modelica.Media.Interfaces.PartialTwoPhaseMedium, isVertical = true);
-    extends PipeFMnoLoss;
-    SI.Density RhoG "saturated gas density";
-    SI.DynamicViscosity MuG "dynamic viscosity of saturated gas";
-    SI.SpecificEnergy Hv "vaporization heat at saturation";
-    Real Xout "vapor quality at outlet as fraction in mass";
-    Fraction XlCond(start = 0.5) "fraction of pipe length used for condensation";
-    SI.Temp_K Tfilm "liquid film average absolute temperature";
-    SI.ReynoldsNumber ReVDI(min = 0.1, start = 200) "Uses mass flow rate per unit length =condensate outlet Reynolds/4";
-    Real Xm "mean vapor quality";
-    Real NuL, NuT, Nu "Nusselt(special) number laminar, turbulent, combined, for gravity governed";
-    SI.CoefficientOfHeatTransfer Hcg "gravity governed heat transfer coefficient";
-    SI.CoefficientOfHeatTransfer Hcs "gas shear governed heat transfer coefficient";
-    Medium.ThermodynamicState StateG "saturated gas state";
-  algorithm
-    MassProductTotal := ViTotal * XlCond * (Xm * RhoG + (1 - Xm) * Rho) + ViTotal * (1 - XlCond) * Rho;
-//falta retocar Xout
-    RhoG := Medium.density(StateG);
-    MuG := Medium.dynamicViscosity(StateG);
-    Hv := Medium.specificEnthalpy(StateG) - Medium.specificEnthalpy(StateAvg);
-  equation
-    StateG = Medium.setDewState(Medium.setSat_T(PortA.T));
-    SusedHT = SactiveHT * XlCond;
-    Tfilm = (PortA.T + Twall) / 2;
-    T = Tfilm;
-    Re = Di * abs(PortA.G) * (1 - Xout) / (NumActiveTubes * PathSection * Mu);
-    if functionality > 1 then
-      Q = PortA.G / RhoG;
-    else
-      Q = 0;
-    end if;
-    Xm = (1 + Xout) / 2;
-    ReVDI = Re / 4;
-//PortA.G*(1-Xout)/NumActiveTubes/(pi*Di*Mu);
-    if functionality > 2 then
-  if isVertical == true then
-        NuL = 0.925 * ((1 - RhoG / Rho) / ReVDI) ^ 0.333;
-        NuT = 0.02 * ReVDI ^ (7 / 24) * Pr ^ 0.333 / (1 + 20.52 * ReVDI ^ (-3 / 8) * Pr ^ (-1 / 6));
-        Nu = ((ReVDI ^ 0.04 * NuL) ^ 1.2 + NuT ^ 1.2) ^ (1 / 1.2) * (Mu / MuWall) ^ 0.25;
-        Hcg = Nu * K * (Rho ^ 2 * 9.81 / Mu ^ 2) ^ 0.333 "VDI mean Nusselt";
-//Alternative for laminar HgL=1.47*K*(Rho*(Rho-RhoG)*9.81/(Mu^2*Re))^(1/3);
-      else
-        NuL = 0;
-        NuT = 0;
-        Nu = 0;
-        Hcg = 0.761 * K * (Rho * (Rho - RhoG) * 9.81 * Ltube * NumActiveTubes / (PortA.G * (1 - Xout) * Mu)) ^ 0.333 "horizontal tubes";
-      end if;
-//Para Xout=0, Hs=abs(K / Mu * 0.065 * (Rho * Pr * 0.078*(MuG/Di/Vm)^0.25 * Vm ^2/2/RhoG)^0.5), con Vm = abs(0.58 * PortA.G / NumActiveTubes / PathSection)
-      Hcs = 0.021 * K / Di * Re ^ 0.8 * Pr ^ 0.43 * (1 + Xm * (Rho / RhoG - 1)) ^ 0.5 "Boyko equation valid between Re=1500-15000";
-//Dobson=0.023*K/Di*ReLM^0.8*Pr^0.4*(1+2.22/(((1-Xm)/Xm)^0.9*(RhoG/Rho)^0.5*(Mu/MuG)^0.1))^0.89;
-//Shah=0.023*K/Di*Re*0.5^0.8*Pr^0.4*(1-Xm)^0.8*(1.8/((1/Xm-1)^0.8*(RhoG/Rho)^0.5)^0.8)"Re>350";
-      if Hcg > Hcs then
-        H = Hcg;
-      else
-        H = Hcs;
-      end if;
-      W = SusedHT * 1 / (1 / H + foulingF) * (Twall - PortA.T) "Twall is only approximate, in order to evaluate wall viscosity correction factor";
-      W = SusedHT * 2 / (Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul)) * (Tsurf - Twall);
-      W = -abs(PortA.G) * (1 - Xout) * Hv;
-//esta con la otra es de las ecuaciones de más en condensación
-    else
-      Twall = PortA.T;
-      Tsurf = PortA.T;
-      NuL = 0;
-      NuT = 0;
-      Nu = 0;
-      Hcg = 0;
-      Hcs = 0;
-      H = 0;
-      W = 0;
-    end if;
-    annotation(
-      defaultComponentName = "pipe",
-      Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 0, 0}, fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}));
-  end PipeCondensBaseOld;
-
   //Models the internal heat exchange in condensation. Uses the no loss fluid model.
   //--------------------------------------------------------------------------------
-
-  model PipeCondSubcoolOld "heat exchanged between a gas, that is condensed and subcooled, with the internal wall. Needs an external heat flow model. Splits the total length between the two functions"
-    extends PipeCondensBaseOld;
-    SI.Temp_K Ts "absolute temperature used for physical properties calc. in subcooling";
-    SI.Temp_K TwallS(start = 373, min = 220) "wall temperature for sensible HT (tube inside)";
-    SI.Temp_K TsurfS(start = 350, min = 220) "superficial temperature for sensible HT(tube outside)";
-    SI.Density RhoS "average density in subcooling";
-    SI.DynamicViscosity MuS "average viscosity in subcooling";
-    SI.DynamicViscosity MuWallS "wall viscosity in subcooling";
-    SI.HeatCapacity CpS "average heat capacity in subcooling";
-    SI.ThermalConductivity Ks "average thermal conductivity in subcooling";
-    SI.PrandtlNumber PrS "average Pr number in subcooling";
-    SI.ReynoldsNumber ReS(min = 0.1, start = 600) "Reynolds of liquid for subcooling";
-    SI.ReynoldsNumber ReVDIs(min = 0.1, start = 150) "Uses mass flow rate per unit length = normal Reynolds/4";
-    SI.Distance FilmThickness "falling film thickness";
-    SI.ReynoldsNumber ReCrit "Reynolds for transition zone in subcooling";
-    Real Nup[4] "Nusselt(special) number for laminar, development, transition and turbulent in subcooling";
-    SI.CoefficientOfHeatTransfer Hs(min = 1, start = 1000) "average heat transfer coefficient in subcooling";
-    SI.Area SusedHTs "internal surface used for heat transfer in subcooling";
-    SI.Power Ws "heat transfer between fluid and wall in subcooling. Positive if fluid inputs heat";
-    Medium.ThermodynamicState StateS "thermodynamic state for properties along subcooling";
-    Medium.ThermodynamicState StateSwall "thermodynamic state for wall properties along subcooling";
-  algorithm
-    StateS := Medium.setState_pTX(PortA.P, Ts, PortA.X);
-    StateSwall := Medium.setState_pTX(PortA.P, TwallS, PortA.X);
-    if functionality > 1 then
-      RhoS := Medium.density(StateS);
-      MuS := Medium.dynamicViscosity(StateS);
-      MuWallS := Medium.dynamicViscosity(StateSwall);
-      CpS := Medium.specificHeatCapacityCp(StateS);
-      FilmThickness := 0.451 * ((Mu / Rho) ^ 2 / 9.81) ^ 0.3333 * ReVDI ^ 0.538 "Karapantsios et al. 1989";
-      ReCrit := 2460 * Pr ^ (-0.65);
-    else
-      RhoS := 1;
-      MuS := 1;
-      MuWallS := 1;
-      CpS := 1;
-      FilmThickness := 0;
-      ReCrit := 0;
-    end if;
-    if functionality > 2 then
-      Ks := Medium.thermalConductivity(StateS);
-      PrS := CpS * MuS / Ks;
-    else
-      Ks := 1;
-      PrS := 1;
-    end if;
-  equation
-    Ts = Tm;
-    ReS = Di * abs(PortA.G) / (NumActiveTubes * PathSection * MuS);
-    SusedHTs = SactiveHT * (1 - XlCond);
-    ReVDIs = ReS / 4;
-    if isVertical == true then
-      if FilmThickness < Di / 2 then
-        Nup[1] = 1.3 * ReVDIs ^ (-0.3333) "laminar Nusselt";
-        Nup[2] = 0.912 * (PrS * ((MuS / RhoS) ^ 2 / 9.81 * ReVDIs) ^ 0.3333 / Ltube) ^ 0.3333 "development Nusselt";
-        Nup[3] = 0.0425 * ReVDIs ^ 0.2 * PrS ^ 0.344 "transition Nusselt";
-        Nup[4] = 0.0136 * ReVDIs ^ 0.4 * PrS ^ 0.344 "turbulent Nusselt";
-//H=Nu * K * (Rho ^ 2 * 9.81 / Mu ^ 2) ^ 0.3333"VDI atlas, using maximum Nusselt. Problems with solver";
-        if ReS < ReCrit then
-          Hs = 0.78 * Ks * (CpS * MuS / (Ks * Ltube)) ^ 0.3333 * (MuS ^ 2 / RhoS ^ 2 / 9.81) ^ (-2 / 9) * ReS ^ (1 / 9) "Mueller for laminar";
-        elseif ReS < 10000 then
-          Hs = 0.032 * Ks * ReS ^ 0.2 * PrS ^ 0.34 * (MuS ^ 2 / RhoS ^ 2 / 9.81) ^ (-0.3333) "Mueller for transition";
-        else
-          Hs = Nup[4] * Ks * (RhoS ^ 2 * 9.81 / MuS ^ 2) ^ 0.3333 "VDI atlas for turbulent";
-        end if;
-      else
-        Nup = {0, 0, 0, 0};
-        Hs = 0;
-      end if;
-    else
-      Nup = {0, 0, 0, 0};
-      Hs = 0;
-    end if;
-    if functionality > 2 then
-      PortB.T = PortA.T + Ws / PortA.G / CpS;
-      Ws = SusedHTs * 1 / (1 / Hs + foulingF) * (TwallS - Tm) "Twall is only approximate, in order to evaluate wall viscosity correction factor";
-      Ws = SusedHTs * 2 / (Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul)) * (TsurfS - TwallS);
-    else
-      PortB.T = PortA.T;
-      TwallS = Tm;
-      TsurfS = Tm;
-    end if;
-  end PipeCondSubcoolOld;
-
   //Models the internal heat exchange in condensation/subcooling. Uses the no loss fluid model.
   //-------------------------------------------------------------------------------------------
-
-  model PipeHeatBoil
-    extends Pipe(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, equalFlow = true, equalT = true, equalP = true, equalElevation = true);
-    parameter Boolean isVertical = true "put to false if the pipe is horizontal";
-    parameter SI.ThermalConductivity kWall = 16 "Wall thermal conductivity. typical value for SS=16.7";
-    parameter SI.ThermalInsulance foulingF = 0.0004 "Tube side fouling factor.Typical: 0.00018 for thermal oil, or treated cooling water";
-    //entering section
-    parameter SI.Height hLiquid = 2 "liquid height over lower end of tubes";
-    parameter SI.Length inletLe = 10 "equivalent length of inlet";
-    parameter SI.Diameter inletD = 0.04 "internal diameter of entering pipe";
-    SI.Density RhoInlet "density at entering pipe";
-    SI.DynamicViscosity MuInlet "viscosity at entering pipe";
-    SI.Velocity Vinlet(start = 1) "velocity in the inlet pipe";
-    SI.ReynoldsNumber ReInlet(min = 0.1, start = 11000) "Reynolds of liquid at entering pipe";
-    Real Finlet(start = 0.02) "Friction factor";
-    SI.Pressure PLossInlet(start = 10) "pressure loss in the entering pipe";
-    //convective section
-    SI.AbsolutePressure PconvIn(start = 100000) "Pressure at inlet of tubes";
-    SI.Temp_K Tconv(start = 100 + 273) "mean temperature in convective section";
-    SI.Density RhoConv "mean density at convective section";
-    SI.DynamicViscosity MuConv "mean viscosity at convective section";
-    SI.HeatCapacity CpConv "mean heat capacity at convective section";
-    SI.ThermalConductivity Kconv "mean thermal conductivity at convective section";
-    SI.PrandtlNumber PrConv "mean Prandt number at convective section";
-    SI.Velocity Vconv(start = 1) "velocity in the convective section";
-    SI.ReynoldsNumber ReConv(min = 0.1, start = 10000) "mean Reynolds of liquid in the convective section";
-    Real Fconv(start = 0.02) "Friction factor in the convective section";
-    SI.Pressure PLossConv "pressure loss in the convective section";
-    Real Fsmooth "smooth pipe friction factor";
-    SI.CoefficientOfHeatTransfer Hconv(min = 1, start = 1000) "average convection section heat transfer coefficient";
-    Fraction XlConv(start = 0.1) "fraction of pipe length used for convective HT";
-    SI.Area Sconv "area used in convective heat transfer";
-    SI.Power Wconv "heat transfer between fluid and wall in convective zone";
-    //boiling section
-    SI.Temp_K TboilIn "temperature at start of boiling";
-    SI.AbsolutePressure PboilIn(min = 1, start = 1e5) "Pressure at start of boiling";
-    SI.EnergyFluenceRate HeatfluxBoilMax "maximum heat flux for boiling";
-    parameter Integer nSteps = 10 "number of calculation steps along the length";
-    SI.Length Lstep "length of each boiling step";
-    SI.Area Sstep "heat transfer area in each boiling step";
-    SI.AbsolutePressure PboilOut "Pressure at outlet of each step";
-    SI.Temp_K TboilOut "temperature at outlet of each step";
-    SI.Temp_K Tm "mean temperature at outlet of each step";
-    Real Xtt "Lockhart'Martinelli parameter";
-    Fraction Xout(start = 0.1) "vapor quality at outlet of step";
-    Fraction Xm "mean vapor quality of step";
-    SI.Density RhoBoilL(displayUnit = "kg/m3") "mean liquid density at step";
-    SI.Density RhoBoilG(displayUnit = "kg/m3") "mean gas density at step";
-    SI.DynamicViscosity MuBoilL "mean liquid viscosity at step";
-    SI.DynamicViscosity MuBoilG "mean gas viscosity at step";
-    SI.HeatCapacity CpBoilL "mean liquid heat capacity at step";
-    SI.ThermalConductivity KboilL "mean liquid thermal conductivity at step";
-    Real SigmaBoil;
-    SI.PrandtlNumber PrBoilL "mean Prandt number pf liquid at step";
-    SI.ReynoldsNumber ReBoilL(min = 0.1, start = 11000) "Reynolds of liquid at each boiling step";
-    SI.ReynoldsNumber ReBoilLO(min = 0.1, start = 11000) "Reynolds if all flow is liquid in boiling step";
-    SI.ReynoldsNumber ReBoilG(min = 0.1, start = 11000) "Reynolds of gas at each boiling step";
-    SI.CoefficientOfFriction FboilL;
-    SI.CoefficientOfFriction FboilLO;
-    SI.Pressure PLossBoilL "liquid pressure loss in boiling step";
-    SI.Pressure PLossBoilLO "liquid pressure loss in boiling step";
-    Real Phi2LM "Lockhart-Martinelli two phase multiplier";
-    SI.Pressure PLossBoilLM "pressure loss in boiling by Lockhart-Martinelli";
-    Real Ef "Coefficient E of Friedel equation for two phase flow";
-    Real Ff "Coefficient F of Friedel equation for two phase flow";
-    SI.Density RhoBoilTP "two phase mean density at step";
-    SI.FroudeNumber Fr "Froude number at each boiling step";
-    SI.WeberNumber We "Weber number at each boiling step";
-    Real Phi2Fr "Friedel two phase multiplier";
-    SI.Pressure PLossBoilFr "pressure loss in boiling by Friedel";
-    Real Hv "vaporization heat at inlet step temperature";
-    SI.CoefficientOfHeatTransfer Hcb(min = 1, start = 1000) "liquid heat transfer coefficient at each boiling step";
-    SI.CoefficientOfHeatTransfer Hnb(min = 1e3, start = 1e4) "nucleate boiling heat transfer coefficient at each boiling step";
-    Real Elw(start = 3.0) "Liu-Winterton convective enhancement factor";
-    Real Slw(start = 0.75) "Liu-Winterton nucleate supression factor";
-    SI.CoefficientOfHeatTransfer Hboil(min = 1, start = 10000) "average heat transfer coefficient at each boiling step";
-    SI.Power Wboil(start = 100000) "heat transfer between fluid and wall in step";
-  algorithm
-    PLossFriction := 0 "represents the total pressure loss by friction, not interesting by now";
-    MassProductTotal := 0 "we do not calculate by now";
-//entering section. Corresponds to the pipe from the vessel to the exchanger
-    RhoInlet := Medium.rho(PortA.T);
-    MuInlet := Medium.mu(PortA.T);
-  equation
-//connect(PortA,PortB);
-    Vinlet = PortA.G / RhoInlet / (pi * inletD ^ 2 / 4);
-    ReInlet = inletD * abs(Vinlet) * RhoInlet / MuInlet;
-    Finlet = 0.0791 / ReInlet ^ 0.25;
-    PLossInlet = 0.5 * Vinlet ^ 2 * RhoInlet * Finlet / inletD * inletLe;
-//convective heat transfer section. It finishes when you arrive to boiling condition
-    PconvIn = PortA.P + hLiquid * RhoInlet * g_n - PLossInlet;
-    Tconv = (PortA.T + TboilIn) / 2;
-    RhoConv = Medium.rho(Tconv);
-    MuConv = Medium.mu(Tconv);
-    CpConv = Medium.cp(Tconv);
-    Kconv = Medium.lambda(Tconv);
-    PrConv = CpConv * MuConv / Kconv;
-    Vconv = PortA.G / RhoConv / PathSection / NumActiveTubes;
-    ReConv = Di * abs(Vconv) * RhoConv / MuConv;
-//Fconv=0.0791/(ReConv)^0.25"Fanning friction factor calculation";
-    Fconv = 8 * ((8 / ReConv) ^ 12 + ((37530 / ReConv) ^ 16 + (-2.457 * log((7 / ReConv) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Darcy friction factor calculation";
-    PLossConv = 0.5 * Vconv ^ 2 * RhoConv * Fconv / Di * Ltube * XlConv;
-    Fsmooth = (0.78173 * log(ReConv) - 1.5) ^ (-2);
-    if ReConv > 10000 then
-      Hconv = OpenModelica.Internal.realAbs(Kconv / Di * Fsmooth / 8 * ReConv * PrConv / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (PrConv ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667)) "Pethukov/Gnielinsky equation for smooth tubes";
-    elseif ReConv < 2100 then
-      Hconv = abs(Kconv / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (ReConv * PrConv * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * PrConv)) ^ (1 / 6) * (ReConv * PrConv * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) "Gnielinski-Martin correlation: VDI mean";
-    else
-      Hconv = abs(Kconv / Di * Fsmooth / 8 * ReConv * PrConv / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (PrConv ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667)) * (ReConv - 2100) / 7900 + abs(Kconv / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (ReConv * PrConv * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * PrConv)) ^ (1 / 6) * (ReConv * PrConv * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) * (10000 - ReConv) / 7900;
-    end if;
-    Sconv = SiActive * XlConv;
-    Wconv = Hconv * SiActive * XlConv * 70 "aun mal";
-    Wconv = PortA.G * CpConv * (TboilIn - PortA.T);
-//boiling section
-    if isVertical == true then
-      PboilIn = PconvIn - XlConv * Ltube * RhoConv * g_n - PLossConv;
-    else
-      PboilIn = PconvIn - PLossConv;
-    end if;
-    PboilIn = Medium.vp(TboilIn);
-    HeatfluxBoilMax = 23660 * (Medium.data.Pc / 1000) ^ 0.61 * (Medium.vp(TboilIn) / Medium.data.Pc) ^ 0.25 * (1 - Medium.vp(TboilIn) / Medium.data.Pc) * (0.05 ^ 2 / 3) ^ 0.35 "Palen, vertical thermosyphon reboiler";
-    Lstep = Ltube * (1 - XlConv) / nSteps;
-    Sstep = (SiActive - Sconv) / nSteps;
-    Tm = (TboilIn + TboilOut) / 2;
-    RhoBoilL = Medium.rho(Tm);
-    RhoBoilG = Medium.vaporSaturatedDensity(Tm);
-    MuBoilL = Medium.mu(Tm);
-    MuBoilG = Medium.vaporDynamicViscosity(Tm);
-    CpBoilL = Medium.cp(Tm);
-    KboilL = Medium.lambda(Tm);
-    Hv = Medium.hv(Tm);
-    SigmaBoil = Medium.liquidSurfaceTension(Tm);
-    PrBoilL = CpBoilL * MuBoilL / KboilL;
-    Xtt = ((1 - Xm) / Xm) ^ 0.9 * (RhoBoilG / RhoBoilL) ^ 0.5 * (MuBoilL / MuBoilG) ^ 0.1;
-    ReBoilL = PortA.G * (1 - Xm) * Di / (PathSection * NumActiveTubes * MuBoilL);
-    ReBoilLO = PortA.G * Di / (PathSection * NumActiveTubes * MuBoilL);
-    ReBoilG = PortA.G * Xm * Di / (PathSection * NumActiveTubes * MuBoilG);
-    FboilL = 8 * ((8 / ReBoilL) ^ 12 + ((37530 / ReBoilL) ^ 16 + (-2.457 * log((7 / ReBoilL) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Darcy friction factor calculation";
-    FboilLO = 8 * ((8 / ReBoilLO) ^ 12 + ((37530 / ReBoilLO) ^ 16 + (-2.457 * log((7 / ReBoilLO) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Darcy friction factor calculation";
-    PLossBoilL = 0.5 * (PortA.G * (1 - Xm) / (PathSection * NumActiveTubes)) ^ 2 / RhoBoilL * FboilL / Di * Ltube * (1 - XlConv);
-    PLossBoilLO = 0.5 * (PortA.G / (PathSection * NumActiveTubes)) ^ 2 / RhoBoilL * FboilLO / Di * Ltube * (1 - XlConv);
-    Phi2LM = 1 + 20 / Xtt + 1 / Xtt ^ 2;
-    PLossBoilLM = Phi2LM * PLossBoilL;
-    Ef = (1 - Xm) ^ 2 + Xm ^ 2 * (MuBoilG / MuBoilL) ^ 0.25 * RhoBoilL / RhoBoilG;
-    Ff = Xm ^ 0.78 * (1 - Xm) ^ 0.24 * (RhoBoilL / RhoBoilG) ^ 0.91 * (MuBoilG / MuBoilL) ^ 0.19 * (1 - MuBoilG / MuBoilL) ^ 0.7;
-    RhoBoilTP = (Xm / RhoBoilG + (1 - Xm) / RhoBoilL) ^ (-1);
-    Fr = (PortA.G / PathSection / NumActiveTubes) ^ 2 / (g_n * Di * RhoBoilTP ^ 2);
-    We = (PortA.G / PathSection / NumActiveTubes) ^ 2 * Di / (RhoBoilTP * SigmaBoil);
-    Phi2Fr = Ef + 3.24 * Ff / Fr ^ 0.045 / We ^ 0.035;
-    PLossBoilFr = Phi2Fr * PLossBoilLO;
-    PboilOut = PboilIn - PLossBoilFr - (1 - XlConv) * Ltube * RhoBoilTP * g_n;
-    PboilOut = Medium.vp(TboilOut);
-    Hcb = 0.023 * ReBoilL ^ 0.8 * PrBoilL ^ 0.4 * (KboilL / Di);
-    Hnb = 55 * (PboilIn / Medium.data.Pc) ^ 0.12 * (-0.4343 * log(PboilIn / Medium.data.Pc)) ^ (-0.55) * Medium.data.MW ^ (-0.5) * (Wboil / (SiActive * (1 - XlConv))) ^ 0.67 "Cooper correlation for nucleate boiling";
-    Elw = (1 + Xm * PrBoilL * (RhoBoilL - RhoBoilG) / RhoBoilG) ^ 0.35;
-    Slw = (1 + 0.055 * Elw ^ 0.1 * ReBoilL ^ 0.16) ^ (-1);
-    Hboil = ((Elw * Hcb) ^ 2 + (Slw * Hnb) ^ 2) ^ 0.5 "Liu-Winterton correlation";
-    Xout = Wboil / Hv / PortA.G;
-    Xm = Xout / 2;
-//PortB.T=TboilOut;
-  end PipeHeatBoil;
-
   //*** VALVE MODELS FOR COMPRESSIBLE FLOW***)
   //******************************************
   /*class ExampleValveCompressible
-                                                                                                                                                                                                                                                                                                                                                                                                  extends ValveCompressible(MW = 18, Z = 0.9443);
-                                                                                                                                                                                                                                                                                                                                                                                                algorithm
-                                                                                                                                                                                                                                                                                                                                                                                                  aperture := 1;
-                                                                                                                                                                                                                                                                                                                                                                                                  pIn := 701325.0;
-                                                                                                                                                                                                                                                                                                                                                                                                  dP := 50000;
-                                                                                                                                                                                                                                                                                                                                                                                                  //pOut := 651325.0;
-                                                                                                                                                                                                                                                                                                                                                                                                  Tin := 273.15 + 165.02;
-                                                                                                                                                                                                                                                                                                                                                                                                  g := 400 / 3600;
-                                                                                                                                                                                                                                                                                                                                                                                                end ExampleValveCompressible;*/
+                                                                                                                                                                                                                                                                                                                                                                                                          extends ValveCompressible(MW = 18, Z = 0.9443);
+                                                                                                                                                                                                                                                                                                                                                                                                        algorithm
+                                                                                                                                                                                                                                                                                                                                                                                                          aperture := 1;
+                                                                                                                                                                                                                                                                                                                                                                                                          pIn := 701325.0;
+                                                                                                                                                                                                                                                                                                                                                                                                          dP := 50000;
+                                                                                                                                                                                                                                                                                                                                                                                                          //pOut := 651325.0;
+                                                                                                                                                                                                                                                                                                                                                                                                          Tin := 273.15 + 165.02;
+                                                                                                                                                                                                                                                                                                                                                                                                          g := 400 / 3600;
+                                                                                                                                                                                                                                                                                                                                                                                                        end ExampleValveCompressible;*/
   /*class ExamplePipeCompressible
-                                                                                                                                                                                                                                                                                                                                                                                                extends PipeCompressible(fullCircular = "yes", roughness = 4.5e-005, flowType = "Adiabatic", MW = 42.08, Z = 0.96, gamma = 1.14, mu = 9.4e-006);
-                                                                                                                                                                                                                                                                                                                                                                                              algorithm
-                                                                                                                                                                                                                                                                                                                                                                                                di := 0.05;
-                                                                                                                                                                                                                                                                                                                                                                                                l := 14.775;
-                                                                                                                                                                                                                                                                                                                                                                                                //g:=2100/3600;
-                                                                                                                                                                                                                                                                                                                                                                                                Tin := 273.15 + 50;
-                                                                                                                                                                                                                                                                                                                                                                                                pIn := 300000.0;
-                                                                                                                                                                                                                                                                                                                                                                                                pOut := 110000.0;
-                                                                                                                                                                                                                                                                                                                                                                                              end ExamplePipeCompressible;*/
+                                                                                                                                                                                                                                                                                                                                                                                                        extends PipeCompressible(fullCircular = "yes", roughness = 4.5e-005, flowType = "Adiabatic", MW = 42.08, Z = 0.96, gamma = 1.14, mu = 9.4e-006);
+                                                                                                                                                                                                                                                                                                                                                                                                      algorithm
+                                                                                                                                                                                                                                                                                                                                                                                                        di := 0.05;
+                                                                                                                                                                                                                                                                                                                                                                                                        l := 14.775;
+                                                                                                                                                                                                                                                                                                                                                                                                        //g:=2100/3600;
+                                                                                                                                                                                                                                                                                                                                                                                                        Tin := 273.15 + 50;
+                                                                                                                                                                                                                                                                                                                                                                                                        pIn := 300000.0;
+                                                                                                                                                                                                                                                                                                                                                                                                        pOut := 110000.0;
+                                                                                                                                                                                                                                                                                                                                                                                                      end ExamplePipeCompressible;*/
 
   model PipeFluidBoundary "Models the external heat exchange against a fluid"
     FreeFluids.Interfaces.HeatPortA PortH annotation(
@@ -1843,24 +1309,6 @@ experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
     annotation(
       Icon(graphics = {Line(origin = {37.5412, 33.3067}, points = {{-56, 17}, {44, -11}}), Line(origin = {29.8566, 17.2874}, points = {{-58, 11}, {52, -1}}), Line(origin = {21.7386, 9.49529}, points = {{-54, 0}, {60, 0}, {58, 0}}), Line(origin = {25.2782, -23.999}, points = {{-44, -7}, {56, 21}}), Line(origin = {21.3346, 1.11031}, points = {{-50, -12}, {60, 2}}), Ellipse(origin = {-55, 55}, rotation = 70, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-63, 21}, rotation = 80, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-59, -15}, rotation = 100, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-51, -47}, rotation = 110, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Text(origin = {11, -81}, extent = {{-57, 37}, {37, -23}}, textString = "Fluid")}, coordinateSystem(initialScale = 0.1)));
   end PipeFluidBoundary;
-
-  model PruebaCasaInAir
-    FreeFluids.Interfaces.FreeFullSink sink1 annotation(
-      Placement(visible = true, transformation(origin = {36, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Interfaces.FullSource source1(Circular = true, Di = 0.3, Elevation = 0, G = 20, P = 5e5, Perimeter = 0.0735, Section = 0.0002851, T = 21 + 273.15, tSource = true) annotation(
-      Placement(visible = true, transformation(origin = {-74, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    PipeMarlothermSHInAir pipe(emissionCoef = 0.46, kInsul = 1.4, rhoWall(displayUnit = "kg/m3"), tAir = 280, thickness = 1e-3, thicknessInsul = 0.4, vAir = 0.25) annotation(
-      Placement(visible = true, transformation(origin = {-14, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  algorithm
-    pipe.SiTube := 302;
-  equation
-    connect(pipe.PortB, sink1.PortA) annotation(
-      Line(points = {{-4, -10}, {26, -10}, {26, -10}, {26, -10}}, color = {0, 127, 255}));
-    connect(source1.PortB, pipe.PortA) annotation(
-      Line(points = {{-64, -10}, {-24, -10}, {-24, -10}, {-24, -10}}, color = {0, 127, 255}));
-  end PruebaCasaInAir;
-
-
 
 
 end Pipes;

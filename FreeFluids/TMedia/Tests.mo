@@ -212,7 +212,8 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
     extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = FreeFluids.TMedia.Fluids.Water(inputChoice = "pT"));
   equation
   
-  end TestModel;
+  annotation(
+      Documentation(info = "<html><head></head><body>Run with the old frontend. this is done by checking the box at \"Simulation Setup/Translation flags/Enable old frontend for code generation\"</body></html>"));end TestModel;
 
     model TestModel2
       extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = FreeFluids.TMedia.Fluids.Water(inputChoice = "pT"));
@@ -233,7 +234,8 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
     equation
     
       annotation(
-        experiment(StartTime = 0, StopTime = 6000, Tolerance = 1e-6, Interval = 12));
+        experiment(StartTime = 0, StopTime = 6000, Tolerance = 1e-6, Interval = 12),
+      Documentation(info = "<html><head></head><body>Run with the old frontend. this is done by checking the box at \"Simulation Setup/Translation flags/Enable old frontend for code generation\"</body></html>"));
     end HeatingSystem;
     
     model TestModelS

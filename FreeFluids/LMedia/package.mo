@@ -39,6 +39,118 @@ package LMedia "LMedia.mo by Carlos Trujillo
     constant SpecificEnthalpy critical_h = SpecificEnthalpyCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, fluidConstants[1].Tc - 0.01);
     constant SpecificEnthalpy critical_h0 = SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, fluidConstants[1].Tc-0.01);*/
 
+    //functions duplicated here because OpenModelica gets confused with the passed record
+    //-----------------------------------------------------------------------------------
+    function liqViscPcorLucas "Lucas liquid viscosity pressure correction."
+      input Real T, p, Pref, rpVisc "temperature, pressure, reference pressure and viscosity at reference pressure";
+      output Real visc;
+    protected
+      Real Tr, Tr2, Tr3, Tr4, A, C, D, dPr;
+    algorithm
+      Tr := T / fluidConstants[1].Tc;
+      Tr2 := Tr * Tr;
+      Tr3 := Tr2 * Tr;
+      Tr4 := Tr3 * Tr;
+      dPr := (p - Pref) / fluidConstants[1].criticalPressure;
+      A := 0.9991 - 4.674e-4 / (1.0523 * Tr ^ (-0.03877) - 1.0513);
+      C := (-0.07921) + 2.1616 * Tr - 13.404 * Tr2 + 44.1706 * Tr3 - 84.8291 * Tr4 + 96.1209 * Tr3 * Tr2 - 59.8127 * Tr3 * Tr3 + 15.6719 * Tr4 * Tr3;
+      D := 0.3257 / (1.0039 - Tr ^ 2.573) ^ 0.2906 - 0.2086;
+      visc := rpVisc * (1 + D * (dPr / 2.118) ^ A / (1 + C * fluidConstants[1].w * dPr));
+    end liqViscPcorLucas;
+  
+  function liqThCondLatini
+    input SI.Temperature T;
+    output SI.ThermalConductivity lambda;
+  protected
+    Real Tr = T / fluidConstants[1].Tc, A, alpha, beta, gamma;
+  algorithm
+    if fluidConstants[1].family == 1 then
+      A := 0.00350 "Alkane";
+      alpha := 1.2;
+      beta := 0.5;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 2 or fluidConstants[1].family == 3 then
+      A := 0.0361 "Alkene, Alkyne";
+      alpha := 1.2;
+      beta := 1.0;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 4 then
+      A := 0.031 "Cycloalkane";
+      alpha := 1.2;
+      beta := 1.0;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 5 or fluidConstants[1].family == 6 then
+      A := 0.0346 "Aromatic, Water";
+      alpha := 1.2;
+      beta := 1.0;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 7 or fluidConstants[1].family == 8 then
+      A := 0.00339 "Alcohol, Polyol";
+      alpha := 1.2;
+      beta := 0.5;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 10 then
+      A := 0.0385 "Ether";
+      alpha := 1.2;
+      beta := 1.0;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 12 then
+      A := 0.00383 "Ketone";
+      alpha := 1.2;
+      beta := 0.5;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 13 then
+      A := 0.00319 "Acid";
+      alpha := 1.2;
+      beta := 0.5;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 14 then
+      A := 0.0415 "Ester";
+      alpha := 1.2;
+      beta := 1.0;
+      gamma := 0.167;
+    elseif fluidConstants[1].family == 17 or fluidConstants[1].family == 18 then
+      A := 0.562 "haloalkanes, haloalkenes";
+      alpha := 0.0;
+      beta := 0.5;
+      gamma := -0.167;
+    else
+      A := 0.494;
+      alpha := 0.0;
+      beta := 0.5;
+      gamma := -0.167;
+    end if;
+    lambda := A * fluidConstants[1].Tb ^ alpha * (1 - Tr) ^ 0.38 / (fluidConstants[1].MW ^ beta * fluidConstants[1].Tc ^ gamma * Tr ^ (1 / 6));
+  end liqThCondLatini;
+  
+  function liqSurfTensSastriRao
+    input SI.Temperature T;
+    output SI.SurfaceTension sigma;
+  protected
+    Real k, x, y, z, m;
+  algorithm
+    if fluidConstants[1].family == 7 or fluidConstants[1].family == 8 then
+      k := 2.28 "alcohol, polyol";
+      x := 0.25;
+      y := 0.175;
+      z := 0;
+      m := 0.8;
+    elseif fluidConstants[1].family == 13 then
+      k := 0.125 "acid";
+      x := 0.5;
+      y := -1.5;
+      z := 1.85;
+      m := 1.222;
+    else
+      k := 0.158;
+      x := 0.5;
+      y := -1.5;
+      z := 1.85;
+      m := 1.222;
+    end if;
+    sigma := k * (fluidConstants[1].criticalPressure * 1e-5) ^ x * fluidConstants[1].Tb ^ y * fluidConstants[1].Tc ^ z * ((1 - T / fluidConstants[1].Tc) / (1 - fluidConstants[1].Tb / fluidConstants[1].Tc)) ^ m * 1e-3;
+  end liqSurfTensSastriRao;
+  
     redeclare model extends BaseProperties(h(stateSelect = if preferredMediumStates and localInputChoice == "ph" then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates and (localInputChoice == "ph" or localInputChoice == "pT") then StateSelect.prefer else StateSelect.default), T(stateSelect = if preferredMediumStates and (localInputChoice == "pT" or localInputChoice == "dT") then StateSelect.prefer else StateSelect.default), d(stateSelect = if preferredMediumStates and localInputChoice == "dT" then StateSelect.prefer else StateSelect.default))
         constant String localInputChoice = inputChoice;
       equation
@@ -417,7 +529,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
         if fluidConstants[1].CAS == "7732-18-5" then
           eta := FreeFluids.MediaCommon.Functions.waterViscosity(state.T, state.d);
         elseif fluidConstants[1].lViscCorr > 0 then
-          eta := if highPressure == false then PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.liqViscPcorLucas(fluidConstants[1], state.T, state.p, PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T), PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T));
+          eta := if highPressure == false then PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T) else liqViscPcorLucas(state.T, state.p, PhysPropCorr(fluidConstants[1].VpCorr, fluidConstants[1].VpCoef, fluidConstants[1].MW, state.T), PhysPropCorr(fluidConstants[1].lViscCorr, fluidConstants[1].lViscCoef, fluidConstants[1].MW, state.T));
         else
           assert(false, "there is no correlation for liquid viscosity calculation");
         end if;
@@ -427,7 +539,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        lambda := if fluidConstants[1].lThCondCorr > 0 then PhysPropCorr(fluidConstants[1].lThCondCorr, fluidConstants[1].lThCondCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.liqThCondLatini(fluidConstants[1], state.T);
+        lambda := if fluidConstants[1].lThCondCorr > 0 then PhysPropCorr(fluidConstants[1].lThCondCorr, fluidConstants[1].lThCondCoef, fluidConstants[1].MW, state.T) else liqThCondLatini(state.T);
         if highPressure == true then
           lambda := lambda * exp(state.d / PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T) - 1);
         end if;
@@ -443,7 +555,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
       input ThermodynamicState state;
       output SurfaceTension sigma;
     algorithm
-        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, state.T) else FreeFluids.MediaCommon.Functions.liqSurfTensSastriRao(fluidConstants[1], state.T);
+        sigma := if fluidConstants[1].lSurfTensCorr > 0 then PhysPropCorr(fluidConstants[1].lSurfTensCorr, fluidConstants[1].lSurfTensCoef, fluidConstants[1].MW, state.T) else liqSurfTensSastriRao(state.T);
     end surfaceTension;
   
 
@@ -451,7 +563,7 @@ package LMedia "LMedia.mo by Carlos Trujillo
         extends Modelica.Icons.Function;
 
       algorithm
-        state := ThermodynamicState(p = Modelica.Media.Common.smoothStep(x, state_a.p, state_b.p, x_small), s = Modelica.Media.Common.smoothStep(x, state_a.s, state_b.s, x_small), h = Modelica.Media.Common.smoothStep(x, state_a.h, state_b.h, x_small), T = Modelica.Media.Common.smoothStep(x, state_a.T, state_b.T, x_small));
+        state := ThermodynamicState(p = Modelica.Media.Common.smoothStep(x, state_a.p, state_b.p, x_small), d = Modelica.Media.Common.smoothStep(x, state_a.d, state_b.d, x_small), h = Modelica.Media.Common.smoothStep(x, state_a.h, state_b.h, x_small), T = Modelica.Media.Common.smoothStep(x, state_a.T, state_b.T, x_small));
       annotation(
         Inline = true);
     end setSmoothState;
