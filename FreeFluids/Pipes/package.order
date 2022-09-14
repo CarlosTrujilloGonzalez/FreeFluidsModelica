@@ -8,12 +8,8 @@ Dampener
 PipePhysical
 Pipe
 PipeFlowBase
-DoublePipeFlowBase
 PipeFlow1Ph
-PipeFlow1PhM
-DoublePipeFlow1Ph
 PipeFlow2Ph
-PipeFlow2PhM
 PipeThermalBase
 PipeForcedConvection
 PipeFallingFilm
