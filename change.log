@@ -1,3 +1,7 @@
+Version 2.5.0
+- Addition of the HeatExchangers package
+- Improvements in the Pipes package, related with two phase flow and condensation.
+
 Version 2.4.1
 - Changes in LMedia and TMedia in order to be compatible with OpenModelica. Nevertheless sometimes it is necessary to use the old frontend.
 - Cleanup of examples.
