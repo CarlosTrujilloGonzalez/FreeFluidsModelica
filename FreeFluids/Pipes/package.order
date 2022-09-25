@@ -9,6 +9,7 @@ PipePhysical
 Pipe
 PipeFlowBase
 PipeFlow1Ph
+PipeFlowChoked
 PipeFlow2Ph
 PipeThermalBase
 PipeForcedConvection
