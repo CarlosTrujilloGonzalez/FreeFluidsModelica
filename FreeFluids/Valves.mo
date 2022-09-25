@@ -2,7 +2,7 @@ within FreeFluids;
 
 package Valves "Valves.mo by Carlos Trujillo
   This file is part of the Free Fluids application
-  Copyright (C) 2008-2022  Carlos Trujillo Gonzalez
+  Copyright (C) 2008-2021  Carlos Trujillo Gonzalez
     
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License version 3
@@ -46,7 +46,35 @@ package Valves "Valves.mo by Carlos Trujillo
   Rho = Medium.density(State);
     Q = PortA.G / Rho;
     T = Medium.temperature(State);
-  annotation(defaultComponentName = "Valve");
+  annotation(defaultComponentName = "Valve",
+      Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-4498\">It is an extension of the Interfaces.TwoFluidPorts model. It adds the following parameters to configure a two ports valve:</div>
+
+<ul class=\"itemize\" id=\"magicparlabel-4499\"><li class=\"itemize_item\">parameter FreeFluids.Types.ValveFixOption fix = FreeFluids.Types.ValveFixOption.fixKv, in order to select if we are going to specify a fized Kv, a fixed pressure drop or a fixed flow along the valve.</li>
+<li class=\"itemize_item\">And the following parameters: fixedKv, fixedDP and fixedFlow, in order to allow the user specification of the needed value.</li>
+</ul>
+<div class=\"standard\" id=\"magicparlabel-4501\">It adds also the following variables:</div>
+
+<div class=\"standard\" id=\"magicparlabel-4502\">Kv for the valve Kv</div>
+
+<div class=\"standard\" id=\"magicparlabel-4503\">Cv for the valve Cv</div>
+
+<div class=\"standard\" id=\"magicparlabel-4504\">Medium.ThermodynamicState State, in order to specify the state at which physical properties will be evaluated.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4505\">Q for the volumetric flow at State conditions.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4506\">T for fluid temperature at State conditions.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4507\">Rho for fluid density at State conditions.</div></body></html>"));
   end ValveBase;
 
   partial model ValvePartial "General control valve model"
@@ -87,7 +115,35 @@ package Valves "Valves.mo by Carlos Trujillo
     annotation(
       Placement(visible = true, transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90), iconTransformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = -90)),
       defaultComponentName = "FV",
-      Icon(coordinateSystem(initialScale = 0.07), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-154, -52}, {150, -120}}, textString = "%name"), Polygon(lineColor = {0, 57, 172}, fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-90, 10}, {-70, 10}, {-70, 60}, {0, 0}, {70, 60}, {70, 10}, {90, 10}, {90, -10}, {70, -10}, {70, -60}, {0, 0}, {-70, -60}, {-70, -10}, {-90, -10}, {-90, 10}}), Line(origin = {0.328629, 1.31454}, points = {{0, 86}, {0, 0}}, color = {0, 0, 127}), Text(origin = {40, 121}, extent = {{-38, 25}, {110, -15}}, textString = "Opening")}));
+      Icon(coordinateSystem(initialScale = 0.07), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-154, -52}, {150, -120}}, textString = "%name"), Polygon(lineColor = {0, 57, 172}, fillColor = {85, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-90, 10}, {-70, 10}, {-70, 60}, {0, 0}, {70, 60}, {70, 10}, {90, 10}, {90, -10}, {70, -10}, {70, -60}, {0, 0}, {-70, -60}, {-70, -10}, {-90, -10}, {-90, 10}}), Line(origin = {0.328629, 1.31454}, points = {{0, 86}, {0, 0}}, color = {0, 0, 127}), Text(origin = {40, 121}, extent = {{-38, 25}, {110, -15}}, textString = "Opening")}),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-3210\">It is the base model for control valves, and extends the ValveBase model. It adds the following parameters for configuration:</div>
+
+<ul class=\"itemize\" id=\"magicparlabel-3211\"><li class=\"itemize_item\">parameter Boolean isCompressibleFlow = false. In order to specify the type of flow to consider. If it is made true the flow will be always considered as adiabatic.</li>
+<li class=\"itemize_item\">parameter Boolean isLinear = true. To specify the valve characteristics. If made false, the valve will be considered as isopercentual.</li>
+<li class=\"itemize_item\">parameter Boolean useFixedAperture = true. If true, the aperture of the valve will be fixed to the value entered manually at the aperture parameter. Otherwise the aperture will be taken from the RealInput connector Opening, making possible the calculation of the aperture outside of the model.</li>
+<li class=\"itemize_item\">parameter Real aperture = 1.0. The fraction of aperture of the valve used if useFixedAperture = true.</li>
+</ul>
+<div class=\"standard\" id=\"magicparlabel-3215\">The following variables are also defined:</div>
+
+<ul class=\"itemize\" id=\"magicparlabel-3216\"><li class=\"itemize_item\">SI.Area KvFlow. The acting Kv of the valve taking into account its aperture, different from the nominal Kv.</li>
+<li class=\"itemize_item\">The conditional connector Modelica.Blocks.Interfaces.RealInput Opening, conditioned to useFixedAperture=false. In order to receive the valve aperture by connexion.</li>
+<li class=\"itemize_item\">The protected connector Modelica.Blocks.Interfaces.RealInput Aperture.</li>
+</ul>
+<div class=\"standard\" id=\"magicparlabel-3219\">The implementation of the Aperture connector is done in the standard way: The connectors Opening and Aperture are connected, but if useFixedAperture is made true, the Opening connector disappears, and also the connection. And the equation Aperture=aperture (reading the manual entered value) is activated.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3220\">There is also an equation relating the Kv, KvFlow and Aperture, taking into account the selected characteristic of the valve.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3221\">And an equation relating flow with KvFlow and differential pressure, if Aperture&gt;0. Otherwise the flow is made equal to 0.</div></body></html>"));
   end ValvePartial;
 
   model ValveIncompressible "Control valve model for incompresible liquid flow"
@@ -103,7 +159,24 @@ package Valves "Valves.mo by Carlos Trujillo
         0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "adiabatic incompressible";
       end if;
     end if;
-  annotation(defaultComponentName = "Valve");
+  annotation(defaultComponentName = "Valve",
+      Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-3276\">Extends the ValvePartial model, fixing isCompressibleFlow=false.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3277\">It adds the parameter Boolean isIsenthalpicFlow = true, in orther to specify the type of flow to consider. If made equal to false, adiabatic flow is considered.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3278\">It defines the State (for physical properties calculation) from the PortA variables.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3279\">An equation is added relating the two ports enthalpy, if calcEnthalpyDifference=true. If the flow is isenthalpic, they are the same. if it is not, only the differential height between ports is taken into account.</div></body></html>"));
   end ValveIncompressible;
 
   model ValveCompressible "Control valve model for compresible liquid flow"
@@ -143,7 +216,24 @@ package Valves "Valves.mo by Carlos Trujillo
         0 = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "energy conservation for adiabatic incompressible";
       end if;
     end if;
-  annotation(defaultComponentName = "Valve");
+  annotation(defaultComponentName = "Valve",
+      Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-3310\">Extends the ValvePartial model, fixing isCompressibleFlow=true.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3311\">It adds two Medium.ThermodynamicState StateA and StateB. In order to retrieve the physical properties at both ports. It defines also variables for temperature, density and velocity at both ports: Ta, RhoA,Va, Tb, RhoB, Vb.</div>
+
+<div class=\"standard\" id=\"magicparlabel-3312\">The State variable (used for retrieving physical properties for the pressure drop calculation) is defined at the highest enthalpy of the two ports and at the lowest pressure of the ports (but not lowest than half of the highest pressure).</div>
+
+<div class=\"standard\" id=\"magicparlabel-3313\">An equation is added relating the two ports enthalpy calcEnthalpyDifference=true. It will take into account the kinetic energy only if the valve diameter is higher than 0.</div></body></html>"));
   end ValveCompressible;
 
   model CheckValve
@@ -255,7 +345,20 @@ package Valves "Valves.mo by Carlos Trujillo
     end if;
     annotation(
       Diagram(coordinateSystem(initialScale = 0.1)),
-      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)));
+      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-1980\">Allows the calculation of the flow or the area of a safety relief valve or disk. It uses isentropic calculation between the inlet, supposed with velocity equal to 0, and the orifice. The gas flow can be chocked or not, and all the calculations are done with the physical properties calculated by the Medium, except the possibility of manual entering of the isentropic coefficient. Correction coefficients are applied for backpressure and for viscosity, according to the API 520 methodology. It is capable for biphasic flow calculation, but the model SafetyValveFlash, that conforms to the API recommenations, is probably more adequate.</div>
+
+<div class=\"standard\" id=\"magicparlabel-1981\">Two thermodynamic states are declared at the orifice outlet, both isentropics with the inlet. One of them at the discharge pressure of the valve, the other adjusted to obtain sonic speed at the orifice. If the discharge pressure is below the obtained critical pressure, the flow is taken from the critical calculation, if not from the discharge pressure calculation.</div></body></html>"));
   end SafetyValve;
 
   model SafetyValveStd "Safety valve calculation according to ISO 4126-1 and API 520"
@@ -403,7 +506,18 @@ package Valves "Valves.mo by Carlos Trujillo
     end if;
     annotation(
       Diagram(coordinateSystem(initialScale = 0.1)),
-      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3), Text(origin = {0, -126}, lineColor = {0, 0, 255}, extent = {{-120, 26}, {120, -26}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)));
+      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3), Text(origin = {0, -126}, lineColor = {0, 0, 255}, extent = {{-120, 26}, {120, -26}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-1991\">API 520 and ISO 4126-1 calculation methods are implemented, with the API one as default. It is limited to monophasic flow. Although a Medium is declared, and physical properties can be taken from it (except the isentropic coefficient for gases, that must be always entered by hand), there is the possibility of manual entering of all the physical properties. If you enter all physical properties manually, you can use data for a different fluid than that of the Medium. The Medium will be used just for generating P and H at the PortA, with H being passed to the PortB if the calculation has been activated. As H is not used in the calculation of the flow, if the pressures are OK the calculation should be fine.</div></body></html>"));
   end SafetyValveStd;
 
   model SafetyValveFlash "Safety valve calculation for flashing liquids, according to API standard 520 Annex C.2.1"
@@ -498,7 +612,48 @@ package Valves "Valves.mo by Carlos Trujillo
     end if;
     annotation(
       Diagram(coordinateSystem(initialScale = 0.1)),
-      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)));
+      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-3135\">It implements the calculation methodology described at API 520 Annex C section C.2.1, based on isentropic flow. In order to get the flow, an array of 25 pressures, between inlet and outlet pressures, are tested, and the higher flow is taken. Instead of implementing the integration of <math xmlns=\"http://www.w3.org/1998/Math/MathML\">
+ <mrow>
+  <mfrac>
+   <mrow>
+    <mrow><mi>d</mi><mi>P</mi>
+    </mrow>
+   </mrow>
+   <mrow><mi> ρ </mi>
+   </mrow>
+  </mfrac>
+ </mrow></math> to obtain the velocity, the relationship <math xmlns=\"http://www.w3.org/1998/Math/MathML\">
+ <mrow>
+  <mrow>
+   <mfrac>
+    <mrow>
+     <mrow><mi>d</mi><mo>(</mo>
+      <msup>
+       <mrow><mi>v</mi>
+       </mrow>
+       <mrow>
+        <mrow><mn>2</mn><mo>)</mo>
+        </mrow>
+       </mrow>
+      </msup>
+     </mrow>
+    </mrow>
+    <mrow><mn>2</mn>
+    </mrow>
+   </mfrac><mo>=</mo><mo>-</mo><mi>d</mi><mi>H</mi>
+  </mrow>
+ </mrow></math> has been used.&nbsp;</div></body></html>"));
   end SafetyValveFlash;
 
   model SafetyValveOmega "Safety valve calculation for flashing liquids, according to API standard 520 Annex C.2.2-3"
@@ -650,10 +805,22 @@ package Valves "Valves.mo by Carlos Trujillo
     end if;
     annotation(
       Diagram(coordinateSystem(initialScale = 0.1)),
-      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)));
+      Icon(graphics = {Polygon(origin = {0, -40}, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Polygon(origin = {40, 0}, rotation = 90, fillColor = {1, 111, 255}, fillPattern = FillPattern.Solid, points = {{0, 40}, {-40, -40}, {40, -40}, {0, 40}}), Line(origin = {0.32, 39.96}, points = {{-0.317267, -39.9637}, {-20.3173, -19.9637}, {19.6827, 0.0362864}, {-20.3173, 20.0363}, {19.6827, 40.0363}}, thickness = 2), Line(origin = {-50, -55}, points = {{-50, 45}, {-50, -45}, {50, -45}, {50, -25}}, thickness = 3)}, coordinateSystem(initialScale = 0.1)),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-3150\">It a model for safety valves working with flashing liquids, according to API 520 Annex C sections C.2.2 and C.2.3. The parameter Boolean liquidInlet allows you so select the calculation method to use, if made true it will use the C.2.3 methodology, that works with an inlet 100% in liquid state. Otherwise the C.2.2 method will be used. The parameters allow you to choose between fixing the discharge area or the flow, configure the basic characteristics of the valve, and enter the physical properties or let them to be taken from the Medium.&nbsp;</div></body></html>"));
   end SafetyValveOmega;
 
   package Examples
+  extends Modelica.Icons.ExamplesPackage;
     package Water1 = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = true) "alias for TMedia water";
     package WaterS = Modelica.Media.Water.StandardWater;
     package Air2 = Modelica.Media.Air.DryAirNasa;
@@ -682,11 +849,10 @@ package Valves "Valves.mo by Carlos Trujillo
   connect(FV.PortB, Sink.PortA) annotation(
         Line(points = {{-10, 0}, {26, 0}}, color = {0, 127, 255}));
       annotation(
-        Documentation(info = "<html>
-    <body>
-    <p>The model has the valve Kv as unknown, as flow, and the inlet and outlet pressures, are fixed. Observe that useFixedKv has been set to false in the flow tab of the valve. You can fix it to a value, but it will be necessary not to force the flow or one of the pressures.</p>
-    </body>
-    </html>"));
+        Documentation(info = "<html><head></head><body>
+    <p>The model has the valve Kv as unknown. The inlet and outlet pressures, are fixed, as is the flow (in tab \"Flow\" of the valve.</p>
+    
+    </body></html>"));
     end ValveWaterTest1;
 
     model ValveAirTest1
@@ -723,7 +889,9 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveLeser7_5_10_3;
+    annotation(
+        Documentation(info = "<html><head></head><body>
+<p>Example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation</p></body></html>"));end SafetyValveLeser7_5_10_3;
 
     model SafetyValveStdLeser7_5_10_3 "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by standard calculation"
       FreeFluids.Valves.SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow = 19.3846, gamma = 0.966, kd = 0.84, kdr = 0.84, pSet = 11040000, rhoA = 72.02, selectStd = 1, useFixedArea = false, useFixedDensity = true) annotation(
@@ -765,7 +933,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveStdAPI1;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example from API standard 520 5.6.3.2(hydrocarbon), critical flow.</body></html>"));end SafetyValveStdAPI1;
 
     model SafetyValveStdAPI2 "example from API standard 520 5.6.4.2(hydrocarbon), subcritical flow"
       SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow(displayUnit = "kg/s") = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
@@ -779,7 +948,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveStdAPI2;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example from API standard 520 5.6.4.2 (hydrocarbon).</body></html>"));end SafetyValveStdAPI2;
 
     model SafetyValveStdAPI5 "example from API standard 520 5.8.2 (crude oil), liquid flow"
       FreeFluids.Valves.SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = true, fixedFlow = 102.21, kd = 0.65, kdr = 0.45, muA = 0.44, pSet = 1825000, rhoA = 900, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true) annotation(
@@ -793,8 +963,24 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveStdAPI5;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example from API standard 520 5.8.2 (crude oil), liquid flow.</body></html>"));end SafetyValveStdAPI5;
 
+    model SafetyValveTest1 "Example of flashing water using direct isentropic flow calculation."
+      SafetyValve SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
+        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = WaterS, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
+        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
+      connect(SaftValv1.PortB, Sink.PortA) annotation(
+        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
+    annotation(
+        Documentation(info = "<html><head></head><body>Example of flashing water using direct isentropic flow calculation.</body></html>"));end SafetyValveTest1;
+  
     model SafetyValveFlashTest1 "example of flashing water using API Annex C 2.2.1 methodology"
       SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -807,7 +993,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveFlashTest1;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example of flashing water using API 520 standard Annex C 2.2.1 methodology.</body></html>"));end SafetyValveFlashTest1;
 
     model SafetyValveOmegaTest1 "example of flashing water using API Annex C 2.2.2 methodology"
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedArea = 1298e-6, fixedFlow = 2.479166666666667, muA = 0.001, pSet = 399999.9999999999, useFixedArea = true, useFixedDensities = false, useFixedViscosity = false) annotation(
@@ -821,7 +1008,9 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveOmegaTest1;
+    annotation(
+        Documentation(info = "<html><head></head><body>
+<p>Example of flashing water using API 520 standard Annex C 2.2.2 methodology.</p></body></html>"));end SafetyValveOmegaTest1;
 
     model SafetyValveFlashTest2 "example of flashing water using API Annex C 2.2.3 methodology"
       SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 13.27444444444444, kd = 0.85, pSet = 990000, useFixedArea = true) annotation(
@@ -868,7 +1057,7 @@ package Valves "Valves.mo by Carlos Trujillo
         Documentation(info = "<html><head></head><body>
 <pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.2 (crude oil) from API RP520 Annex C, biphasic inlet.</span><!--EndFragment--></pre></body></html>"));end SafetyValveOmegaC222;
 
-    model SafetyValveOmegaC232 "Example C.2.2.3(Propane) from API standard 520 Annex C, liquid inlet"
+    model SafetyValveOmegaC223 "Example C.2.2.3(Propane) from API standard 520 Annex C, liquid inlet"
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 378.5 / 60 * 511.3 * 1e-3, kd = 0.65, liquidInlet = true, muA = 0.001, pSatur = 741899.9999999999, pSet = 1893600, rhoA = 511.3, rhoA9 = 262.7, useFixedArea = false, useFixedDensities = true, useFixedViscosity = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(G = 6.741666666666666, redeclare package Medium = WaterS, P = 2073300, T(displayUnit = "K") = 288.7) annotation(
@@ -881,7 +1070,7 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body><pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.3 (Propane) from API RP520 Annex C, liquid inlet.</span></pre></body></html>"));end SafetyValveOmegaC232;
+        Documentation(info = "<html><head></head><body><pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.3 (Propane) from API RP520 Annex C, liquid inlet.</span></pre></body></html>"));end SafetyValveOmegaC223;
     
     model SafetyValveFlashTest1TMedia "example of flashing water using API Annex C 2.2.1 methodology"
       SafetyValveFlash SaftValv1(redeclare package Medium = Water1, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
@@ -895,16 +1084,17 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveFlashTest1TMedia;
+    annotation(
+        Documentation(info = "<html><head></head><body>Example of flashing water using API standard 520 AnneX C 2.2.1 methodology.</body></html>"));end SafetyValveFlashTest1TMedia;
     
     model SVPlusPipeSteam "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation"
-      FreeFluids.Valves.SafetyValve SaftValv1(A(displayUnit = "m2"), Aeff(displayUnit = "m2"), redeclare package Medium = WaterS, Pc(displayUnit = "Pa"), fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 19.44444444444444, kd = 0.84, pSet = 11040000) annotation(
+      FreeFluids.Valves.SafetyValveStd SaftValv1( redeclare package Medium = WaterS,fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 19.44444444444444, gamma = 0.966, kd = 0.84, pSet = 11040000) annotation(
         Placement(visible = true, transformation(origin = {-52, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(G = 0.2777777777777778, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-96, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = WaterS, PLossFriction(displayUnit = "Pa"), di = 0.05000000000000001, lTube = 10) annotation(
+  Pipes.PipeFlowChoked Pipe1(redeclare package Medium = WaterS, di = 0.05, fixedW(displayUnit = "kW") = 1000, lTube = 10, thermalType = FreeFluids.Types.ThermalType.adiabatic) annotation(
         Placement(visible = true, transformation(origin = {2, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(Source.PortB, SaftValv1.PortA) annotation(
@@ -915,5 +1105,6 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{12, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
         Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, solved by direct isentropic flow calculation.</body></html>"));end SVPlusPipeSteam;
+    
   end Examples;
 end Valves;

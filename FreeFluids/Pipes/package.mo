@@ -417,6 +417,8 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.Velocity Va(start = 1);
     Modelica.Units.SI.Velocity Vb(start = -1);
+    Modelica.Units.SI.Velocity Vas "sound velocity at PortA";
+    Modelica.Units.SI.Velocity Vbs "sound velocity at PortB";
     Medium.Density RhoA(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at Port A";
     Medium.Density RhoB(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at PortB";
     Medium.ThermodynamicState StateA "state at PortA";
@@ -437,7 +439,10 @@ package Pipes "Pipes.mo by Carlos Trujillo
     Qb = PortA.G / RhoB;
     Ta = Medium.temperature(StateA);
     Tb = Medium.temperature(StateB);
+  
     if isCompressibleFlow == true then
+      Vas = Medium.velocityOfSound(StateA);
+      Vbs = Medium.velocityOfSound(StateB);  
       if twoPhaseFlow==true then
         Pdiff = (-sign(PortA.G) * PLossFriction) + PortA.G * (Va + Vb) / PathSectionActive / NumActiveTubes "Momentum conservation. Gravity is not taken into account";    
       else
@@ -445,6 +450,8 @@ package Pipes "Pipes.mo by Carlos Trujillo
       end if;
       W / PortA.G = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n + 0.5 * (abs(Vb) ^ 2 - abs(Va) ^ 2) "energy conservation";
     else
+      Vas = Modelica.Constants.inf;
+      Vbs = Modelica.Constants.inf;
       Pdiff = (-sign(PortA.G) * PLossFriction) + (PortA.Elevation - PortB.Elevation + 1e-5) * g_n * (RhoA + RhoB) / 2 "momentum change is not taken into account.1 e-5 is to avoid division by 0";
       W / PortA.G = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "kinetic energy is not taken into account";
     end if;
@@ -461,8 +468,9 @@ package Pipes "Pipes.mo by Carlos Trujillo
         Tb = Ta + fixedDeltaT;
       end if;
     end if;
-    assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
-//assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
+//assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
+    assert(abs(Va)<Vas and abs(Vb)<Vbs, "The speed of sound has been exceeded", AssertionLevel.warning);
+  //assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
     annotation(
       defaultComponentName = "Pipe",
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {0, 63, 191}, fillColor = {0, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}),
@@ -473,7 +481,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
   end PipeFlowBase;
 
   model PipeFlow1Ph "Single pipe(not double) for single phase, full bore flow. With no detailed heat transfer model"
-    extends FreeFluids.Pipes.PipeFlowBase(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.adiabatic);
+    extends FreeFluids.Pipes.PipeFlowBase(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, final twoPhaseFlow=false, isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.adiabatic);
     Medium.ThermodynamicState StateAvg "average state for physical properties calculation";
     Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "average density used in calculations";
     Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "average dynamic viscosity used in calculations";
@@ -512,15 +520,121 @@ package Pipes "Pipes.mo by Carlos Trujillo
   </body></html>"));
   end PipeFlow1Ph;
 
+  model PipeFlowChoked "Single phase flow with detection of choked condition."
+    extends FreeFluids.Pipes.Pipe(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, final isCompressibleFlow = true);
+    parameter FreeFluids.Types.ThermalType thermalType = FreeFluids.Types.ThermalType.adiabatic "Alternatives: detailed, isenthalpic, adiabatic, isothermal, fixed W, fixed deltaT. If detailed, W calculation must be supplied" annotation(
+      Dialog(tab = "Heat transfer"));
+    parameter Modelica.Units.SI.HeatFlowRate fixedW = 0 "Heat exchange if thermaltype = fixedPower. Positive if heat enters the tube" annotation(
+      Dialog(tab = "Heat transfer"));
+    parameter Modelica.Units.SI.TemperatureDifference fixedDeltaT = 0 "fixed T diff. between ports if thermalType = fixedDeltaT. Positive if Tb > Ta" annotation(
+      Dialog(tab = "Heat transfer"));
+    Modelica.Units.SI.Velocity Va(start = 1);
+    Modelica.Units.SI.Velocity Vb(start = -1);
+    Medium.Density RhoA(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at Port A";
+    Medium.Density RhoB(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at PortB";
+    Medium.ThermodynamicState StateA "state at PortA";
+    Medium.ThermodynamicState StateB "state at PortB";
+    Modelica.Units.SI.VolumeFlowRate Qa(displayUnit = "m3/h") "volume flow rate at PortA";
+    Modelica.Units.SI.VolumeFlowRate Qb(displayUnit = "m3/h") "volume flow rate at PortB";
+    Medium.Temperature Ta(displayUnit = "degC", start = Medium.T_default);
+    Medium.Temperature Tb(displayUnit = "degC", start = Medium.T_default);
+    Modelica.Units.SI.Power W "heat transfer between fluid and wall. Positive if fluid inputs heat";
+  
+    Medium.ThermodynamicState StateAvg "average state for physical properties calculation";
+    Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "average density used in calculations";
+    Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "average dynamic viscosity used in calculations";
+    Modelica.Units.SI.ReynoldsNumber Re(min = 0.01, start = 20000) "Reynolds number at average conditions";
+    Real F(start = 0.01) "Darcy's friction factor at average conditions";
+    Modelica.Units.SI.VolumeFlowRate Q(displayUnit = "m3/h") "volume flow rate in each active tube at average conditions";
+    Modelica.Units.SI.Velocity V(start = 1) "velocity at average conditions";
+    
+    Modelica.Units.SI.VelocityOfSound Vc "sound velocity at outlet conditions";
+    Medium.ThermodynamicState StateC "choked state";
+    Modelica.Units.SI.AbsolutePressure Pc "outlet pressure for choked condition";
+    Modelica.Units.SI.Density RhoC "density at choked conditions";
+    
+  
+  equation
+    StateA = Medium.setState_phX(PortA.P, PortA.H, PortA.X);
+    RhoA = abs(Medium.density(StateA));
+    Va = PortA.G / RhoA / PathSectionActive / NumActiveTubes;
+    Qa = PortA.G / RhoA;
+    Ta = Medium.temperature(StateA);
+  
+    StateC=Medium.setState_phX(Pc,PortB.H);
+    Vc=Medium.velocityOfSound(StateC);  
+    RhoC=Medium.density(StateC);
+    PortA.G=Vc*RhoC*(PathSectionActive * NumActiveTubes);
+    
+    if noEvent(PortB.P>Pc) then
+      StateB = Medium.setState_phX(PortB.P, PortB.H, PortB.X);
+      StateAvg = Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X); 
+    else
+      StateB=StateC;
+      StateAvg = Medium.setState_phX((PortA.P + Pc) / 2, (PortA.H + PortB.H) / 2, PortA.X);
+    end if;  
+    RhoB = abs(Medium.density(StateB));
+    Vb = PortB.G / RhoB / PathSectionActive / NumActiveTubes;  
+    Qb = PortA.G / RhoB;
+    Tb = Medium.temperature(StateB);  
+  
+    if calcEnthalpyDifference == true then
+      if thermalType == ThermalType.isenthalpic then
+        PortA.H = PortB.H;
+      elseif thermalType == ThermalType.isothermal then
+        Ta = Tb;
+      elseif thermalType == ThermalType.adiabatic then
+        W = 0;
+      elseif thermalType == ThermalType.fixedPower then
+        W = fixedW;
+      elseif thermalType == ThermalType.fixedDeltaT then
+        Tb = Ta + fixedDeltaT;
+      end if;
+    end if;
+  
+    Rho = abs(Medium.density(StateAvg));
+    Mu = Medium.dynamicViscosity(StateAvg);
+    Q = PortA.G / Rho;
+    V = abs(Q / (PathSectionActive * NumActiveTubes));
+    MassProductTotal = ViTotal * Rho;
+    if noEvent(PortA.G < (-1e-7) or PortA.G > 1e-7) then
+      Re = Dh * abs(PortA.G) / (PathSectionActive * NumActiveTubes * Mu) + 0.01 "in order to avoid division by 0 calculating F";
+      F = 8 * ((8 / Re) ^ 12 + ((37530 / Re) ^ 16 + (-2.457 * log((7 / Re) ^ 0.9 + 0.27 * roughness / Dh)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
+      if kv > 0 then
+        PLossFriction = homotopy(0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads) + 1296000000.0 * (PortA.G / (kv * aperture)) ^ 2 / Rho, 0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads)) "1.296e9=3600^2*100";
+      else
+        PLossFriction = 0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads);
+      end if;
+    else
+      Re = 0.01;
+      F = 6400;
+      PLossFriction = abs(PortA.G) * 1e3;
+    end if;
+    if PortB.P>Pc then
+      Pdiff = (-sign(PortA.G) * PLossFriction) + (PortA.Elevation - PortB.Elevation + 1e-5) * g_n * (RhoA + RhoB) / 2 + PortA.G * (Va + Vb) / PathSectionActive / NumActiveTubes "Momentum conservation. 1e-5 is to avoid division by 0";
+    else
+      Pc-PortA.P= (-sign(PortA.G) * PLossFriction) + (PortA.Elevation - PortB.Elevation + 1e-5) * g_n * (RhoA + RhoB) / 2 + PortA.G * (Va + Vb) / PathSectionActive / NumActiveTubes "Momentum conservation. 1e-5 is to avoid division by 0";
+    end if;
+    W / PortA.G = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n + 0.5 * (abs(Vb) ^ 2 - abs(Va) ^ 2) "energy conservation";
+  
+    annotation(
+      defaultComponentName = "Pipe",
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {0, 63, 191}, fillColor = {0, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}),
+      Documentation(info = "<html><head></head><body>
+  <p>The model is for single phase compressible flow that could become choked. Although it can be used giving the flow at one of the connectors, it is intended for the specification of the two ends pressures and calculation of the flow.</p><p>The enthalpy change is always calculated between PortA and PortB but, if the flow is chocked, the pressure variation is calculated between PortA and StateB, that becames equal to StateC. This is due to the fact that the pressure at B has been specified but is less that the choked pressure.</p><p>The model may have convergence problems when isothermal behaviour is selected, but it is possible to add heat till we arrive to isothermal situation.</p><p>In complex circuits, use this model only for the last pipe, that is the one that can become choked. For the other pipes use PipeFlow1Ph with the parameter isCompressibleFlow to true</p>
+  
+  </body></html>"));
+  end PipeFlowChoked;
+
   model PipeFlow2Ph "Single pipe(not double) for two phases flow. With no detailed heat transfer model. Muller-Steinhagen and Heck method"
     extends FreeFluids.Pipes.PipeFlowBase(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialTwoPhaseMedium, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = true, twoPhaseFlow=true, thermalType = ThermalType.adiabatic);
     parameter Modelica.Units.SI.Density rhoL(displayUnit = "kg/m3") = 0 "fixed liquid density to use in calculations. If 0, will be calculated from the medium" annotation(
       Dialog(tab = "Optional user phys. prop."));
-    parameter Medium.DynamicViscosity muL = 0 "fixed liquid dynamic viscosity to use in calculations" annotation(
+    parameter Modelica.Units.SI.DynamicViscosity muL = 0 "fixed liquid dynamic viscosity to use in calculations" annotation(
       Dialog(tab = "Optional user phys. prop."));
     parameter Modelica.Units.SI.Density rhoG(displayUnit = "kg/m3") = 0 "fixed gas density to use in calculations" annotation(
       Dialog(tab = "Optional user phys. prop."));
-    parameter Medium.DynamicViscosity muG = 0 "fixed gas dynamic viscosity to use in calculations" annotation(
+    parameter Modelica.Units.SI.DynamicViscosity muG = 0 "fixed gas dynamic viscosity to use in calculations" annotation(
       Dialog(tab = "Optional user phys. prop."));
     parameter Real x = 0 "fixed mass gas fraction at average conditions" annotation(
       Dialog(tab = "Optional user phys. prop."));
@@ -639,6 +753,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Dialog(tab = "Flow"));
     parameter Boolean useHTWallCorrFactor = true annotation(
       Dialog(tab = "Heat transfer"));
+    
     Medium.ThermodynamicState StateAvg "average state for physical properties calculation";
     Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "average density used in calculations";
     Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "average dynamic viscosity used in calculations";
@@ -655,6 +770,8 @@ package Pipes "Pipes.mo by Carlos Trujillo
     Medium.DynamicViscosity MuWall(min = 1.0e-6, start = 1.0e-3, max = 1.0e6) "average wall viscosity";
     Real Fsmooth "smooth pipe friction factor";
     Real HTWallCorrFactor(start = 1.0);
+    
+    
     
   algorithm
     StateAvg := Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X);
@@ -736,7 +853,6 @@ package Pipes "Pipes.mo by Carlos Trujillo
     PathSectionActive = PathPerimeterActive * FilmThickness "approximate flow section";
     PathPerimeterActive = PathPerimeter;
     MassProductTotal = SiActive * FilmThickness * Rho;
-//StateAvg = Medium.setState_phX(PortA.P, (PortA.H + PortB.H) / 2, PortA.X);
     StateW = Medium.setState_pTX(PortA.P, Twall, PortA.X);
     MuWall = Medium.dynamicViscosity(StateW);
     ReVDI = Re / 4;
@@ -1142,28 +1258,6 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Line(origin = {0, -19.72}, points = {{-90, 19.7236}, {-80, 19.7236}, {-60, -20.2764}, {-40, 19.7236}, {-20, -20.2764}, {0, 19.7236}, {20, -20.2764}, {40, 19.7236}, {60, -20.2764}, {80, 19.7236}, {90, 19.7236}, {90, 19.7236}}, color = {255, 85, 255}, thickness = 1)}));
   end HalfCoilCondensing;
 
-  //*** VALVE MODELS FOR COMPRESSIBLE FLOW***)
-  //******************************************
-  /*class ExampleValveCompressible
-                                                                                                                                                                                                                                                                                                                                                                                                        extends ValveCompressible(MW = 18, Z = 0.9443);
-                                                                                                                                                                                                                                                                                                                                                                                                      algorithm
-                                                                                                                                                                                                                                                                                                                                                                                                        aperture := 1;
-                                                                                                                                                                                                                                                                                                                                                                                                        pIn := 701325.0;
-                                                                                                                                                                                                                                                                                                                                                                                                        dP := 50000;
-                                                                                                                                                                                                                                                                                                                                                                                                        //pOut := 651325.0;
-                                                                                                                                                                                                                                                                                                                                                                                                        Tin := 273.15 + 165.02;
-                                                                                                                                                                                                                                                                                                                                                                                                        g := 400 / 3600;
-                                                                                                                                                                                                                                                                                                                                                                                                      end ExampleValveCompressible;*/
-  /*class ExamplePipeCompressible
-                                                                                                                                                                                                                                                                                                                                                                                                      extends PipeCompressible(fullCircular = "yes", roughness = 4.5e-005, flowType = "Adiabatic", MW = 42.08, Z = 0.96, gamma = 1.14, mu = 9.4e-006);
-                                                                                                                                                                                                                                                                                                                                                                                                    algorithm
-                                                                                                                                                                                                                                                                                                                                                                                                      di := 0.05;
-                                                                                                                                                                                                                                                                                                                                                                                                      l := 14.775;
-                                                                                                                                                                                                                                                                                                                                                                                                      //g:=2100/3600;
-                                                                                                                                                                                                                                                                                                                                                                                                      Tin := 273.15 + 50;
-                                                                                                                                                                                                                                                                                                                                                                                                      pIn := 300000.0;
-                                                                                                                                                                                                                                                                                                                                                                                                      pOut := 110000.0;
-                                                                                                                                                                                                                                                                                                                                                                                                    end ExamplePipeCompressible;*/
 
   model PipeFluidBoundary "Models the external heat exchange against a fluid"
     FreeFluids.Interfaces.HeatPortA PortH annotation(
@@ -1232,6 +1326,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
     annotation(
       Icon(graphics = {Line(origin = {37.5412, 33.3067}, points = {{-56, 17}, {44, -11}}), Line(origin = {29.8566, 17.2874}, points = {{-58, 11}, {52, -1}}), Line(origin = {21.7386, 9.49529}, points = {{-54, 0}, {60, 0}, {58, 0}}), Line(origin = {25.2782, -23.999}, points = {{-44, -7}, {56, 21}}), Line(origin = {21.3346, 1.11031}, points = {{-50, -12}, {60, 2}}), Ellipse(origin = {-55, 55}, rotation = 70, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-63, 21}, rotation = 80, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-59, -15}, rotation = 100, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-51, -47}, rotation = 110, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Text(origin = {11, -81}, extent = {{-57, 37}, {37, -23}}, textString = "Fluid")}, coordinateSystem(initialScale = 0.1)));
   end PipeFluidBoundary;
+
 
 
   annotation(
