@@ -43,7 +43,7 @@ package Valves "Valves.mo by Carlos Trujillo
     else
       Kv = fixedKv;
     end if;
-  Rho = Medium.density(State);
+    Rho = Medium.density(State);
     Q = PortA.G / Rho;
     T = Medium.temperature(State);
   annotation(defaultComponentName = "Valve",
@@ -819,6 +819,84 @@ package Valves "Valves.mo by Carlos Trujillo
 <div class=\"standard\" id=\"magicparlabel-3150\">It a model for safety valves working with flashing liquids, according to API 520 Annex C sections C.2.2 and C.2.3. The parameter Boolean liquidInlet allows you so select the calculation method to use, if made true it will use the C.2.3 methodology, that works with an inlet 100% in liquid state. Otherwise the C.2.2 method will be used. The parameters allow you to choose between fixing the discharge area or the flow, configure the basic characteristics of the valve, and enter the physical properties or let them to be taken from the Medium.&nbsp;</div></body></html>"));
   end SafetyValveOmega;
 
+  
+  model PressureVacuumValve
+    extends FreeFluids.Interfaces.TwoFluidPorts(redeclare replaceable package Medium=Modelica.Media.Air.DryAirNasa, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
+    parameter Modelica.Units.SI.AbsolutePressure pressureSet(displayUnit="bar")=102325;
+    parameter Fraction overPressure=0.1 "as fraction of set pressure";
+    parameter Modelica.Units.SI.AbsolutePressure pressureHysteresis(displayUnit="mbar")=500 "hysteresis for revert overpressure valve opening";
+    parameter Modelica.Units.SI.VolumeFlowRate pressureFlow(displayUnit="m3/h") "air flow at the given overpressure";
+    parameter Modelica.Units.SI.AbsolutePressure vacuumSet(displayUnit="bar")=100325;
+    parameter Fraction underPressure=0.1 "as fraction of set vacuum";
+    parameter Modelica.Units.SI.AbsolutePressure vacuumHysteresis(displayUnit="mbar")=500 "hysteresis for revert underpressure valve opening";
+    parameter Modelica.Units.SI.VolumeFlowRate vacuumFlow(displayUnit="m3/h") "air flow at the given underpressure";
+  
+    parameter Modelica.Units.SI.Density rho(displayUnit="kg/m3")=1.2 "density used for rating";
+    Boolean p;
+    Boolean v;
+  equation
+    Hdiff=0;
+    when {PortA.P>pressureSet, PortA.P<(pressureSet-pressureHysteresis)} then
+      p=PortA.P>pressureSet;
+    end when;
+    when {(PortA.P<vacuumSet), (PortA.P>(vacuumSet+vacuumHysteresis))} then
+      v= PortA.P<vacuumSet;
+    end when;   
+    if p then
+      PortA.G= rho*pressureFlow*((PortA.P-PortB.P)/(pressureSet*(1+overPressure)-101325))^0.5;
+    elseif v then
+      PortA.G=-rho*vacuumFlow*((PortA.P-PortB.P)*Medium.density(Medium.setState_phX(PortB.P,PortB.H))/(vacuumSet*(1-underPressure)-101325))^0.5;
+    else
+      PortA.G=0;
+    end if;
+    annotation(
+      defaultComponentName = "PSV",
+      Icon(coordinateSystem(initialScale = 0.04), graphics = {Line(origin = {22.5477, 62.5318}, points = {{0, 34}, {0, -40}}, thickness = 5), Polygon(origin = {20, 60}, fillColor = {1, 115, 255}, fillPattern = FillPattern.Solid, points = {{-60, 40}, {0, 0}, {-60, -40}, {-60, 40}}), Line(origin = {-43.6944, -57.5479}, points = {{0, 34}, {0, -40}}, thickness = 5), Polygon(origin = {-40, -60}, rotation = 180, fillColor = {1, 115, 255}, fillPattern = FillPattern.Solid, points = {{-60, 40}, {0, 0}, {-60, -40}, {-60, 40}}), Line(origin = {-66, 33}, points = {{-26, -27}, {26, 27}, {26, 27}}, thickness = 0.5), Line(origin = {-69, -34}, points = {{-23, 26}, {23, -26}}, thickness = 0.5), Line(origin = {59, 34}, points = {{-33, 26}, {33, -26}}, thickness = 0.5), Line(origin = {57, -34}, points = {{37, 26}, {-37, -26}}, thickness = 0.5), Text(origin = {0, -134}, lineColor = {45, 12, 201}, extent = {{-100, 28}, {100, -28}}, textString = "%name")}),
+  Documentation(info = "<html><head></head><body>The model is for a pressure/vacuum relief valve for tanks. The model performs no calculation from the media defined, and the supplied density is only used to convert from volumetric flow to mass flow. This can produce innexact results if the pressure (and so the density)is too diferent from the one used for the rating. This could be the case if the pressure in the tank is too high. For vacuum no problem should be expected, as normally we will be taking the gas from the atmosphere.<div>Elevation and specific enthalpy are passed from Port A to Port B, also when the flow is from PortB to PortA. So normally Port A should be connected to the tank, mainly for getting the correct elevation of the port, because specific enthalpy is not usable when the flow is from PortB to A.</div><div>If a more flexible model is needed, we can use separate valves, attached to separate ports of the tank. In this case the pressure correction can be applied and the specific entahlpy used.&nbsp;</div></body></html>"));
+  end PressureVacuumValve;
+
+  
+  model PressureReliefValve
+    extends FreeFluids.Interfaces.TwoFluidPorts(redeclare replaceable package Medium=Modelica.Media.Air.DryAirNasa, useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, passComposition = true);
+    parameter Modelica.Units.SI.AbsolutePressure pSet(displayUnit="bar")=102325;
+    parameter Fraction overPressure=0.1 "design overpressure as fraction of set pressure";
+    parameter Boolean balancedValve=false "if true, a balanced or pilot governed valve is used"; 
+    parameter Modelica.Units.SI.AbsolutePressure pHysteresis(displayUnit="mbar")=500 "hysteresis for revert valve opening";
+    parameter Modelica.Units.SI.VolumeFlowRate flowRating(displayUnit="m3/h") "rating flow at the given overpressure";
+    parameter Modelica.Units.SI.AbsolutePressure pRating(displayUnit="bar")=101325 "discharge pressure used for rating";
+    parameter Modelica.Units.SI.Density rhoRating(displayUnit="kg/m3")=1.2 "density used for rating";
+    Modelica.Units.SI.Density RhoA "density at PortA";
+    Modelica.Units.SI.Density RhoB "density at PortB";  
+    Modelica.Units.SI.VolumeFlowRate Qa(displayUnit="m3/h") "volume flow rate at Port A";
+    Modelica.Units.SI.VolumeFlowRate Qb(displayUnit="m3/h") "volume flow rate at Port A";
+    Boolean p;
+  
+  equation
+    Hdiff=0;
+    RhoA=Medium.density(Medium.setState_phX(PortA.P,PortA.H,PortA.X));
+    RhoB=Medium.density(Medium.setState_phX(PortB.P,PortB.H,PortB.X));
+    if balancedValve==true then
+      when {PortA.P>pSet, PortA.P<(pSet-pHysteresis)} then
+        p=PortA.P>pSet;
+      end when;
+    else
+      when {PortA.P>(pSet+PortB.P-pRating), PortA.P<(pSet+PortB.P-pRating-pHysteresis)} then
+        p=PortA.P>(pSet+PortB.P-pRating);
+      end when;  
+    end if; 
+    if p then
+      PortA.G= rhoRating*flowRating*((PortA.P-PortB.P)*RhoB/((pSet*(1+overPressure)-pRating)*rhoRating))^0.5;
+    else
+      PortA.G=0;
+    end if;
+    Qa=PortA.G/RhoA;
+    Qb=PortA.G/RhoB;
+    annotation(
+      defaultComponentName = "PSV",
+      Icon(coordinateSystem(initialScale = 0.04), graphics = {Line(origin = {17.3838, 3.43344}, points = {{0, 34}, {0, -40}}, thickness = 5), Polygon(origin = {14, 0}, fillColor = {1, 115, 255}, fillPattern = FillPattern.Solid, points = {{-60, 40}, {0, 0}, {-60, -40}, {-60, 40}}), Line(origin = {53.5492, -26.5328}, points = {{-33, 26}, {37, 26}}, thickness = 0.5), Line(origin = {-74.1557, -88.541}, points = {{-15, 88}, {27, 88}}, thickness = 0.5), Text(origin = {-2, -73}, lineColor = {12, 4, 199}, extent = {{-98, 29}, {98, -29}}, textString = "%name")}),
+  Documentation(info = "<html><head></head><body>Similar to a safety valve but without the possibility of choked flow limitation.<div>The flow is calculated from a rated flow in a prescribed conditions.</div><div>The physical properties are taken from the Medium.</div></body></html>"));
+  end PressureReliefValve;
+
   package Examples
   extends Modelica.Icons.ExamplesPackage;
     package Water1 = FreeFluids.TMedia.Fluids.Water(refState = "User", highPressure = true) "alias for TMedia water";
@@ -937,7 +1015,7 @@ package Valves "Valves.mo by Carlos Trujillo
         Documentation(info = "<html><head></head><body>Example from API standard 520 5.6.3.2(hydrocarbon), critical flow.</body></html>"));end SafetyValveStdAPI1;
 
     model SafetyValveStdAPI2 "example from API standard 520 5.6.4.2(hydrocarbon), subcritical flow"
-      SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow(displayUnit = "kg/s") = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
+      SafetyValveStd SaftValv1( redeclare package Medium = WaterS,A(displayUnit = "m2"), balancedValve = false, fixedFlow(displayUnit = "kg/s") = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(redeclare package Medium = WaterS, P = 670000, T(displayUnit = "K") = 348) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1104,7 +1182,26 @@ package Valves "Valves.mo by Carlos Trujillo
   connect(Pipe1.PortB, Sink.PortA) annotation(
         Line(points = {{12, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, solved by direct isentropic flow calculation.</body></html>"));end SVPlusPipeSteam;
+        Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, with discharge pipe.</body></html>"));
+    end SVPlusPipeSteam;
     
+    model PresureReliefAir
+      FreeFluids.Valves.PressureReliefValve PSV(redeclare package Medium = Modelica.Media.Air.DryAirNasa, flowRating = 0.04166666666666666, overPressure = 0, pRating = 99999.99999999999, pSet = 100600, rhoRating = 1.2) annotation(
+        Placement(visible = true, transformation(origin = {-8, -8.88178e-16}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = Modelica.Media.Air.DryAirNasa, T (displayUnit = "degC") = 293.15, externalP = true) annotation(
+        Placement(visible = true, transformation(origin = {-64, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Interfaces.FlowSink Sink(redeclare package Medium = Modelica.Media.Air.DryAirNasa, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {46, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Blocks.Sources.Ramp InRamp(duration = 0.9, height = 0.3e5, offset = 9e4, startTime = 0.1)  annotation(
+        Placement(visible = true, transformation(origin = {-96, 46}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  equation
+      connect(Source.PortB, PSV.PortA) annotation(
+        Line(points = {{-54, 0}, {-20, 0}}, color = {0, 127, 255}));
+      connect(PSV.PortB, Sink.PortA) annotation(
+        Line(points = {{4, 0}, {36, 0}}, color = {0, 127, 255}));
+  connect(InRamp.y, Source.Pext) annotation(
+        Line(points = {{-84, 46}, {-58, 46}, {-58, 12}}, color = {0, 0, 127}));
+    end PresureReliefAir;
   end Examples;
+
 end Valves;

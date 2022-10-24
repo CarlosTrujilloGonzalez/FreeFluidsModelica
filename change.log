@@ -1,3 +1,7 @@
+Version 2.6.0
+- Added package Vessels, mainly for heat exchange and power consumption in agitated vessels.
+But also for storage volume usage.
+- Added models for pressure-vacuum relief valves.
 Version 2.5.1
 - Added model PipeFlowChoked, for compressible, possibly choked flow. Example also added.
 - Changed example model SVPlusPipeSteam, for safety valve plus discharge pipe with choked flow. 

@@ -116,7 +116,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
   end HEXsimple;
 
   model HEXgeneric1Ph "Exchanger model without heat transfer coefficient calculation, for forced convection in tubes"
-    extends FreeFluids.Pipes.PipeFlow1Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = false, final twoPhaseFlow = false, thermalType = FreeFluids.Types.ThermalType.detailed);
+    extends FreeFluids.Pipes.PipeFlow1Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.detailed);
     parameter FreeFluids.Types.ExchangerType exchangerType = FreeFluids.Types.ExchangerType.undefined "if undefined, raw LMTD will be used, otherwise mixed LMTD/NTU method" annotation(
       Dialog(tab = "Heat transfer"));
     parameter Boolean counterCurrent = true "for undefined type of exchanger select if flow is counter-current, otherwise will be considered co-current" annotation(
