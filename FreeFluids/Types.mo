@@ -32,7 +32,7 @@ package Types "Types.mo by Carlos Trujillo
   type TemaShell = enumeration(E "one pass",F "two pass longitudinal",G "split flow",H "double split flow",J "divided flow",K ,X "cross flow");
   type ExchangerType = enumeration(undefined, shellAndTubes, crossflow);
   type VesselForm = enumeration(cylinder, prism, sphere); 
-  type HeadShape = enumeration(open, flat, Klopper, Korbbogen,conical,hemispherical);
+  type HeadShape = enumeration(open, flat, conical, Klopper, Korbbogen,semielliptical, hemispherical);
   type EquilibriumDataType = enumeration(EquilibriumConstant, RelativeVolatility, RVpolynomia);
   type PerformanceSpecification = enumeration(FixedComposition, FixedFlow, FixedRecovery, None);
   type ReboilerType=enumeration(Kettle, Thermosyphon, ThermosyphonFromTray);

@@ -439,10 +439,9 @@ package Pipes "Pipes.mo by Carlos Trujillo
     Qb = PortA.G / RhoB;
     Ta = Medium.temperature(StateA);
     Tb = Medium.temperature(StateB);
-  
+    Vas = Medium.velocityOfSound(StateA);
+    Vbs = Medium.velocityOfSound(StateB); 
     if isCompressibleFlow == true then
-      Vas = Medium.velocityOfSound(StateA);
-      Vbs = Medium.velocityOfSound(StateB);  
       if twoPhaseFlow==true then
         Pdiff = (-sign(PortA.G) * PLossFriction) + PortA.G * (Va + Vb) / PathSectionActive / NumActiveTubes "Momentum conservation. Gravity is not taken into account";    
       else
@@ -450,8 +449,6 @@ package Pipes "Pipes.mo by Carlos Trujillo
       end if;
       W / PortA.G = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n + 0.5 * (abs(Vb) ^ 2 - abs(Va) ^ 2) "energy conservation";
     else
-      Vas = Modelica.Constants.inf;
-      Vbs = Modelica.Constants.inf;
       Pdiff = (-sign(PortA.G) * PLossFriction) + (PortA.Elevation - PortB.Elevation + 1e-5) * g_n * (RhoA + RhoB) / 2 "momentum change is not taken into account.1 e-5 is to avoid division by 0";
       W / PortA.G = PortB.H - PortA.H + (PortB.Elevation - PortA.Elevation) * g_n "kinetic energy is not taken into account";
     end if;
