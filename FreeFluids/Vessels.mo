@@ -134,8 +134,9 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Documentation(info = "<html><head></head><body>The VesselFlow model using just a fixed area and height for the vessel.</body></html>"));
   end VesselSimple;
   
-  //Physical description of the vessel
+//Physical description of the vessel
   //----------------------------------
+
   model VesselPhysical
     parameter Boolean isVertical = true "if true, the shell is considered vertical, otherwise horizontal" annotation(
       Dialog(tab = "Shell data"));
@@ -263,7 +264,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       ShellVi = Modelica.Constants.pi * di ^ 2 * shellLength / 4;
       ShellSo = Modelica.Constants.pi * Do * shellLength;
       ShellVo = Modelica.Constants.pi * Do ^ 2 * shellLength / 4;
-      if vesselTop == Types.HeadShape.open then
+  if vesselTop == Types.HeadShape.open then
         TopHi = 0;
         TopSi = 0;
         TopVi = 0;
@@ -281,23 +282,26 @@ package Vessels "Vessels.mo by Carlos Trujillo
         TopHi = topHeight;
         TopSi = Modelica.Constants.pi * di * (di ^ 2 / 4 + topHeight ^ 2) ^ 0.5;
         TopVi = Modelica.Constants.pi * di ^ 2 * topHeight / 12;
-        TopHo = topHeight+topThickness*(di^2/4+topHeight^2)^0.5/(di/2);
+        TopHo = topHeight + topThickness * (di ^ 2 / 4 + topHeight ^ 2) ^ 0.5 / (di / 2);
         TopSo = Modelica.Constants.pi * (di + 2 * topThickness) * ((di + 2 * topThickness) ^ 2 / 4 + topHeight ^ 2) ^ 0.5;
         TopVo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 2 * (topHeight + topThickness) / 12;
-      //elseif vesselTop == Types.HeadShape.Klopper or vesselTop == Types.HeadShape.Korbbogenthen then
-        
+//elseif vesselTop == Types.HeadShape.Klopper or vesselTop == Types.HeadShape.Korbbogenthen then
       elseif vesselTop == Types.HeadShape.Klopper then
-        TopHi = Talpha2*di;//0.19377 * di;
+        TopHi = Talpha2 * di;
+//0.19377 * di;
         TopSi = 0.947 * di ^ 2;
         TopVi = 0.098966 * di ^ 3;
-        TopHo = Talpha2*(di + 2 * topThickness);//0.19377 * (di + 2 * topThickness);
+        TopHo = Talpha2 * (di + 2 * topThickness);
+//0.19377 * (di + 2 * topThickness);
         TopSo = 0.947 * (di + 2 * topThickness) ^ 2;
         TopVo = 0.098966 * (di + 2 * topThickness) ^ 3;
       elseif vesselTop == Types.HeadShape.Korbbogen then
-        TopHi = Talpha2*di;//0.2545 * di;
+        TopHi = Talpha2 * di;
+//0.2545 * di;
         TopSi = 0.986 * di ^ 2;
         TopVi = 0.1307 * di ^ 3;
-        TopHo = Talpha2*(di + 2 * topThickness);//0.2545 * (di + 2 * topThickness);
+        TopHo = Talpha2 * (di + 2 * topThickness);
+//0.2545 * (di + 2 * topThickness);
         TopSo = 0.986 * (di + 2 * topThickness) ^ 2;
         TopVo = 0.1307 * (di + 2 * topThickness) ^ 3;
       elseif vesselTop == Types.HeadShape.semielliptical then
@@ -315,7 +319,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
         TopSo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 2 / 2;
         TopVo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 3 / 12;
       end if;
-      if vesselBottom == Types.HeadShape.flat then
+  if vesselBottom == Types.HeadShape.flat then
         BottomHi = 0;
         BottomSi = Modelica.Constants.pi * di ^ 2 / 4;
         BottomVi = 0;
@@ -326,21 +330,25 @@ package Vessels "Vessels.mo by Carlos Trujillo
         BottomHi = bottomHeight;
         BottomSi = Modelica.Constants.pi * di * (di ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5;
         BottomVi = Modelica.Constants.pi * di ^ 2 * bottomHeight / 12;
-        BottomHo = bottomHeight+bottomThickness*(di^2/4+bottomHeight^2)^0.5/(di/2);
+        BottomHo = bottomHeight + bottomThickness * (di ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5 / (di / 2);
         BottomSo = Modelica.Constants.pi * (di + 2 * bottomThickness) * ((di + 2 * bottomThickness) ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5;
         BottomVo = Modelica.Constants.pi * (di + 2 * bottomThickness) ^ 2 * (bottomHeight + bottomThickness) / 12;
       elseif vesselBottom == Types.HeadShape.Klopper then
-        BottomHi = Balpha2*di;//0.19377 * di;
+        BottomHi = Balpha2 * di;
+//0.19377 * di;
         BottomSi = 0.947 * di ^ 2;
         BottomVi = 0.098966 * di ^ 3;
-        BottomHo = Balpha2*(di + 2 * bottomThickness);//0.19377 * (di + 2 * bottomThickness);
+        BottomHo = Balpha2 * (di + 2 * bottomThickness);
+//0.19377 * (di + 2 * bottomThickness);
         BottomSo = 0.947 * (di + 2 * bottomThickness) ^ 2;
         BottomVo = 0.098966 * (di + 2 * bottomThickness) ^ 3;
       elseif vesselBottom == Types.HeadShape.Korbbogen then
-        BottomHi = Balpha2*di;//0.25447 * di;
+        BottomHi = Balpha2 * di;
+//0.25447 * di;
         BottomSi = 0.986 * di ^ 2;
         BottomVi = 0.1307 * di ^ 3;
-        BottomHo = Balpha2*(di + 2 * bottomThickness);//0.25447 * (di + 2 * bottomThickness);
+        BottomHo = Balpha2 * (di + 2 * bottomThickness);
+//0.25447 * (di + 2 * bottomThickness);
         BottomSo = 0.986 * (di + 2 * bottomThickness) ^ 2;
         BottomVo = 0.1307 * (di + 2 * bottomThickness) ^ 3;
       elseif vesselBottom == Types.HeadShape.semielliptical then
@@ -878,77 +886,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end if;
   end TankAgitAnchor2Coils;
 
-  model TankAgitAnchor2CoilsOld "Anchor Vessel. Seems the best model for anchors"
-    //Normally missing:N (rpm) from the mixer, and T from the process
-    extends TankAgitatedAnchorPM(final numCoils = 2, final numHalfCoils = 0);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerAnchor Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1 constrainedby FreeFluids.Pipes.PipeThermalBase(final useThermalConnector = false) annotation(
-       Placement(visible = true, transformation(origin = {0, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil2 constrainedby FreeFluids.Pipes.PipeThermalBase(final useThermalConnector = false) annotation(
-       Placement(visible = true, transformation(origin = {0, 16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    Real HTWallCorrFactorC1(start = 1.0), HTWallCorrFactorC2(start = 1.0);
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(start = 1e2, min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.NusseltNumber NuCoil2(start = 1e2, min = 1, max = 1e5) "Coil2 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Hcoil2(min = 10, start = 1000) "Coil2 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil2(min = 10, start = 600) "Coil2 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil1, LMTDcoil2 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateC2;
-  algorithm
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-    NuCoil1 := homotopy(0.135 * HTWallCorrFactorC1 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.135 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33) "VDI atlas. Original leading constant 0.084 and 0.14 of viscosity corr. exponent";
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if noEvent((T - Coil1.Ta) * (T - Coil1.Tb) <= 0) then
-      LMTDcoil1 := 0;
-    elseif noEvent(T - Coil1.Ta == T - Coil1.Tb) then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := homotopy((Coil1.Tb - Coil1.Ta) / log((T - Coil1.Ta) / (T - Coil1.Tb)), T - Coil1.Ta);
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.13);
-    end if;
-    NuCoil2 := homotopy(0.135 * HTWallCorrFactorC2 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.135 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta - (T - Coil2.Tb) == 0 then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := homotopy((T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb)), T - Coil2.Ta);
-    end if;
-  equation
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
-    end if;
-//StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
-//StateC2 = Medium.setBubbleState(Medium.setSat_T(Coil2.Tsurf));
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    if numCoils == 2 and numHalfCoils == 0 then
-      W = (-Coil1.W) - Coil2.W;
-    end if;
-  end TankAgitAnchor2CoilsOld;
-
   model TankAgitAnchor2Coils1Hc "Anchor Vessel. Seems the best model for anchors"
     extends TankAgitAnchor2Coils(numCoils = 2, numHalfCoils = 1);
     replaceable VesselCylVert Vessel(nConcCoils = 1) annotation(
@@ -999,7 +936,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       LMTDhalfCoil1 := homotopy((T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb)), T - HalfCoil1.Ta);
     end if;
   equation
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
+  if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
       HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT);
 //HalfCoil1.W = HhalfCoil1 * (T-HalfCoil1.Tsurf) * (HalfCoil1.SactiveHT+AuxSurfEffHc1*HalfCoil1.SauxHT);
     end if;
@@ -1011,125 +948,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   end TankAgitAnchor2Coils1Hc;
-
-  model TankAgitAnchor2Coils1HcOld "Anchor Vessel. Seems the best model for anchors"
-    //Normally missing:N (rpm) from the mixer, and T from the process
-    extends TankAgitatedAnchorPM(final numCoils = 2, final numHalfCoils = 1);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerAnchor Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0) annotation(
-      Placement(visible = true, transformation(origin = {0, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.CoilForcedConvection Coil2(final useThermalConnector = false, final thicknessInsul = 0) annotation(
-      Placement(visible = true, transformation(origin = {-8.88178e-16, 16}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil1(final useThermalConnector = false) annotation(
-      Placement(visible = true, transformation(origin = {-34, 12}, extent = {{-12, -12}, {12, 12}}, rotation = 90)));
-    Real HTWallCorrFactorC1(start = 1.0), HTWallCorrFactorC2(start = 1.0);
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(start = 1e2, min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.NusseltNumber NuCoil2(start = 1e2, min = 1, max = 1e5) "Coil2 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Hcoil2(min = 10, start = 1000) "Coil2 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600) "Coil1 global heat transfer coeff., referenced to internal surface";
-    SI.CoefficientOfHeatTransfer Ucoil2(min = 10, start = 600) "Coil2 global heat transfer coeff., referenced to internal surface";
-    SI.TemperatureDifference LMTDcoil1, LMTDcoil2 "Coil logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc1(start = 1.0);
-    SI.DynamicViscosity MuWallHc1(min = 1e-6, start = 1e-3, max = 1e6) "wall jacket process side viscosity at wall temperature";
-    Real AuxSurfEffHc1(start = 1) "fraction of internal auxiliar surface used in heat transfer";
-    SI.NusseltNumber NuHalfCoil1(start = 1e2, min = 1, max = 1e5) "jacket process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil1(min = 5, start = 1000) "jacket process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil1(min = 5, start = 600) "jacket global heat transfer coeff.,referenced to directly heated surface";
-    SI.TemperatureDifference LMTDhalfCoil1 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateC2, StateHc1;
-  algorithm
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-//HTWallCorrFactorC1 := (Mu / MuWall1) ^ 0.13;
-    NuCoil1 := homotopy(0.13 * HTWallCorrFactorC1 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.13 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-//NuCoil1 := 0.135 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33 * (Mu / MuWall1) ^ 0.12 "VDI atlas. Original 0.084 and 0.14 of exponent";
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if noEvent((T - Coil1.Ta) * (T - Coil1.Tb) <= 0) then
-      LMTDcoil1 := 0;
-    elseif noEvent(T - Coil1.Ta == T - Coil1.Tb) then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := homotopy((Coil1.Tb - Coil1.Ta) / log((T - Coil1.Ta) / (T - Coil1.Tb)), T - Coil1.Ta);
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.13);
-    end if;
-    NuCoil2 := homotopy(0.13 * HTWallCorrFactorC2 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.13 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta - (T - Coil2.Tb) == 0 then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := homotopy((T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb)), T - Coil2.Ta);
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil1.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc1 := Medium.dynamicViscosity(StateHc1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc1 := 1.0;
-    else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
-    end if;
-    if Mixer.Re < 100 then
-      NuHalfCoil1 := homotopy(0.69 * HTWallCorrFactorHc1 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3), 0.69 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3));
-    else
-      NuHalfCoil1 := homotopy(0.56 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3), 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3));
-    end if;
-//NuHalfCoil1 := 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mu / MuWallHc1) ^ 0.14 "McKetta: Heat Transfer Design Methods. Original 0.46";
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    AuxSurfEffHc1 := (HhalfCoil1 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc1 := (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) - 1) / (AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi) * (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if noEvent((T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0) then
-      LMTDhalfCoil1 := 0;
-    elseif noEvent(T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0) then
-      LMTDhalfCoil1 := T - HalfCoil1.Ta;
-    else
-      LMTDhalfCoil1 := homotopy((T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb)), T - HalfCoil1.Ta);
-    end if;
-//HalfCoil1.W := UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-  equation
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SactiveHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SactiveHT;
-    end if;
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT);
-//HalfCoil1.W = HhalfCoil1 * (T-HalfCoil1.Tsurf) * (HalfCoil1.SactiveHT+AuxSurfEffHc1*HalfCoil1.SauxHT);
-    end if;
-//StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
-//StateC2 = Medium.setBubbleState(Medium.setSat_T(Coil2.Tsurf));
-//StateHc1 = Medium.setBubbleState(Medium.setSat_T(HalfCoil1.Tsurf));
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
-    if numCoils == 2 and numHalfCoils == 1 then
-      W = (-Coil1.W) - Coil2.W - HalfCoil1.W;
-    end if;
-    annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
-  end TankAgitAnchor2Coils1HcOld;
 
   model TankAgitAnchor2Coils2Hc
     extends TankAgitAnchor2Coils1Hc(numCoils = 2, numHalfCoils = 2);
@@ -1194,161 +1012,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   end TankAgitAnchor2Coils2Hc;
-
-  model TankAgitAnchor2Coils2HcOld "Anchor Vessel. Seems the best model for anchors"
-    //Normally missing:N (rpm) from the mixer, and T from the process
-    extends TankAgitatedAnchorPM(final numCoils = 2, final numHalfCoils = 2);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerAnchor Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0) annotation(
-      Placement(visible = true, transformation(origin = {0, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.CoilForcedConvection Coil2(final useThermalConnector = false, final thicknessInsul = 0) annotation(
-      Placement(visible = true, transformation(origin = {-8.88178e-16, 16}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil1(final useThermalConnector = false, isBottomJacket = true) annotation(
-      Placement(visible = true, transformation(origin = {0, -38}, extent = {{-12, 12}, {12, -12}}, rotation = 0)));
-    FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil2(final useThermalConnector = false) annotation(
-      Placement(visible = true, transformation(origin = {-40, 12}, extent = {{-12, -12}, {12, 12}}, rotation = 90)));
-    Real HTWallCorrFactorC1(start = 1.0), HTWallCorrFactorC2(start = 1.0);
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(start = 1e2, min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.NusseltNumber NuCoil2(start = 1e2, min = 1, max = 1e5) "Coil2 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Hcoil2(min = 10, start = 1000) "Coil2 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600) "Coil1 global heat transfer coeff., referenced to internal surface";
-    SI.CoefficientOfHeatTransfer Ucoil2(min = 10, start = 600) "Coil2 global heat transfer coeff., referenced to internal surface";
-    SI.TemperatureDifference LMTDcoil1, LMTDcoil2 "Coil logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc1(start = 1.0);
-    SI.DynamicViscosity MuWallHc1(min = 1e-6, start = 1e-3, max = 1e6) "halfcoil process side viscosity at wall temperature";
-    Real AuxSurfEffHc1(start = 1) "fraction of internal auxiliar surface used in heat transfer";
-    SI.NusseltNumber NuHalfCoil1(start = 1e2, min = 1, max = 1e5) "halfcoil process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil1(min = 5, start = 1000) "halfcoil process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil1(min = 5, start = 600) "halfcoil global heat transfer coeff.,referenced to directly heated surface";
-    SI.TemperatureDifference LMTDhalfCoil1 "Logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc2(start = 1.0);
-    SI.DynamicViscosity MuWallHc2(min = 1e-6, start = 1e-3, max = 1e6) "halfcoil process side viscosity at wall temperature";
-    Real AuxSurfEffHc2(start = 1) "fraction of internal auxiliar surface used in heat transfer";
-    SI.NusseltNumber NuHalfCoil2(start = 1e2, min = 1, max = 1e5) "halfcoil process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil2(min = 5, start = 1000) "halfcoil process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil2(min = 5, start = 600) "halfcoil global heat transfer coeff.,referenced to directly heated surface";
-    SI.TemperatureDifference LMTDhalfCoil2 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateC2, StateHc1, StateHc2;
-  algorithm
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-    NuCoil1 := homotopy(0.13 * HTWallCorrFactorC1 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.13 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-//NuCoil1 := 0.135 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33 * (Mu / MuWall1) ^ 0.12 "VDI atlas. Original 0.084 and 0.14 of exponent";
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if noEvent((T - Coil1.Ta) * (T - Coil1.Tb) <= 0) then
-      LMTDcoil1 := 0;
-    elseif noEvent(T - Coil1.Ta == T - Coil1.Tb) then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := homotopy((Coil1.Tb - Coil1.Ta) / log((T - Coil1.Ta) / (T - Coil1.Tb)), T - Coil1.Ta);
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.14);
-    end if;
-    NuCoil2 := homotopy(0.13 * HTWallCorrFactorC2 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.13 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-//NuCoil2 := 0.135 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33 * (Mu / MuWall2) ^ 0.13;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta - (T - Coil2.Tb) == 0 then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := homotopy((T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb)), T - Coil2.Ta);
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil1.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc1 := Medium.dynamicViscosity(StateHc1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc1 := 1.0;
-    else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
-    end if;
-    if Mixer.Re < 100 then
-      NuHalfCoil1 := homotopy(0.69 * HTWallCorrFactorHc1 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3), 0.69 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3));
-    else
-      NuHalfCoil1 := homotopy(0.56 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3), 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3)) "McKetta: Heat Transfer Design Methods. Original 0.46";
-    end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    AuxSurfEffHc1 := (HhalfCoil1 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc1 := (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) - 1) / (AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi) * (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if noEvent((T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0) then
-      LMTDhalfCoil1 := 0;
-    elseif noEvent(T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0) then
-      LMTDhalfCoil1 := T - HalfCoil1.Ta;
-    else
-      LMTDhalfCoil1 := homotopy((T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb)), T - HalfCoil1.Ta);
-    end if;
-    if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil2.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc2 := Medium.dynamicViscosity(StateHc2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc2 := 1.0;
-    else
-      HTWallCorrFactorHc2 := max(0.4, (Mu / MuWallHc2) ^ 0.14);
-    end if;
-    if Mixer.Re < 100 then
-      NuHalfCoil2 := homotopy(0.69 * HTWallCorrFactorHc2 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3), 0.69 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3));
-    else
-      NuHalfCoil2 := homotopy(0.56 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3), 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3));
-    end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    AuxSurfEffHc2 := (HhalfCoil2 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc2 := (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) - 1) / (AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi) * (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) + 1));
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
-    if noEvent((T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0) then
-      LMTDhalfCoil2 := 0;
-    elseif noEvent(T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0) then
-      LMTDhalfCoil2 := T - HalfCoil2.Ta;
-    else
-      LMTDhalfCoil2 := homotopy((T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb)), T - HalfCoil2.Ta);
-    end if;
-  equation
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SactiveHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SactiveHT;
-    end if;
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT);
-//HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-    end if;
-    if HalfCoil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT);
-//HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
-    end if;
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
-    StateHc2 = Medium.setState_pTX(fixedPressure, HalfCoil2.Tsurf);
-    if numCoils == 2 and numHalfCoils == 2 then
-      W = (-Coil1.W) - Coil2.W - HalfCoil1.W - HalfCoil2.W;
-    end if;
-    annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
-  end TankAgitAnchor2Coils2HcOld;
 
   partial model TankAgitatedKameiPM
     extends TankPM;
@@ -1598,124 +1261,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end if;
   end TankAgitKamei1Coil1Hc;
 
-  model TankAgitKamei1coils1hc
-    extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 1, final numHalfCoils = 1);
-    FreeFluids.Vessels.VesselCylVert Vessel(final nConcCoils = 1) annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerKamei Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil1(final useThermalConnector = false) annotation(
-      Placement(visible = true, transformation(origin = {-34, 4}, extent = {{-12, -12}, {12, 12}}, rotation = 90)));
-    Real HTWallCorrFactorC1(start = 1.0) "Mu/Mu Wall for coil 1";
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil1 "Logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc1(start = 1.0);
-    SI.DynamicViscosity MuWallHc1(min = 1e-6, start = 1e-3, max = 1e3) "wall jacket process side viscosity at wall temperature";
-    SI.NusseltNumber NuHalfCoil1(min = 1, max = 1e5) "wall jacket process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil1(min = 10, start = 1000) "wall jacket process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil1(min = 10, start = 600) "wall jacket global heat transfer coeff.";
-    SI.TemperatureDifference LMTDhalfCoil1 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateHc1;
-  algorithm
-//Nusselt halfcoil must be reviewed for mig and intermig
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
-      LMTDcoil1 := 0;
-    elseif T - Coil1.Ta == T - Coil1.Tb then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil1.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc1 := Medium.dynamicViscosity(StateHc1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc1 := 1.0;
-    else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      end if;
-    else
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
-        if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
-        elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        end if;
-      end if;
-    end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
-      LMTDhalfCoil1 := 0;
-    elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
-      LMTDhalfCoil1 := T - HalfCoil1.Ta;
-    else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
-    end if;
-  equation
-    if Coil1.fullHTlength == false then
-      if Coil1.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = 0.0;
-      elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = Coil1.SactiveHT;
-      else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
-      end if;
-    end if;
-//StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
-//StateHc1 = Medium.setBubbleState(Medium.setSat_T(HalfCoil1.Tsurf));
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-    end if;
-    if numCoils == 1 and numHalfCoils == 1 then
-      W = (-Coil1.W) - HalfCoil1.W;
-    end if;
-  end TankAgitKamei1coils1hc;
-
   model TankAgitKamei1Coil2Hc
     extends TankAgitKamei1Coil1Hc(numCoils = 1, numHalfCoils = 2);
     replaceable FreeFluids.Vessels.VesselCylVert Vessel(nConcCoils = 1) annotation(
@@ -1791,173 +1336,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end if;
   end TankAgitKamei1Coil2Hc;
 
-  model TankAgitKamei1coil2hc
-    extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 1, final numHalfCoils = 2);
-    FreeFluids.Vessels.VesselCylVert Vessel(final nConcCoils = 1) annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerKamei Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0, PLossFriction(displayUnit = "bar"), fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil1(final useThermalConnector = false, isBottomJacket = true, PLossFriction(displayUnit = "bar"), basePipeAngle(displayUnit = "deg")) annotation(
-      Placement(visible = true, transformation(origin = {0, -42}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil2(final useThermalConnector = false, PLossFriction(displayUnit = "bar"), basePipeAngle(displayUnit = "deg")) annotation(
-      Placement(visible = true, transformation(origin = {-34, 4}, extent = {{-12, -12}, {12, 12}}, rotation = 90)));
-    Real HTWallCorrFactorC1(start = 1.0) "Mu/Mu Wall for coil 1";
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil1 "Logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc1(start = 1.0), HTWallCorrFactorHc2(start = 1.0);
-    SI.DynamicViscosity MuWallHc1(min = 1e-6, start = 1e-3, max = 1e3), MuWallHc2(min = 1e-6, start = 1e-3, max = 1e3) "wall jacket process side viscosity at wall temperature";
-    SI.NusseltNumber NuHalfCoil1(min = 1, max = 1e5), NuHalfCoil2(min = 1, max = 1e5) "wall jacket process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil1(min = 10, start = 1000), HhalfCoil2(min = 10, start = 1000) "wall jacket process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil1(min = 10, start = 600), UhalfCoil2(min = 10, start = 600) "wall jacket global heat transfer coeff.";
-    SI.TemperatureDifference LMTDhalfCoil1, LMTDhalfCoil2 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateHc1, StateHc2;
-  algorithm
-//Nusselt halfcoil must be reviewed for mig and intermig
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
-      LMTDcoil1 := 0;
-    elseif T - Coil1.Ta == T - Coil1.Tb then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil1.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc1 := Medium.dynamicViscosity(StateHc1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc1 := 1.0;
-    else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      end if;
-    else
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
-        if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
-        elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        end if;
-      end if;
-    end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
-      LMTDhalfCoil1 := 0;
-    elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
-      LMTDhalfCoil1 := T - HalfCoil1.Ta;
-    else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
-    end if;
-    if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil2.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc2 := Medium.dynamicViscosity(StateHc2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc2 := 1.0;
-    else
-      HTWallCorrFactorHc2 := max(0.4, (Mu / MuWallHc2) ^ 0.14);
-    end if;
-    if HalfCoil2.isBottomJacket == true then
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
-      elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil2 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
-      end if;
-    else
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
-        if Mixer.Re > 10000 then
-          NuHalfCoil2 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT, liquid heigth correction from PDHengineer";
-        elseif Mixer.Re < 400 then
-          NuHalfCoil2 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
-        else
-          NuHalfCoil2 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
-        end if;
-      end if;
-    end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
-    if (T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0 then
-      LMTDhalfCoil2 := 0;
-    elseif T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0 then
-      LMTDhalfCoil2 := T - HalfCoil2.Ta;
-    else
-      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb));
-    end if;
-  equation
-    if Coil1.fullHTlength == false then
-      if Coil1.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = 0.0;
-      elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = Coil1.SactiveHT;
-      else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
-      end if;
-    end if;
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
-    StateHc2 = Medium.setState_pTX(fixedPressure, HalfCoil2.Tsurf);
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-    end if;
-    if HalfCoil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
-    end if;
-    if numCoils == 1 and numHalfCoils == 2 then
-      W = (-Coil1.W) - HalfCoil1.W - HalfCoil2.W;
-    end if;
-  end TankAgitKamei1coil2hc;
-
   model TankAgitKamei2Coils
     extends FreeFluids.Vessels.TankAgitKamei1Coil(numCoils = 2, numHalfCoils = 0);
     replaceable FreeFluids.Vessels.VesselCylVert Vessel(nConcCoils = 1) annotation(
@@ -2020,110 +1398,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
       W = (-Coil1.W) - Coil2.W;
     end if;
   end TankAgitKamei2Coils;
-
-  model TankAgitKamei2coils
-    extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 2, final numHalfCoils = 0);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerKamei Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil2(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {-8.88178e-16, 24}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    Real HTWallCorrFactorC1(start = 1.0) "Mu/Mu Wall for coil 1";
-    Real HTWallCorrFactorC2(start = 1.0) "Mu/Mu Wall for coil 2";
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(min = 1, max = 1e5), NuCoil2(min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000), Hcoil2(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600), Ucoil2(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil1, LMTDcoil2 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateC2;
-  algorithm
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    elseif noEvent(Mu / MuWall1 >= 1.0e4) then
-      HTWallCorrFactorC1 := 10000.0;
-    elseif noEvent(Mu / MuWall1 <= 0.000006) then
-      HTWallCorrFactorC1 := 0.000006;
-    else
-      HTWallCorrFactorC1 := Mu / MuWall1;
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
-      LMTDcoil1 := 0;
-    elseif T - Coil1.Ta == T - Coil1.Tb then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    elseif noEvent(Mu / MuWall2 >= 1.0e4) then
-      HTWallCorrFactorC2 := 10000.0;
-    elseif noEvent(Mu / MuWall2 <= 0.000006) then
-      HTWallCorrFactorC2 := 0.000006;
-    else
-      HTWallCorrFactorC2 := Mu / MuWall2;
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil2 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil2 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil2 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    end if;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta == T - Coil2.Tb then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb));
-    end if;
-  equation
-    if Coil1.fullHTlength == false then
-      if Coil1.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = 0.0;
-      elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = Coil1.SactiveHT;
-      else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
-      end if;
-    end if;
-    if Coil2.fullHTlength == false then
-      if Coil2.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = 0.0;
-      elseif Coil2.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = Coil2.SactiveHT;
-      else
-        Coil2.SusedHT = Coil2.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil2.heightInit) / Coil2.CoilHeigth;
-      end if;
-    end if;
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
-    end if;
-    if numCoils == 2 and numHalfCoils == 0 then
-      W = (-Coil1.W) - Coil2.W;
-    end if;
-  end TankAgitKamei2coils;
 
   model TankAgitKamei2Coils1Hc
     extends FreeFluids.Vessels.TankAgitKamei2Coils(numCoils = 2, numHalfCoils = 1);
@@ -2198,181 +1472,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
       W = (-Coil1.W) - Coil2.W - HalfCoil1.W;
     end if;
   end TankAgitKamei2Coils1Hc;
-
-  model TankAgitKamei2coils1hc
-    extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 2, final numHalfCoils = 1);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerKamei Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -14}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil2(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {-8.88178e-16, 24}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.HalfCoilForcedConvection HalfCoil1(final useThermalConnector = false) annotation(
-      Placement(visible = true, transformation(origin = {-34, 4}, extent = {{-12, -12}, {12, 12}}, rotation = 90)));
-    Real HTWallCorrFactorC1(start = 1.0) "Mu/Mu Wall for coil 1";
-    Real HTWallCorrFactorC2(start = 1.0) "Mu/Mu Wall for coil 2";
-    SI.DynamicViscosity MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil1(min = 1, max = 1e5), NuCoil2(min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil1(min = 10, start = 1000), Hcoil2(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil1(min = 10, start = 600), Ucoil2(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil1, LMTDcoil2 "Logarithmic mean temperature difference";
-    Real HTWallCorrFactorHc1(start = 1.0);
-    SI.DynamicViscosity MuWallHc1(min = 1e-6, start = 1e-3, max = 1e3) "wall jacket process side viscosity at wall temperature";
-    SI.NusseltNumber NuHalfCoil1(min = 1, max = 1e5) "wall jacket process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer HhalfCoil1(min = 10, start = 1000) "wall jacket process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer UhalfCoil1(min = 10, start = 600) "wall jacket global heat transfer coeff.";
-    SI.TemperatureDifference LMTDhalfCoil1 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC1, StateC2, StateHc1;
-  algorithm
-//Nusselt halfcoil must be reviewed for mig and intermig
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    elseif noEvent(Mu / MuWall1 >= 1.0e4) then
-      HTWallCorrFactorC1 := 10000.0;
-    elseif noEvent(Mu / MuWall1 <= 0.000006) then
-      HTWallCorrFactorC1 := 0.000006;
-    else
-      HTWallCorrFactorC1 := Mu / MuWall1;
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
-      LMTDcoil1 := 0;
-    elseif T - Coil1.Ta == T - Coil1.Tb then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    elseif noEvent(Mu / MuWall2 >= 1.0e4) then
-      HTWallCorrFactorC2 := 10000.0;
-    elseif noEvent(Mu / MuWall2 <= 0.000006) then
-      HTWallCorrFactorC2 := 0.000006;
-    else
-      HTWallCorrFactorC2 := Mu / MuWall2;
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil2 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil2 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil2 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    end if;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta == T - Coil2.Tb then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb));
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
-    else
-      HalfCoil1.HalfCoilDiam := Vessel.Do;
-    end if;
-    MuWallHc1 := Medium.dynamicViscosity(StateHc1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorHc1 := 1.0;
-    elseif noEvent(Mu / MuWallHc1 >= 1e4) then
-      HTWallCorrFactorHc1 := 10000 ^ 0.14;
-    elseif noEvent(Mu / MuWallHc1 <= 0.000008) then
-      HTWallCorrFactorHc1 := 0.000008 ^ 0.14;
-    else
-      HTWallCorrFactorHc1 := (Mu / MuWallHc1) ^ 0.14;
-    end if;
-    if HalfCoil1.isBottomJacket == true then
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
-      end if;
-    else
-      if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
-      elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
-      elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
-        if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
-        elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
-        end if;
-      end if;
-    end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
-      LMTDhalfCoil1 := 0;
-    elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
-      LMTDhalfCoil1 := T - HalfCoil1.Ta;
-    else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
-    end if;
-//HalfCoilW.W := UhalfCoilW * (T - HalfCoilW.Ta + T - HalfCoilW.Tb) / 2 * HalfCoilW.SactivedHT;
-//HalfCoilW.W := UhalfCoilW * LMTDhalfCoilW * HalfCoilW.SactivedHT;
-/*elseif Mixer.reference == "radialTurbine" then
-        NuJacketC1 = 0.66 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / Vessel.hLiquid*Mixer.nImpellers) ^ 0.15 * (Mixer.nBlades * Mixer.width / (4 * 0.2    * Vessel.di)) ^ 0.2 * (Mu / MuWallJC1) ^ 0.14 "Handbook of Industrial Mixing";
-        NuJacketC2 = 0.66 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / Vessel.hLiquid*Mixer.nImpellers) ^ 0.15 * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * (Mu / MuWallJC2) ^ 0.14 "Handbook of Industrial Mixing";
-      elseif Mixer.reference == "axialTurbine" then
-        NuJacketC1 = 0.45 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / Vessel.hLiquid*Mixer.nImpellers) ^ 0.15 * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * (Mu / MuWallJC1) ^ 0.14 "Handbook of Industrial Mixing";
-        NuJacketC2 = 0.45 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / Vessel.hLiquid*Mixer.nImpellers) ^ 0.15 * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * (Mu / MuWallJC2) ^ 0.14 "Handbook of Industrial Mixing";
-      end if;*/
-  equation
-    if Coil1.fullHTlength == false then
-      if Coil1.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = 0.0;
-      elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = Coil1.SactiveHT;
-      else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
-      end if;
-    end if;
-    if Coil2.fullHTlength == false then
-      if Coil2.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = 0.0;
-      elseif Coil2.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = Coil2.SactiveHT;
-      else
-        Coil2.SusedHT = Coil2.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil2.heightInit) / Coil2.CoilHeigth;
-      end if;
-    end if;
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
-    end if;
-    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-    end if;
-    if numCoils == 2 and numHalfCoils == 1 then
-      W = (-Coil1.W) - HalfCoil1.W - Coil2.W;
-    end if;
-  end TankAgitKamei2coils1hc;
 
   model TankAgitKamei2coil2hc
     extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 2, final numHalfCoils = 2);
@@ -2643,143 +1742,6 @@ package Vessels "Vessels.mo by Carlos Trujillo
       W = (-Coil0.W) - Coil1.W - Coil2.W;
     end if;
   end TankAgitKamei3Coils;
-
-  model TankAgitKamei3coils
-    extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 3, final numHalfCoils = 0);
-    FreeFluids.Vessels.VesselCylVert Vessel annotation(
-      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
-    FreeFluids.Vessels.MixerKamei Mixer annotation(
-      Placement(visible = true, transformation(origin = {0, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil0(final thicknessInsul = 0, final useThermalConnector = false, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -28}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil1(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {0, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    replaceable FreeFluids.Pipes.CoilForcedConvection Coil2(final useThermalConnector = false, final thicknessInsul = 0, fullHTlength = false) annotation(
-      Placement(visible = true, transformation(origin = {-8.88178e-16, 26}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
-    Real HTWallCorrFactorC0(start = 1.0) "Mu/Mu Wall for coil 0";
-    Real HTWallCorrFactorC1(start = 1.0) "Mu/Mu Wall for coil 1";
-    Real HTWallCorrFactorC2(start = 1.0) "Mu/Mu Wall for coil 2";
-    SI.DynamicViscosity MuWall0(min = 1e-6, start = 1e-3, max = 1e7), MuWall1(min = 1e-6, start = 1e-3, max = 1e7), MuWall2(min = 1e-6, start = 1e-3, max = 1e7) "Coil1 process side viscosity at wall temperature";
-    SI.NusseltNumber NuCoil0(min = 1, max = 1e5), NuCoil1(min = 1, max = 1e5), NuCoil2(min = 1, max = 1e5) "Coil1 process side Nusselt numbers";
-    SI.CoefficientOfHeatTransfer Hcoil0(min = 10, start = 1000), Hcoil1(min = 10, start = 1000), Hcoil2(min = 10, start = 1000) "Coil1 process side heat transfer coeff.";
-    SI.CoefficientOfHeatTransfer Ucoil0(min = 10, start = 600), Ucoil1(min = 10, start = 600), Ucoil2(min = 10, start = 600) "Coil1 global heat transfer coeff.";
-    SI.TemperatureDifference LMTDcoil0, LMTDcoil1, LMTDcoil2 "Logarithmic mean temperature difference";
-    SI.Power W "heat transfer power possitive to the vessel";
-    Medium.ThermodynamicState StateC0, StateC1, StateC2;
-  algorithm
-    MuWall0 := Medium.dynamicViscosity(StateC0);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC0 := 1.0;
-    else
-      HTWallCorrFactorC0 := max(0.4, (Mu / MuWall0) ^ 0.13);
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil0 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil0 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil0 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.08;
-    end if;
-    Hcoil0 := NuCoil0 * K / Coil0.Do;
-    Ucoil0 := 1 / ((foulingF + 1 / Hcoil0) * Coil0.Di / Coil0.Do + Coil0.Do * log(Coil0.Do / Coil0.Di) / (2 * Vessel.wallK) + 1 / Coil0.H + Coil0.foulingF);
-    if (T - Coil0.Ta) * (T - Coil0.Tb) <= 0 then
-      LMTDcoil0 := 0;
-    elseif T - Coil0.Ta == T - Coil0.Tb then
-      LMTDcoil0 := T - Coil0.Ta;
-    else
-      LMTDcoil0 := (T - Coil0.Ta - (T - Coil0.Tb)) / log((T - Coil0.Ta) / (T - Coil0.Tb));
-    end if;
-    MuWall1 := Medium.dynamicViscosity(StateC1);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC1 := 1.0;
-    else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
-    end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
-      LMTDcoil1 := 0;
-    elseif T - Coil1.Ta == T - Coil1.Tb then
-      LMTDcoil1 := T - Coil1.Ta;
-    else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
-    end if;
-    MuWall2 := Medium.dynamicViscosity(StateC2);
-    if useHTWallCorrFactor == false then
-      HTWallCorrFactorC2 := 1.0;
-    else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.13);
-    end if;
-    if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil2 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.14;
-    elseif Mixer.reference == "radialTurbine" then
-      NuCoil2 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    elseif Mixer.reference == "axialTurbine" then
-      NuCoil2 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
-    end if;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
-      LMTDcoil2 := 0;
-    elseif T - Coil2.Ta == T - Coil2.Tb then
-      LMTDcoil2 := T - Coil2.Ta;
-    else
-      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb));
-    end if;
-  equation
-    if Coil0.fullHTlength == false then
-      if Coil0.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil0.SusedHT = 0.0;
-      elseif Coil0.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil0.SusedHT = Coil0.SactiveHT;
-      else
-        Coil0.SusedHT = Coil0.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil0.heightInit) / Coil0.CoilHeigth;
-      end if;
-    end if;
-    if Coil1.fullHTlength == false then
-      if Coil1.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = 0.0;
-      elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil1.SusedHT = Coil1.SactiveHT;
-      else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
-      end if;
-    end if;
-    if Coil2.fullHTlength == false then
-      if Coil2.heightInit >= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = 0.0;
-      elseif Coil2.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
-        Coil2.SusedHT = Coil2.SactiveHT;
-      else
-        Coil2.SusedHT = Coil2.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil2.heightInit) / Coil2.CoilHeigth;
-      end if;
-    end if;
-//StateC0 = Medium.setBubbleState(Medium.setSat_T(Coil0.Tsurf));
-//StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
-//StateC2 = Medium.setBubbleState(Medium.setSat_T(Coil2.Tsurf));
-    StateC0 = Medium.setState_pTX(fixedPressure, Coil0.Tsurf);
-    StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
-    StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
-    if Coil0.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil0.W = Ucoil0 * LMTDcoil0 * Coil0.SusedHT;
-    end if;
-    if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
-    end if;
-    if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
-    end if;
-    if numCoils == 3 then
-      W = (-Coil0.W) - Coil1.W - Coil2.W;
-    end if;
-  end TankAgitKamei3coils;
 
   model TankAgitKamei2hc
     extends FreeFluids.Vessels.TankAgitatedKameiPM(final numCoils = 0, final numHalfCoils = 2);
