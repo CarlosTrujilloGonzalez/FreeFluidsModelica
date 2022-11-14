@@ -417,8 +417,8 @@ package Pipes "Pipes.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.Velocity Va(start = 1);
     Modelica.Units.SI.Velocity Vb(start = -1);
-    Modelica.Units.SI.Velocity Vas "sound velocity at PortA";
-    Modelica.Units.SI.Velocity Vbs "sound velocity at PortB";
+    //Modelica.Units.SI.Velocity Vas "sound velocity at PortA";
+    //Modelica.Units.SI.Velocity Vbs "sound velocity at PortB";
     Medium.Density RhoA(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at Port A";
     Medium.Density RhoB(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "density at PortB";
     Medium.ThermodynamicState StateA "state at PortA";
@@ -439,8 +439,8 @@ package Pipes "Pipes.mo by Carlos Trujillo
     Qb = PortA.G / RhoB;
     Ta = Medium.temperature(StateA);
     Tb = Medium.temperature(StateB);
-    Vas = Medium.velocityOfSound(StateA);
-    Vbs = Medium.velocityOfSound(StateB); 
+    //Vas = Medium.velocityOfSound(StateA);
+    //Vbs = Medium.velocityOfSound(StateB);
     if isCompressibleFlow == true then
       if twoPhaseFlow==true then
         Pdiff = (-sign(PortA.G) * PLossFriction) + PortA.G * (Va + Vb) / PathSectionActive / NumActiveTubes "Momentum conservation. Gravity is not taken into account";    
@@ -465,9 +465,9 @@ package Pipes "Pipes.mo by Carlos Trujillo
         Tb = Ta + fixedDeltaT;
       end if;
     end if;
-//assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
-    assert(abs(Va)<Vas and abs(Vb)<Vbs, "The speed of sound has been exceeded", AssertionLevel.warning);
-  //assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
+  assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
+    //assert(abs(Va)<Vas and abs(Vb)<Vbs, "The speed of sound has been exceeded", AssertionLevel.warning);
+//assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
     annotation(
       defaultComponentName = "Pipe",
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {0, 63, 191}, fillColor = {0, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}),
@@ -744,79 +744,135 @@ package Pipes "Pipes.mo by Carlos Trujillo
   Documentation(info = "<html><head></head><body>Extends the PipeFlowBase model, adding the variables needed for heat exchange calculation in forced convection and in falling film situations.<div>An external surface temperature is introduced, and the LMTD is calculated in reference to this temperature. It is necessary to take into account that, except if we can grant really an unique surface temperature, the objetive of this calculation is not to obtain the exchanged heat, but to obtain a surface temperature for introducing corrections in the calculation, once the heat transfer is known. In this case the heat transfer is calculated using information from both sides.<br><div>It adds also an optional heat port, in order to allow the connection of the pipe to other thermal elements. As the connector gives only one temperature and one heat flow, the use is limited.</div></div></body></html>"));
   end PipeThermalBase;
 
-  model PipeForcedConvection "Model for pipes with thermal,single phase, flow"
-    extends FreeFluids.Pipes.PipeThermalBase(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = false, thermalType = ThermalType.detailed, fullHTperimeter = true, fullHTlength = true);
-    parameter Boolean usePLossWallCorr = true annotation(
-      Dialog(tab = "Flow"));
-    parameter Boolean useHTWallCorrFactor = true annotation(
-      Dialog(tab = "Heat transfer"));
-    
-    Medium.ThermodynamicState StateAvg "average state for physical properties calculation";
-    Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "average density used in calculations";
-    Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "average dynamic viscosity used in calculations";
-    Modelica.Units.SI.ReynoldsNumber Re(min = 0.01, start = 20000) "Reynolds number at average conditions";
-    Real F(start = 0.01) "Darcy's friction factor at average conditions";
-    Modelica.Units.SI.VolumeFlowRate Q(displayUnit = "m3/h") "volume flow rate in each active tube at average conditions";
-    Modelica.Units.SI.Velocity V(start = 1) "velocity at average conditions. Normally between 0.9 and 3.0 m/s for liquids";
-    Modelica.Units.SI.HeatCapacity Cp(start = 2000.0);
-    Modelica.Units.SI.ThermalConductivity K(start = 0.1);
-    Modelica.Units.SI.PrandtlNumber Pr;
-    Real PLossWallCorr(start = 1.0);
-    Medium.ThermodynamicState StateW "Thermodynamic state at wall";
-    Medium.Temperature T "absolute temperature used for physical properties calc.";
-    Medium.DynamicViscosity MuWall(min = 1.0e-6, start = 1.0e-3, max = 1.0e6) "average wall viscosity";
-    Real Fsmooth "smooth pipe friction factor";
-    Real HTWallCorrFactor(start = 1.0);
-    
-    
-    
-  algorithm
-    StateAvg := Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X);
-    Rho := abs(Medium.density(StateAvg));
-    Mu := Medium.dynamicViscosity(StateAvg);
-    Q := PortA.G / Rho;
-    V := abs(Q / (PathSectionActive * NumActiveTubes));
-    MassProductTotal := ViTotal * Rho;
-    T := Medium.temperature(StateAvg);
-    StateW := Medium.setState_pTX(PortA.P, Twall, PortA.X);
-    MuWall := Medium.dynamicViscosity(StateW);
-    Cp := Medium.specificHeatCapacityCp(StateAvg);
-    K := Medium.thermalConductivity(StateAvg);
-    Pr := Cp * Mu / K;
-    if usePLossWallCorr == true then
-      PLossWallCorr := max((MuWall / Mu) ^ 0.14, 0.25);
-    else
-      PLossWallCorr := 1;
-    end if;
-    Re := Dh * abs(PortA.G) / PathSectionActive / NumActiveTubes / Mu + 0.01;
+model PipeForcedConvection "Model for pipes with thermal,single phase, flow"
+  extends FreeFluids.Pipes.PipeThermalBase(useElevDifference = true, elevDifference = 0.0, calcEnthalpyDifference = true, isCompressibleFlow = false, thermalType = ThermalType.detailed, fullHTperimeter = true, fullHTlength = true);
+  parameter Boolean usePLossWallCorr = true annotation(
+    Dialog(tab = "Flow"));
+  parameter Boolean useHTWallCorrFactor = true annotation(
+    Dialog(tab = "Heat transfer"));
+  parameter Boolean useTwistedTapeInserts = false annotation(
+    Dialog(tab = "Heat transfer"));
+  parameter Modelica.Units.SI.Length tapeWidth(displayUnit="mm") = di "only if twisted tape inserts are used" annotation(
+    Dialog(tab = "Heat transfer"));
+  parameter Modelica.Units.SI.Length tapeThickness(displayUnit="mm") = thickness "only if twisted tape inserts are used" annotation(
+    Dialog(tab = "Heat transfer"));    
+  parameter Real twistRatio = 6 "Length of a 180 degrees twist divided by Di, if twisted tape inserts are used" annotation(
+    Dialog(tab = "Heat transfer"));   
+  Medium.ThermodynamicState StateAvg "average state for physical properties calculation";
+  Modelica.Units.SI.Density Rho(displayUnit = "kg/m3", start = if isCompressibleFlow == true then 5.0 else 1000.0) "average density used in calculations";
+  Medium.DynamicViscosity Mu(min = 1e-6, start = 1e-3, max = 1e6) "average dynamic viscosity used in calculations";
+  Modelica.Units.SI.ReynoldsNumber Re(min = 0.01, start = 20000) "Reynolds number at average conditions";
+  Real Fl(start = 0.01) "laminar Darcy's friction factor at average conditions";
+  Real Ft(start = 0.01) "turbulent Darcy's friction factor at average conditions";
+  Real F(start = 0.01) "Darcy's friction factor at average conditions";
+  Modelica.Units.SI.VolumeFlowRate Q(displayUnit = "m3/h") "volume flow rate in each active tube at average conditions";
+  Modelica.Units.SI.Velocity V(start = 1) "velocity at average conditions. Normally between 0.9 and 3.0 m/s for liquids";
+  Modelica.Units.SI.HeatCapacity Cp(start = 2000.0);
+  Modelica.Units.SI.ThermalConductivity K(start = 0.1);
+  Modelica.Units.SI.PrandtlNumber Pr;
+  Real PLossWallCorr(start = 1.0);
+  Medium.ThermodynamicState StateW "Thermodynamic state at wall";
+  Medium.Temperature T "absolute temperature used for physical properties calc.";
+  Medium.DynamicViscosity MuWall(min = 1.0e-6, start = 1.0e-3, max = 1.0e6) "average wall viscosity";
+  Real Fsmooth "smooth pipe friction factor";
+  Real HTWallCorrFactor(start = 1.0);
+  
+  Modelica.Units.SI.RayleighNumber Ra "Rayleigh number";
+  Real Sw "Swirl number";
+  
+algorithm
+  StateAvg := Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X);
+  Rho := abs(Medium.density(StateAvg));
+  Mu := Medium.dynamicViscosity(StateAvg);
+  Q := PortA.G / Rho;
+  V := abs(Q / (PathSectionActive * NumActiveTubes));
+  MassProductTotal := ViTotal * Rho;
+  T := Medium.temperature(StateAvg);
+  StateW := Medium.setState_pTX(PortA.P, Twall, PortA.X);
+  MuWall := Medium.dynamicViscosity(StateW);
+  Cp := Medium.specificHeatCapacityCp(StateAvg);
+  K := Medium.thermalConductivity(StateAvg);
+  Pr := Cp * Mu / K;
+  Re := Dh * abs(PortA.G) / PathSectionActive / NumActiveTubes / Mu + 0.01;
+  if useTwistedTapeInserts==true then
+    Sw:=(Re*pi/(twistRatio^0.5*(pi-4*tapeThickness/Di)))*(1+(pi/(2*twistRatio))^2)^0.5;
+    Ra:=g_n*Rho^2*Di^3*Medium.isobaricExpansionCoefficient(StateAvg)*abs(Twall-Tsurf)*Pr/Mu^2;
+    Fl:=4*15.767/Re*(pi/(pi-4*tapeThickness/Di))*((pi+2-2*tapeThickness/Di)/(pi-4*tapeThickness/Di))^2*(1+(pi/2/twistRatio)^2)*(1+1e-6*Sw^2.55)^(1/6) "laminar flow friction factor";
+    Ft:=4*0.0791/Re^0.25*(pi/(pi-4*tapeThickness/Di))*((pi+2-2*tapeThickness/Di)/(pi-4*tapeThickness/Di))^1.25*(1+2.752/twistRatio^1.29) "turbulent flow friction factor";
+    F := (Fl^10+Ft^10)^0.1;
+  else
+    Sw:=0;
+    Ra:=0;
+    Fl:=0;
+    Ft:=0;
     F := 8 * ((8 / Re) ^ 12 + ((37530 / Re) ^ 16 + (-2.457 * log((7 / Re) ^ 0.9 + 0.27 * roughness / Di)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
-//F=0.0791/(Re)^0.25"alternative turbulent";
-    PLossFriction := homotopy(0.5 * V ^ 2 * Rho * PLossWallCorr * (F * LeTube / Dh + numVelocityHeads), 0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads));
-    if Rho > 300 and useHTWallCorrFactor == true then
-      HTWallCorrFactor := (Mu / MuWall) ^ 0.11 "liquids wall temperature correction factor";
+  end if;
+  if usePLossWallCorr == true then
+    PLossWallCorr := max((MuWall / Mu) ^ 0.14, 0.25) "pressure loss correction factor";
+  else
+    PLossWallCorr := 1;
+  end if;
+  PLossFriction := homotopy(0.5 * V ^ 2 * Rho * PLossWallCorr * (F * LeTube / Dh + numVelocityHeads), 0.5 * V ^ 2 * Rho * (F * LeTube / Dh + numVelocityHeads));
+  
+  if useHTWallCorrFactor == true then
+    if useTwistedTapeInserts==true then
+      if Rho>300 then
+        if noEvent(Twall>T) then
+          HTWallCorrFactor := (Mu / MuWall) ^ 0.18 "liquid heating heat transfer correction factor with inserts";
+        else
+          HTWallCorrFactor := (Mu / MuWall) ^ 0.3 "liquid cooling heat transfer correction factor with inserts";
+        end if;
+      else
+        if noEvent(Twall>T) then
+          HTWallCorrFactor := (T / Twall) ^ 0.45 "gas heating heat transfer correction factor with inserts";
+        else
+          HTWallCorrFactor := (T / Twall) ^ 0.15 "gas cooling heat transfer correction factor with inserts";
+        end if;
+      end if;
     else
-      HTWallCorrFactor := 1;
+      if Rho>300 then
+        HTWallCorrFactor := (Mu / MuWall) ^ 0.11 "liquids heat transfer correction factor without inserts";
+      else
+        HTWallCorrFactor := 1;
+      end if;
     end if;
-  equation
+  else
+    HTWallCorrFactor := 1;
+  end if;
+
+equation
+  if useTwistedTapeInserts==true then
+    Fsmooth=0;
+    if noEvent(Sw<1400) then
+      H=0.85*abs(K/Di*((5.172*(1+5.484e-3*Pr^0.7*((Re*pi/(pi-4*tapeThickness/Di))/twistRatio)^1.25)^0.5)^9+(1.17*Ra^0.181)^9)^(1/9)) "reduced heat transfer coefficient in constant power laminar conditions";
+    elseif noEvent(Sw>2000) then
+      H=abs(K/Di*0.023*Re^0.8*Pr^0.4*(pi/(pi-4*tapeThickness/Di))^0.8*((pi+2-2*tapeThickness/Di)/(pi-4*tapeThickness/Di))^0.2)*(1+0.769/twistRatio) "heat transfer coefficient in turbulent conditions";
+    else
+      H=(2000-Sw)/600*0.85*abs(K/Di*((5.172*(1+5.484e-3*Pr^0.7*((Re*pi/(pi-4*tapeThickness/Di))/twistRatio)^1.25)^0.5)^9+(1.17*Ra^0.181)^9)^(1/9)) + (Sw-1400)/600*abs(K/Di*0.023*Re^0.8*Pr^0.4*(pi/(pi-4*tapeThickness/Di))^0.8*((pi+2-2*tapeThickness/Di)/(pi-4*tapeThickness/Di))^0.2)*(1+0.769/twistRatio) "extrapolation between laminar and turbulent conditions";
+    end if;
+  else
     if noEvent(Re > 10000) then
       Fsmooth = (0.78173 * log(Re) - 1.5) ^ (-2);
       H = OpenModelica.Internal.realAbs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) "Pethukov/Gnielinsky equation for smooth tubes, VDI mean";
 //H = abs(K / Di * 0.023 * Re ^ 0.8 * Pr ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for turbulent flow in smooth pipes";
-    elseif noEvent(Re < 2100) then
+      elseif noEvent(Re < 2100) then
       Fsmooth = 0;
       H = abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (Re * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) "Gnielinsky-Martin correlation: VDI mean";
-    //H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
-    //H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
+//H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
+//H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
     else
 //interpolation between turbulent and laminar flow
       Fsmooth = (0.78173 * log(10000) - 1.5) ^ (-2);
-      H = abs(K / Di * Fsmooth / 8 * 10000 * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (10000 * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (10000 * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) * HTWallCorrFactor * (10000 - Re) / 7900 "VDI G1 4.2";
-    end if;
-    W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * LMTD "Twall is only an approximate average, in order to evaluate wall viscosity correction factor";
-    annotation(
-      defaultComponentName = "Pipe",
-      Documentation(info = "<html><head></head><body>Extends the PipeThermalBase model for forced convection. For the pressure loss, the friction factor is calculated as per Churchill's equation, with possibility of a correction factor for wall viscosity.<div>The heat transfer coefficient is calculated according to Gnielinsky and others, with interpolation between laminar and turbulent flow. A fouling factor and a wall viscosity correction factor can be also used.</div></body></html>"));
-  end PipeForcedConvection;
+      H = abs(K / Di * Fsmooth / 8 * 10000 * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (2100 * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (2100 * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) * (10000 - Re) / 7900 "VDI G1 4.2";
+    end if;  
+  end if;
+
+  W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * LMTD "Twall is only an approximate average, in order to evaluate wall viscosity correction factor";
+  annotation(
+    defaultComponentName = "Pipe",
+    Documentation(info = "<html><head></head><body>Extends the PipeThermalBase model for forced convection. As an option , you can use twisted tape inserts.<div>If inserts are used, the friction factor is calculated according to Manglik and Bergles (Journal of Thermal Science and Egineering Applications 2013 Vol.5). For laminar flow, the constant power equation is used with a 0.8 factor, in order to allow for lower exchange in constant wall temperature situations. &nbsp;Otherwise the friction factor is calculated as per Churchill's equation.</div><div>A correction factor for wall viscosity can be used.<div>The heat transfer coefficient is calculated according to Manglik and Bergles if tape inserts are used, or according to Gnielinsky and others if not. Interpolation between laminar and turbulent flow is used. A fouling factor and a wall viscosity correction factor can also be used.</div></div></body></html>"));
+
+end PipeForcedConvection;
 
   model PipeFallingFilm "heat exchanged between a flowing fluid and the internal wall. It uses all the active pipe surface"
     extends PipeThermalBase(useElevDifference = true, calcEnthalpyDifference = true, fullBore = false, final isCompressibleFlow = false, fullHTperimeter = true, fullHTlength = true);
@@ -1177,7 +1233,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
   model CoilForcedConvection "Power exchanged between a flowing fluid and the internal wall. Needs an external heat flow model. It uses all the active coil surface"
     //Normally lacking:PortA elevation,G,P,H and some way to calculate W
     extends CoilPhysical;
-    extends PipeForcedConvection(final useTubeLength = false, final lTube = 0, final isCircular = true, final useDiameter = true, final useSectionAndPerimeter = false, final section = 0, final perimeter = 0);
+    extends PipeForcedConvection(final useTubeLength = false, final lTube = 0, final isCircular = true, final useDiameter = true, final useSectionAndPerimeter = false, final section = 0, final perimeter = 0, final useTwistedTapeInserts = false, final tapeWidth=0, final tapeThickness=0, final twistRatio = 0);
   
     annotation(
       defaultComponentName = "coil");
@@ -1323,7 +1379,6 @@ package Pipes "Pipes.mo by Carlos Trujillo
     annotation(
       Icon(graphics = {Line(origin = {37.5412, 33.3067}, points = {{-56, 17}, {44, -11}}), Line(origin = {29.8566, 17.2874}, points = {{-58, 11}, {52, -1}}), Line(origin = {21.7386, 9.49529}, points = {{-54, 0}, {60, 0}, {58, 0}}), Line(origin = {25.2782, -23.999}, points = {{-44, -7}, {56, 21}}), Line(origin = {21.3346, 1.11031}, points = {{-50, -12}, {60, 2}}), Ellipse(origin = {-55, 55}, rotation = 70, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-63, 21}, rotation = 80, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-59, -15}, rotation = 100, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-51, -47}, rotation = 110, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Text(origin = {11, -81}, extent = {{-57, 37}, {37, -23}}, textString = "Fluid")}, coordinateSystem(initialScale = 0.1)));
   end PipeFluidBoundary;
-
 
 
   annotation(

@@ -2271,7 +2271,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end TurbineKettle;
 
     model TurbineKettleHeating
-      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 328.15, InitialValues.initT = 323.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667);
+      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 523.15, InitialValues.initT = 323.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667);
     equation
 
       annotation(
