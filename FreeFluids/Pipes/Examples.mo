@@ -245,11 +245,11 @@ package Examples
     extends Modelica.Icons.Example;
     FreeFluids.Pipes.PipeFlowChoked Pipe(redeclare package Medium = Modelica.Media.Air.ReferenceAir.Air_ph, di = 0.05000000000000001, fixedW(displayUnit = "kW") = 100000, lTube = 10, roughness(displayUnit = "mm") = 1.8e-06, thermalType = FreeFluids.Types.ThermalType.adiabatic) annotation(
       Placement(visible = true, transformation(origin = {-12, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = Modelica.Media.Air.ReferenceAir.Air_ph, P(displayUnit = "Pa") = 2000000, T = 323.15, sourceOption = FreeFluids.Types.SourceOptionS.useP_T) annotation(
+    FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = Modelica.Media.Air.ReferenceAir.Air_ph, P(displayUnit = "Pa") = 700000, T = 323.15, sourceOption = FreeFluids.Types.SourceOptionS.useP_T) annotation(
       Placement(visible = true, transformation(origin = {-106, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     FreeFluids.Interfaces.FlowSink Sink(P = 49999.99999999999, externalP = true, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
       Placement(visible = true, transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    Modelica.Blocks.Sources.Ramp Ramp(duration = 500, height = -19e5, offset = 19.5e5) annotation(
+    Modelica.Blocks.Sources.Ramp Ramp(duration = 500, height = -6e5, offset = 6.5e5) annotation(
       Placement(visible = true, transformation(origin = {18, 42}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     FreeFluids.Interfaces.FlowSink Sink2(P = 49999.99999999999, externalP = true, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
       Placement(visible = true, transformation(origin = {64, -36}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -285,7 +285,7 @@ package Examples
   connect(Pipe2_4.PortB, Pipe2_5.PortA) annotation(
       Line(points = {{16, -36}, {26, -36}}, color = {0, 127, 255}));
     annotation(
-      Diagram(coordinateSystem(extent = {{-120, 60}, {80, -60}})),
+      Diagram(coordinateSystem(extent = {{-100, 80}, {80, -60}})),
       experiment(StartTime = 0, StopTime = 500, Tolerance = 1e-6, Interval = 1),
   Documentation(info = "<html><head></head><body>An example of compressible flow that becomes choked. In Pipe2_x the length of Pipe has been splitted in five, in order to illustrate the influence of using average properties in the calculation of the pressure drop.</body></html>"));
   end AirFlowChoked;
@@ -358,16 +358,18 @@ package Examples
 
   model ForcedConvectionConstantPower
     extends Modelica.Icons.Example;
-    FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, D = 55, Elevation = 1, G(displayUnit = "kg/h") = 0.555556, H = 2.567e6, P = 1e+06, T = 298.15) annotation(
+    FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, D = 55, Elevation = 1, G(displayUnit = "kg/h") = 0.555556, H = 2.567e6, P (displayUnit = "Pa") = 1e+06, T = 313.15) annotation(
       Placement(visible = true, transformation(origin = {-66, 4.44089e-16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, G = 0.555556) annotation(
+    FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, G = 0.5555560000000003, externalG = true) annotation(
       Placement(visible = true, transformation(origin = {36, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.PipeForcedConvectionNew Pipe(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, PLossFriction(displayUnit = "Pa"), di = 0.04, lTube = 60, thermalType = FreeFluids.Types.ThermalType.detailed, twistRatio = 20, useElevDifference = false, useThermalConnector = true, useTubeLength = true, useTwistedTapeInserts = true) annotation(
+    FreeFluids.Pipes.PipeForcedConvection Pipe(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, PLossFriction(displayUnit = "Pa"), di = 0.04, lTube = 60, tapeThickness = 0.023 * Pipe.di, thermalType = FreeFluids.Types.ThermalType.detailed, twistRatio = 6, useElevDifference = false, useThermalConnector = true, useTubeLength = true, useTwistedTapeInserts = true, useWallsResistance = true) annotation(
       Placement(visible = true, transformation(origin = {-20, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Interfaces.ElevationReference ElevRef(refElev = 50) annotation(
+    FreeFluids.Interfaces.ElevationReference ElevRef(refElev = 40) annotation(
       Placement(visible = true, transformation(origin = {-10, 44}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     FreeFluids.Interfaces.ThermalSource ThSource(T = 283.15, W = 500, isTsource = false) annotation(
       Placement(visible = true, transformation(origin = {-20, -26}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+  Modelica.Blocks.Sources.Ramp Gramp(duration = 500, height = 9000 / 3600, offset = 2000 / 3600)  annotation(
+      Placement(visible = true, transformation(origin = {-4, 74}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(Source.PortB, Pipe.PortA) annotation(
       Line(points = {{-56, 0}, {-30, 0}}, color = {0, 127, 255}));
@@ -377,7 +379,11 @@ package Examples
       Line(points = {{-20, -20}, {-20, -20}, {-20, -4}, {-20, -4}}, color = {255, 0, 0}));
     connect(Pipe.PortB, Sink.PortA) annotation(
       Line(points = {{-10, 0}, {26, 0}}, color = {0, 127, 255}));
-  end ForcedConvectionConstantPower;
+  connect(Gramp.y, Sink.Gext) annotation(
+      Line(points = {{8, 74}, {30, 74}, {30, 12}}, color = {0, 0, 127}));
+  annotation(
+      experiment(StartTime = 0, StopTime = 500, Tolerance = 1e-6, Interval = 1),
+      Documentation(info = "<html><head></head><body>This example allows checking the influence of twisted tape inserts along the change from laminar to turbulent flow.</body></html>"));end ForcedConvectionConstantPower;
 
   model PipeWaterFallingFilmTest
     extends Modelica.Icons.Example;
@@ -641,7 +647,7 @@ package Examples
     extends Modelica.Fluid.Examples.IncompressibleFluidNetwork(valveOpening1.height = -0.99, each heat8.Q_flow = 0, redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "ph"));
     annotation(
       experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-6, Interval = 0.4),
-      Documentation(info = "<html><head></head><body>The Modelica IncompressibleFluidNetwor example ran with FreeFluids LMedia Water, in order to see the influence of the medium used.</body></html>"));
+      Documentation(info = "<html><head></head><body>The Modelica IncompressibleFluidNetwork example ran with FreeFluids LMedia Water, in order to see the influence of the medium used.</body></html>"));
   end ModelicaPipeTestF;
 
   model ModelicaPipeTest
