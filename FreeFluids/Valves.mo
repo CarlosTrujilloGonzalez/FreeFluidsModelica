@@ -816,7 +816,7 @@ package Valves "Valves.mo by Carlos Trujillo
 
 
 
-<div class=\"standard\" id=\"magicparlabel-3150\">It a model for safety valves working with flashing liquids, according to API 520 Annex C sections C.2.2 and C.2.3. The parameter Boolean liquidInlet allows you so select the calculation method to use, if made true it will use the C.2.3 methodology, that works with an inlet 100% in liquid state. Otherwise the C.2.2 method will be used. The parameters allow you to choose between fixing the discharge area or the flow, configure the basic characteristics of the valve, and enter the physical properties or let them to be taken from the Medium.&nbsp;</div></body></html>"));
+<div class=\"standard\" id=\"magicparlabel-3150\">It is a model for safety valves working with flashing liquids, according to API 520 Annex C sections C.2.2 and C.2.3. The parameter Boolean liquidInlet allows you so select the calculation method to use, if made true it will use the C.2.3 methodology, that works with an inlet 100% in liquid state. Otherwise the C.2.2 method will be used. The parameters allow you to choose between fixing the discharge area or the flow, configure the basic characteristics of the valve, and enter the physical properties or let them to be taken from the Medium.&nbsp;</div></body></html>"));
   end SafetyValveOmega;
 
   
@@ -852,7 +852,7 @@ package Valves "Valves.mo by Carlos Trujillo
     annotation(
       defaultComponentName = "PSV",
       Icon(coordinateSystem(initialScale = 0.04), graphics = {Line(origin = {22.5477, 62.5318}, points = {{0, 34}, {0, -40}}, thickness = 5), Polygon(origin = {20, 60}, fillColor = {1, 115, 255}, fillPattern = FillPattern.Solid, points = {{-60, 40}, {0, 0}, {-60, -40}, {-60, 40}}), Line(origin = {-43.6944, -57.5479}, points = {{0, 34}, {0, -40}}, thickness = 5), Polygon(origin = {-40, -60}, rotation = 180, fillColor = {1, 115, 255}, fillPattern = FillPattern.Solid, points = {{-60, 40}, {0, 0}, {-60, -40}, {-60, 40}}), Line(origin = {-66, 33}, points = {{-26, -27}, {26, 27}, {26, 27}}, thickness = 0.5), Line(origin = {-69, -34}, points = {{-23, 26}, {23, -26}}, thickness = 0.5), Line(origin = {59, 34}, points = {{-33, 26}, {33, -26}}, thickness = 0.5), Line(origin = {57, -34}, points = {{37, 26}, {-37, -26}}, thickness = 0.5), Text(origin = {0, -134}, lineColor = {45, 12, 201}, extent = {{-100, 28}, {100, -28}}, textString = "%name")}),
-  Documentation(info = "<html><head></head><body>The model is for a pressure/vacuum relief valve for tanks. The model performs no calculation from the media defined, and the supplied density is only used to convert from volumetric flow to mass flow. This can produce innexact results if the pressure (and so the density)is too diferent from the one used for the rating. This could be the case if the pressure in the tank is too high. For vacuum no problem should be expected, as normally we will be taking the gas from the atmosphere.<div>Elevation and specific enthalpy are passed from Port A to Port B, also when the flow is from PortB to PortA. So normally Port A should be connected to the tank, mainly for getting the correct elevation of the port, because specific enthalpy is not usable when the flow is from PortB to A.</div><div>If a more flexible model is needed, we can use separate valves, attached to separate ports of the tank. In this case the pressure correction can be applied and the specific entahlpy used.&nbsp;</div></body></html>"));
+  Documentation(info = "<html><head></head><body>The model is for a pressure/vacuum relief valve for tanks. The model performs no calculation from the media defined, and the supplied density is only used to convert from volumetric flow to mass flow. This can produce innexact results if the pressure (and so the density)is too diferent from the one used for the rating. This could be the case if the pressure in the tank is too high. For vacuum no problem should be expected, as normally we will be taking the gas from the atmosphere.<div>Elevation and specific enthalpy are passed from Port A to Port B, also when the flow is from PortB to PortA. So normally Port A should be connected to the tank, mainly for getting the correct elevation of the port, because specific enthalpy is not usable when the flow is from PortB to A.</div><div>If a more flexible model is needed, we can use separate valves, attached to separate ports of the tank. In this case the pressure correction can be applied and the specific enthalpy used.&nbsp;</div></body></html>"));
   end PressureVacuumValve;
 
   
@@ -907,11 +907,12 @@ package Valves "Valves.mo by Carlos Trujillo
     package MarlothermSH = FreeFluids.TMedia.Fluids.MarlothermSH;
 
     model ValveWaterTest1 "Very simple model using external connectors for flow"
-      FreeFluids.Valves.ValveIncompressible FV(redeclare package Medium = Water1, Q(displayUnit = "m3/s"), aperture = 1, fix = FreeFluids.Types.ValveFixOption.fixFlow, fixedFlow(displayUnit = "kg/s") = 3.88889, isLinear = false, useFixedAperture = true) annotation(
+      extends Modelica.Icons.Example;
+      FreeFluids.Valves.ValveIncompressible FV(redeclare package Medium = Water1, Q(displayUnit = "m3/s"), aperture = 1, fix = FreeFluids.Types.ValveFixOption.fixFlow, fixedFlow(displayUnit = "kg/h") = 3.88889, isLinear = false, useFixedAperture = true) annotation(
         Placement(visible = true, transformation(origin = {-18, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = Water1, G = 3.88889, P = 160000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+      FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = Water1, P = 160000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {36, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(Elevation = 1, G = 3.88889, redeclare package Medium = Water1, P = 300000, T(displayUnit = "degC") = 298.15, externalG = false, externalP = true, externalT = true, isGsource = false) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = Water1,Elevation = 1, P = 300000, T(displayUnit = "degC") = 298.15, externalG = false, externalP = true, externalT = true, isGsource = false) annotation(
         Placement(visible = true, transformation(origin = {-50, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Blocks.Sources.Constant const1(k = 25 + 273.15) annotation(
         Placement(visible = true, transformation(origin = {-94, 54}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -924,21 +925,23 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-83, 54}, {-50, 54}, {-50, 11}}, color = {0, 0, 127}));
       connect(RampP.y, Source.Pext) annotation(
         Line(points = {{-82, 88}, {-44, 88}, {-44, 12}}, color = {0, 0, 127}));
-  connect(FV.PortB, Sink.PortA) annotation(
+      connect(FV.PortB, Sink.PortA) annotation(
         Line(points = {{-10, 0}, {26, 0}}, color = {0, 127, 255}));
       annotation(
         Documentation(info = "<html><head></head><body>
-    <p>The model has the valve Kv as unknown. The inlet and outlet pressures, are fixed, as is the flow (in tab \"Flow\" of the valve.</p>
+    <p>The model has the valve Kv as unknown. The inlet and outlet pressures, are fixed, as is the flow (in tab \"Flow\" of the valve).</p>
     
-    </body></html>"));
+    </body></html>"),
+        Diagram(coordinateSystem(extent = {{-120, 100}, {60, -20}})));
     end ValveWaterTest1;
 
     model ValveAirTest1
+      extends Modelica.Icons.Example;
       FreeFluids.Valves.ValveCompressible FV(redeclare package Medium = Air2, Q(displayUnit = "m3/h"), di = 0.02, fix = FreeFluids.Types.ValveFixOption.fixKv, fixedFlow(displayUnit = "kg/h") = 0.006944444444444444, fixedKv = 2.3404) annotation(
         Placement(visible = true, transformation(origin = {-32, -1.77636e-15}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink sink(redeclare package Medium = Air2, P = 499999.9999999999, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {36, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 1, G = 0.0555556, redeclare package Medium = Air2, P(displayUnit = "bar") = 200000, T(displayUnit = "degC") = 298.15, externalP = true) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source( redeclare package Medium = Air2,Elevation = 1, P(displayUnit = "bar") , T(displayUnit = "degC") = 298.15, externalP = true) annotation(
         Placement(visible = true, transformation(origin = {-72, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Blocks.Sources.Ramp Ramp(duration = 1, height = 12e5, offset = 2e5) annotation(
         Placement(visible = true, transformation(origin = {-96, 52}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -953,12 +956,14 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{-24, 0}, {-12, 0}}, color = {0, 127, 255}));
   connect(Reader1.PortB, sink.PortA) annotation(
         Line(points = {{8, 0}, {26, 0}}, color = {0, 127, 255}));
-    end ValveAirTest1;
+    annotation(
+        Diagram(coordinateSystem(extent = {{-120, 80}, {60, -20}})));end ValveAirTest1;
 
     model SafetyValveLeser7_5_10_3 "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation"
+      extends Modelica.Icons.Example;
       SafetyValve SaftValv1(A(displayUnit = "m2"), Aeff(displayUnit = "m2"), redeclare package Medium = WaterS, Pc(displayUnit = "Pa"), fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 19.44444444444444, kd = 0.84, pSet = 11040000) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 0.2777777777777778, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -969,40 +974,14 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
         Documentation(info = "<html><head></head><body>
-<p>Example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation</p></body></html>"));end SafetyValveLeser7_5_10_3;
+<p>Example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation</p></body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveLeser7_5_10_3;
 
     model SafetyValveStdLeser7_5_10_3 "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by standard calculation"
+      extends Modelica.Icons.Example;
       FreeFluids.Valves.SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow = 19.3846, gamma = 0.966, kd = 0.84, kdr = 0.84, pSet = 11040000, rhoA = 72.02, selectStd = 1, useFixedArea = false, useFixedDensity = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 6.3, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
-        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    equation
-      connect(Source.PortB, SaftValv1.PortA) annotation(
-        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
-      connect(SaftValv1.PortB, Sink.PortA) annotation(
-        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveStdLeser7_5_10_3;
-
-    model SafetyValveStdTest7_5_10_6 "example 7.5.10.6 from Leser handbook, viscous glycerine flow, solved by standard calculation"
-      SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, fixedFlow = 6.3, kd = 0.65, kdr = 0.45, muA = 1.46, pSet = 1101000, rhoA = 1260, selectStd = 1, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true) annotation(
-        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 6.3, redeclare package Medium = WaterS, P = 1201000) annotation(
-        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    equation
-      connect(Source.PortB, SaftValv1.PortA) annotation(
-        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
-      connect(SaftValv1.PortB, Sink.PortA) annotation(
-        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    end SafetyValveStdTest7_5_10_6;
-
-    model SafetyValveStdAPI1 "example from API standard 520 5.6.3.2(hydrocarbon), critical flow"
-      SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
-        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 6.741666666666666, redeclare package Medium = WaterS, P = 670000, T(displayUnit = "K") = 348) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1012,7 +991,40 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example from API standard 520 5.6.3.2(hydrocarbon), critical flow.</body></html>"));end SafetyValveStdAPI1;
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveStdLeser7_5_10_3;
+
+    model SafetyValveStdTest7_5_10_6 "example 7.5.10.6 from Leser handbook, viscous glycerine flow, solved by standard calculation"
+      extends Modelica.Icons.Example;
+      SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, fixedFlow = 6.3, kd = 0.65, kdr = 0.45, muA = 1.46, pSet = 1101000, rhoA = 1260, selectStd = 1, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true) annotation(
+        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 1201000) annotation(
+        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
+      connect(SaftValv1.PortB, Sink.PortA) annotation(
+        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
+    annotation(
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveStdTest7_5_10_6;
+
+    model SafetyValveStdAPI1 "example from API standard 520 5.6.3.2(hydrocarbon), critical flow"
+      extends Modelica.Icons.Example;
+      SafetyValveStd SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
+        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 670000, T(displayUnit = "K") = 348) annotation(
+        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
+      connect(SaftValv1.PortB, Sink.PortA) annotation(
+        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
+    annotation(
+        Documentation(info = "<html><head></head><body>Example from API standard 520 5.6.3.2(hydrocarbon), critical flow.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveStdAPI1;
 
     model SafetyValveStdAPI2 "example from API standard 520 5.6.4.2(hydrocarbon), subcritical flow"
       SafetyValveStd SaftValv1( redeclare package Medium = WaterS,A(displayUnit = "m2"), balancedValve = false, fixedFlow(displayUnit = "kg/s") = 6.741666666666666, gamma = 1.11, kd = 0.975, kdr = 0.45, muA = 0.001, mw = 51, pSet = 617999.9999999999, rhoA = 0, selectStd = 2, useFixedArea = false, useFixedDensity = true, useFixedViscosity = true, z = 0.9) annotation(
@@ -1045,6 +1057,7 @@ package Valves "Valves.mo by Carlos Trujillo
         Documentation(info = "<html><head></head><body>Example from API standard 520 5.8.2 (crude oil), liquid flow.</body></html>"));end SafetyValveStdAPI5;
 
     model SafetyValveTest1 "Example of flashing water using direct isentropic flow calculation."
+      extends Modelica.Icons.Example;
       SafetyValve SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = WaterS, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
@@ -1057,9 +1070,11 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example of flashing water using direct isentropic flow calculation.</body></html>"));end SafetyValveTest1;
+        Documentation(info = "<html><head></head><body>Example of flashing water using direct isentropic flow calculation.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveTest1;
   
     model SafetyValveFlashTest1 "example of flashing water using API Annex C 2.2.1 methodology"
+      extends Modelica.Icons.Example;
       SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = WaterS, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
@@ -1072,9 +1087,29 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example of flashing water using API 520 standard Annex C 2.2.1 methodology.</body></html>"));end SafetyValveFlashTest1;
+        Documentation(info = "<html><head></head><body>Example of flashing water using API 520 standard Annex C 2.2.1 methodology. And using Modelica.Media.Water.StandardWater as the medium.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveFlashTest1;
 
+    
+    model SafetyValveFlashTest1TMedia "example of flashing water using API Annex C 2.2.1 methodology"
+      extends Modelica.Icons.Example;
+      SafetyValveFlash SaftValv1(redeclare package Medium = Water1, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
+        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = Water1, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
+        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Interfaces.FlowSink Sink(redeclare package Medium = Water1, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(Source.PortB, SaftValv1.PortA) annotation(
+        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
+      connect(SaftValv1.PortB, Sink.PortA) annotation(
+        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
+    annotation(
+        Documentation(info = "<html><head></head><body>Example of flashing water using API standard 520 AnneX C 2.2.1 methodology. And using FreeFluids.TMedia.Fluids.Water as the medium.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveFlashTest1TMedia;
+  
     model SafetyValveOmegaTest1 "example of flashing water using API Annex C 2.2.2 methodology"
+      extends Modelica.Icons.Example;
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedArea = 1298e-6, fixedFlow = 2.479166666666667, muA = 0.001, pSet = 399999.9999999999, useFixedArea = true, useFixedDensities = false, useFixedViscosity = false) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = WaterS, T(displayUnit = "degC") = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
@@ -1088,7 +1123,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
         Documentation(info = "<html><head></head><body>
-<p>Example of flashing water using API 520 standard Annex C 2.2.2 methodology.</p></body></html>"));end SafetyValveOmegaTest1;
+<p>Example of flashing water using API 520 standard Annex C 2.2.2 methodology.</p></body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveOmegaTest1;
 
     model SafetyValveFlashTest2 "example of flashing water using API Annex C 2.2.3 methodology"
       SafetyValveFlash SaftValv1(redeclare package Medium = WaterS, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 13.27444444444444, kd = 0.85, pSet = 990000, useFixedArea = true) annotation(
@@ -1105,6 +1141,7 @@ package Valves "Valves.mo by Carlos Trujillo
     end SafetyValveFlashTest2;
 
     model SafetyValveOmegaTest2 "example of flashing water,low subcooling, critical, using API Annex C 2.2.3 methodology"
+      extends Modelica.Icons.Example;
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedArea = 1298e-6, fixedFlow = 13.27444444444444, liquidInlet = true, muA = 0.001, pSet = 990000, useFixedArea = true, useFixedDensities = false, useFixedViscosity = false) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSource Source(redeclare package Medium = WaterS, P = 999999.9999999999, T(displayUnit = "degC") = 452.65, sourceOption = FreeFluids.Types.SourceOption.useP_T) annotation(
@@ -1117,12 +1154,14 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example of flashing water, low subcooling, critical flow, using API Annex C.2.2.3 methodology.</body></html>"));end SafetyValveOmegaTest2;
+        Documentation(info = "<html><head></head><body>Example of flashing water, low subcooling, critical flow, using API Annex C.2.2.3 methodology.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveOmegaTest2;
 
     model SafetyValveOmegaC222 "Example C.2.2.2(crude oil) from API RP520 Annex C, biphasic inlet"
+      extends Modelica.Icons.Example;
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 60.15555555555556, liquidInlet = false, muA = 0.001, pSet = 514700, rhoA = 1 / 0.01945, rhoA9 = 1 / 0.02265, useFixedArea = false, useFixedDensities = true, useFixedViscosity = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 6.741666666666666, redeclare package Medium = WaterS, P = 556400, T(displayUnit = "K") = 366.5) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 556400, T(displayUnit = "K") = 366.5) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 204700, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1133,12 +1172,14 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
         Documentation(info = "<html><head></head><body>
-<pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.2 (crude oil) from API RP520 Annex C, biphasic inlet.</span><!--EndFragment--></pre></body></html>"));end SafetyValveOmegaC222;
+<pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.2 (crude oil) from API RP520 Annex C, biphasic inlet.</span><!--EndFragment--></pre></body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveOmegaC222;
 
     model SafetyValveOmegaC223 "Example C.2.2.3(Propane) from API standard 520 Annex C, liquid inlet"
+      extends Modelica.Icons.Example;
       SafetyValveOmega SaftValv1(A(displayUnit = "m2"), redeclare package Medium = WaterS, balancedValve = false, fixedFlow = 378.5 / 60 * 511.3 * 1e-3, kd = 0.65, liquidInlet = true, muA = 0.001, pSatur = 741899.9999999999, pSet = 1893600, rhoA = 511.3, rhoA9 = 262.7, useFixedArea = false, useFixedDensities = true, useFixedViscosity = true) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 6.741666666666666, redeclare package Medium = WaterS, P = 2073300, T(displayUnit = "K") = 288.7) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 2073300, T(displayUnit = "K") = 288.7) annotation(
         Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 170300, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1148,27 +1189,14 @@ package Valves "Valves.mo by Carlos Trujillo
       connect(SaftValv1.PortB, Sink.PortA) annotation(
         Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body><pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.3 (Propane) from API RP520 Annex C, liquid inlet.</span></pre></body></html>"));end SafetyValveOmegaC223;
-    
-    model SafetyValveFlashTest1TMedia "example of flashing water using API Annex C 2.2.1 methodology"
-      SafetyValveFlash SaftValv1(redeclare package Medium = Water1, fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 2.451666666666667, kd = 0.85, pSet = 399999.9999999999, useFixedArea = true) annotation(
-        Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(D = 50, redeclare package Medium = Water1, T = 422.15, sourceOption = FreeFluids.Types.SourceOption.useD_T) annotation(
-        Placement(visible = true, transformation(origin = {-66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Interfaces.FlowSink Sink(redeclare package Medium = Water1, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    equation
-      connect(Source.PortB, SaftValv1.PortA) annotation(
-        Line(points = {{-56, 0}, {-10, 0}}, color = {0, 127, 255}));
-      connect(SaftValv1.PortB, Sink.PortA) annotation(
-        Line(points = {{10, 0}, {56, 0}}, color = {0, 127, 255}));
-    annotation(
-        Documentation(info = "<html><head></head><body>Example of flashing water using API standard 520 AnneX C 2.2.1 methodology.</body></html>"));end SafetyValveFlashTest1TMedia;
+        Documentation(info = "<html><head></head><body><pre style=\"margin-top: 0px; margin-bottom: 0px;\"><span style=\"font-family: 'Bitstream Vera Sans Mono'; font-size: 12px; white-space: normal;\">Example C.2.2.3 (Propane) from API RP520 Annex C, liquid inlet.</span></pre></body></html>"),
+        Diagram(coordinateSystem(extent = {{-80, 20}, {80, -20}})));end SafetyValveOmegaC223;
     
     model SVPlusPipeSteam "example 7.5.10.3 from Leser handbook, critical flow saturated steam, solved by direct isentropic flow calculation"
+      extends Modelica.Icons.Example;
       FreeFluids.Valves.SafetyValveStd SaftValv1( redeclare package Medium = WaterS,fixedArea = 1298e-6, fixedFlow(displayUnit = "kg/h") = 19.44444444444444, gamma = 0.966, kd = 0.84, pSet = 11040000) annotation(
         Placement(visible = true, transformation(origin = {-52, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSource Source(G = 0.2777777777777778, redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
+      FreeFluids.Interfaces.FlowSource Source( redeclare package Medium = WaterS, P = 12245000, sourceOption = FreeFluids.Types.SourceOption.useSatGasP) annotation(
         Placement(visible = true, transformation(origin = {-96, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Interfaces.FlowSink Sink(redeclare package Medium = WaterS, P = 101000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {66, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1182,10 +1210,12 @@ package Valves "Valves.mo by Carlos Trujillo
   connect(Pipe1.PortB, Sink.PortA) annotation(
         Line(points = {{12, 0}, {56, 0}}, color = {0, 127, 255}));
     annotation(
-        Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, with discharge pipe.</body></html>"));
+        Documentation(info = "<html><head></head><body>Example 7.5.10.3 from Leser handbook, critical flow, saturated steam, with discharge pipe.</body></html>"),
+        Diagram(coordinateSystem(extent = {{-120, 20}, {80, -20}})));
     end SVPlusPipeSteam;
     
     model PresureReliefAir
+      extends Modelica.Icons.Example;
       FreeFluids.Valves.PressureReliefValve PSV(redeclare package Medium = Modelica.Media.Air.DryAirNasa, flowRating = 0.04166666666666666, overPressure = 0, pRating = 99999.99999999999, pSet = 100600, rhoRating = 1.2) annotation(
         Placement(visible = true, transformation(origin = {-8, -8.88178e-16}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = Modelica.Media.Air.DryAirNasa, T (displayUnit = "degC") = 293.15, externalP = true) annotation(
@@ -1201,7 +1231,8 @@ package Valves "Valves.mo by Carlos Trujillo
         Line(points = {{4, 0}, {36, 0}}, color = {0, 127, 255}));
   connect(InRamp.y, Source.Pext) annotation(
         Line(points = {{-84, 46}, {-58, 46}, {-58, 12}}, color = {0, 0, 127}));
-    end PresureReliefAir;
+    annotation(
+        Diagram(coordinateSystem(extent = {{-120, 60}, {60, -20}})));end PresureReliefAir;
   end Examples;
 
 end Valves;

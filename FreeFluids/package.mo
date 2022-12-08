@@ -25,6 +25,6 @@ package FreeFluids "FreeFluids.mo by Carlos Trujillo
   type Possitive = Real(min = 0.0);
 
   annotation(
-    version="2.6",
+    version="2.7",
     uses(Modelica(version = "4.0.0")));
 end FreeFluids;

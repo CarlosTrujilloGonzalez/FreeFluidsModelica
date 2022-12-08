@@ -24,8 +24,7 @@ package Columns "Columns.mo by Carlos Trujillo
     parameter Modelica.Units.SI.MolarMass mwH = 0 "heavy component molecular weight";
     parameter Boolean isBinaryDistillation = true "if true only two components are considered" annotation(
       Dialog(tab = "Feed data"));
-    parameter Boolean molarBasis=true "if true flow computed as kmol/h, otherwise as kg/h" annotation(
-      Dialog(tab = "Feed data"));
+    parameter Boolean molarBasis=true "if true, use molar fraction and kmol/h, otherwise mass fraction and kg/h";
     parameter Real ffl(min=0) "fixed feed flow rate of light component in kmol/h or kg/h" annotation(
       Dialog(tab = "Feed data"));
     parameter Real ffh(min=0) "fixed feed flow rate of heavy component in kmol/h or kg/h" annotation(
@@ -772,12 +771,12 @@ package Columns "Columns.mo by Carlos Trujillo
   //model for unstructured and structured packing
 
   model PCBilletSchultes   "package characteristic parameters. Values are for 1,5 metallic Pall ring, replace them as needed"
-    extends PackedColumnExtended;
+    extends PackedColumnExtended(physProp=1);
     parameter Real cH = 0.644 "parameter for liquid holdup" annotation(
       Dialog(tab = "Physical data"));
-    parameter Real cSt = 2.629 "parameters for loading point calculation" annotation(
+    parameter Real cSt = 2.629 "parameter for loading point calculation" annotation(
       Dialog(tab = "Physical data"));
-    parameter Real cFlt = 1.679 "parameters for flooding point calculation" annotation(
+    parameter Real cFlt = 1.679 "parameter for flooding point calculation" annotation(
       Dialog(tab = "Physical data"));
     parameter Real cP0 = 0.967 "pressure drop coefficient" annotation(
       Dialog(tab = "Physical data"));
@@ -969,7 +968,9 @@ package Columns "Columns.mo by Carlos Trujillo
   end PCDelft;
 
   package Examples
+  extends Modelica.Icons.ExamplesPackage;
     model BinaryiC4nC4 "Packed towers. Billet 1995 pag 344"
+      extends Modelica.Icons.Example;
       BinaryDistillation Column( bottomFixed = FreeFluids.Types.PerformanceSpecification.FixedComposition, brv = 1.35, bxh = 0.999, dataType = FreeFluids.Types.EquilibriumDataType.RelativeVolatility, drv = 1.35, dyl = 0.999, fGfSat = 0, ffh = 200, ffl = 300, fixRefluxRatio = true, frv = 1.35, isPartialCondenser = true, mwH = 0.058122, mwL = 0.058122, rr = 15, topFixed = FreeFluids.Types.PerformanceSpecification.FixedComposition, wb = 0) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     annotation(
@@ -978,6 +979,7 @@ package Columns "Columns.mo by Carlos Trujillo
     end BinaryiC4nC4;
     
     model FUGSeaderChap9
+      extends Modelica.Icons.Example;
       MulticomponentDistillationFUG Column(bfh = 23, bottomFixed = FreeFluids.Types.PerformanceSpecification.FixedFlow, brv = 1.44, brvi_h = {1.6, 0.819, 0.5, 0.278, 0.167, 0.108}, dataType = FreeFluids.Types.EquilibriumDataType.RelativeVolatility, dfl = 442, drv = 2.08, drvi_h = {2.81, 0.737, 0.303, 0.123, 0.045, 0.02}, fGfSat = 0.1334, fHeavy = "iC5", fLight = "nC4", fNonKeys = "iC4,nC5,nC6,nC7,nC8,nC9", ffh = 36, ffi = {12, 15, 23, 39.1, 272.2, 31}, ffl = 448, fixRatioToMinReflux = true, frv = 1.93, frvi_h = {2.43, 0.765, 0.362, 0.164, 0.072, 0.0362}, minRratio = 1.3, mwH = 0.072149, mwI = {0.058122, 0.072149, 0.086175, 0.1002, 0.11423, 0.12825}, mwL = 0.058122, nNonKey = 6, topFixed = FreeFluids.Types.PerformanceSpecification.FixedFlow)  annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       annotation(
@@ -1048,7 +1050,7 @@ package Columns "Columns.mo by Carlos Trujillo
     end UsagePCBravo99;
 
     model UsagePCBilletSchultes "Aalto university example. Water-Methanol, top of column"
-      PCBilletSchultes Column(av = 256, Gg(displayUnit = "kg/s"), Gl(displayUnit = "kg/s"), redeclare package MediumG = FreeFluids.TMedia.Fluids.Water, redeclare package MediumL = FreeFluids.TMedia.Fluids.Water, cFlt = 2, cH = 0.75, cP0 = 0.891, cSt = 2.5, epsilon = 0.89, physProp = 1, rhoL = 978, rhoG = 0.198, muL = 4.06e-4, muG = 1.1e-5, sigmaL = 1.86e-2, dL = 5e-9, dG = 2e-5) annotation(
+      PCBilletSchultes Column(av = 256, redeclare package MediumG = FreeFluids.TMedia.Fluids.Water, redeclare package MediumL = FreeFluids.TMedia.Fluids.Water, cFlt = 2, cH = 0.75, cP0 = 0.891, cSt = 2.5, epsilon = 0.89, physProp = 1, rhoL = 978, rhoG = 0.198, muL = 4.06e-4, muG = 1.1e-5, sigmaL = 1.86e-2, dL = 5e-9, dG = 2e-5) annotation(
         Placement(visible = true, transformation(origin = {-1, 3}, extent = {{-35, -35}, {35, 35}}, rotation = 0)));
       //extends PCBilletSchultes(av = 256, epsilon = 0.89, cSt = 2.5, cFlt = 2, cH = 0.75, cP0 = 0.891);
     algorithm
@@ -1120,15 +1122,12 @@ package Columns "Columns.mo by Carlos Trujillo
     end UsagePCBilletSchultes231;
 
     model PCBilletSchultes_iC4nC4 "Packet towers Billet 1995, pag.344"
+      extends Modelica.Icons.Example;
       PCBilletSchultes Column(av=200,P = 360000,VgFl1(start = 2), cFlt = 2.339, cG = 0.39, cH = 0.547, cL = 0.971, cP0 = 0.355, cSt = 3.116, dG = 1.17e-6, dL = 8.44e-9, epsilon = 0.979, lambda = 0.8335, muG = 7.76e-6, muL = 0.13078e-3, physProp = 1, rhoG = 8.398, rhoL = 561.3, sigmaL = 8.88e-3) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     algorithm
-      //Column.Av := 200;
       Column.Gg := 279088 / 3600;
       Column.Gl := 261645 / 3600;
-//Column.Fg := 1.6;
-//Column.Load:=0.6;
-//Column.Di:=5;
     equation
       Column.Fg = Column.FgS1 "working at loading condition";
       annotation(
@@ -1172,5 +1171,5 @@ package Columns "Columns.mo by Carlos Trujillo
     end UsagePCDelft230;
   end Examples;
   annotation(
-    Documentation(info = "<html><head></head><body>The package contains models for performing distillation and packed column calculations.<div>For distillation we have a basic model performing just the material and energy balances, without any treatment of the necessary number of contact stages. A binary distillation model, and a more complex multicomponent model.</div><div>For packed columns, the Sherwood-Lobo model will perform simple hydraulic calculations. In order to obtain the height of the transfer unit more complex models are needed. For unstructured packing there is the Onda model, and also the very complete Billet-Schultes model. For the last one, the packing characteristics to use can be found at \"Prediction of mass transfer columns with dumped and arranged packaging\", Trans IChemE, Vol.77 Part A, September 1999. For structured packing we havethe Delft model.&nbsp;</div></body></html>"));
+    Documentation(info = "<html><head></head><body>The package contains models for performing distillation and packed column calculations.<div>For distillation there is a basic model performing just the material and energy balances, without any treatment of the necessary number of contact stages. A binary distillation model, and a more complex multicomponent model.</div><div>For packed columns, the Sherwood-Lobo model will perform simple hydraulic calculations. In order to obtain the height of the transfer unit more complex models are needed. For unstructured packing there is the Onda model, and also the very complete Billet-Schultes model. For the last one, the packing characteristics to use can be found at \"Prediction of mass transfer columns with dumped and arranged packaging\", Trans IChemE, Vol.77 Part A, September 1999. For structured packing there is the Delft model.&nbsp;</div></body></html>"));
 end Columns;

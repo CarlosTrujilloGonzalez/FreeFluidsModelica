@@ -842,9 +842,8 @@ package LMedia "LMedia.mo by Carlos Trujillo
 
 
   annotation(
-    Documentation(info = "<html>
-    <body>
+    Documentation(info = "<html><head></head><body>
     <p>The package TMedia is covering liquid, biphasic and gas phases, but this has increased the complexity, the computation time, and the convergence issues. In order to recover speed and compatibility, a reduced version, covering only the liquid phase has been implemented in this package.</p>
-    </body>
-    </html>"));
+    
+    </body></html>"));
 end LMedia;
