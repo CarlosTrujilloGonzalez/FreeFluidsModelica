@@ -354,7 +354,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
   partial model Pipe "Pipe with two ports fluid ports and an internal fluid"
     extends PipePhysical;
     extends Interfaces.TwoFluidPorts(calcEnthalpyDifference = true, useElevDifference = true, elevDifference = 0.0, passComposition = true);
-    parameter Integer numActiveTubes(start = numTubes, max = numTubes) "number of parallel identical paths used with flow. Default=numTubes" annotation(
+    parameter Integer numActiveTubes(start = numTubes, max = numTubes)=numTubes "number of parallel identical paths used with flow. Default=numTubes" annotation(
       Dialog(tab = "Flow"));
     parameter Real pipeComplexity = 0 "Approx. estimation of equivalent length,0=not used,0.25=supply lines,0.5=long runs, 1=normal,2=valves,4=complex valves" annotation(
       Dialog(tab = "Flow"));
@@ -467,7 +467,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
     end if;
   assert(isCompressibleFlow == false or PLossFriction < 0.4 * max(PortA.P, PortB.P), "Too high pressure drop for the pipe model in gas application", AssertionLevel.warning);
     //assert(abs(Va)<Vas and abs(Vb)<Vbs, "The speed of sound has been exceeded", AssertionLevel.warning);
-//assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
+  //assert(isCompressibleFlow == false or F * Ltube / Dh > 2.0, "Too short pipe for the pipe model in gas application", AssertionLevel.warning);
     annotation(
       defaultComponentName = "Pipe",
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {0, 63, 191}, fillColor = {0, 170, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-90, 20}, {90, -20}}), Text(origin = {0, 10}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name")}),
@@ -779,6 +779,7 @@ model PipeForcedConvection "Model for pipes with thermal,single phase, flow"
   
   Modelica.Units.SI.RayleighNumber Ra "Rayleigh number";
   Real Sw "Swirl number";
+  Modelica.Units.SI.NusseltNumber Nu;
   
 algorithm
   StateAvg := Medium.setState_phX((PortA.P + PortB.P) / 2, (PortA.H + PortB.H) / 2, PortA.X);
@@ -854,20 +855,30 @@ equation
     if noEvent(Re > 10000) then
       Fsmooth = (0.78173 * log(Re) - 1.5) ^ (-2);
       H = OpenModelica.Internal.realAbs(K / Di * Fsmooth / 8 * Re * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) "Pethukov/Gnielinsky equation for smooth tubes, VDI mean";
-//H = abs(K / Di * 0.023 * Re ^ 0.8 * Pr ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for turbulent flow in smooth pipes";
-      elseif noEvent(Re < 2100) then
+      //H = abs(K / Di * 0.0265 * Re ^ 0.8 * Pr ^ 0.3 * HTWallCorrFactor) "Dittus-boelter equation for turbulent flow in smooth pipes";
+      //H = abs(K / Di * 0.023 * Re ^ 0.8 * Pr ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for turbulent flow in smooth pipes";
+    elseif noEvent(Re < 2100) then
       Fsmooth = 0;
-      H = abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (Re * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) "Gnielinsky-Martin correlation: VDI mean";
-//H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
-//H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.33 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
+      if noEvent(Ltube > 0.05*Re*Pr*Di) then
+        H = abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.615 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3) ^ 0.333* HTWallCorrFactor) "correlation for constant wall temperature: VDI Atlas mean";
+        //H = abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.615 * (Re * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (Re * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.333* HTWallCorrFactor) "Gnielinsky-Martin correlation for constant wall temperature: VDI mean";
+      else
+        H=abs(K / Di * 1.615 * (Re * Pr * Di / Ltube) ^ 0.333* HTWallCorrFactor);
+        //H = abs(K / Di * 1.86 * (Re * Pr * Di / Ltube) ^ 0.333 * HTWallCorrFactor) "Sieder-Tate equation for laminar flow";
+      end if;
+  //H = abs(K / Di * (3.657 + 0.0668 * Re * Pr * Di / Ltube / (1 + 0.04 * (Re * Pr * Di / Ltube) ^ 0.667)) *HTWallCorrFactor) "Hausen correlation";
+
     else
 //interpolation between turbulent and laminar flow
       Fsmooth = (0.78173 * log(10000) - 1.5) ^ (-2);
-      H = abs(K / Di * Fsmooth / 8 * 10000 * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * HTWallCorrFactor) * (Re - 2100) / 7900 + abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (2100 * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 + ((2 / (1 + 22 * Pr)) ^ (1 / 6) * (2100 * Pr * Di / Ltube) ^ 0.5) ^ 3) ^ 0.33) * (10000 - Re) / 7900 "VDI G1 4.2";
+      H = (abs(K / Di * Fsmooth / 8 * 10000 * Pr / (1 + 12.7 * (Fsmooth / 8) ^ 0.5 * (Pr ^ 0.667 - 1)) * (1 + (Di / Ltube) ^ 0.667) * (Re - 2100) / 7900 + abs(K / Di * (3.66 ^ 3 + 0.7 ^ 3 + (1.615 * (2100 * Pr * Di / Ltube) ^ 0.333 - 0.7) ^ 3 ) ^ 0.333) * (10000 - Re) / 7900)  * HTWallCorrFactor)"VDI G1 4.2";
     end if;  
   end if;
 
   W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * LMTD "Twall is only an approximate average, in order to evaluate wall viscosity correction factor";
+  //W = SactiveHT * 1 / (1 / H + foulingF + Di * (log(Do / Di) / kWall + log(Dinsul / Do) / kInsul) / 2) * (Tsurf-T) "Twall is only an approximate average, in order to evaluate wall viscosity correction factor";
+  
+  Nu=H*Di/K;
   annotation(
     defaultComponentName = "Pipe",
     Documentation(info = "<html><head></head><body>Extends the PipeThermalBase model for forced convection. As an option , you can use twisted tape inserts.<div>If inserts are used, the friction factor is calculated according to Manglik and Bergles (Journal of Thermal Science and Egineering Applications 2013 Vol.5). For laminar flow, the constant power equation is used with a 0.8 factor, in order to allow for lower exchange in constant wall temperature situations. &nbsp;Otherwise the friction factor is calculated as per Churchill's equation.</div><div>A correction factor for wall viscosity can be used.<div>The heat transfer coefficient is calculated according to Manglik and Bergles if tape inserts are used, or according to Gnielinsky and others if not. Interpolation between laminar and turbulent flow is used. A fouling factor and a wall viscosity correction factor can also be used.</div></div></body></html>"));
@@ -1379,6 +1390,7 @@ end PipeForcedConvection;
     annotation(
       Icon(graphics = {Line(origin = {37.5412, 33.3067}, points = {{-56, 17}, {44, -11}}), Line(origin = {29.8566, 17.2874}, points = {{-58, 11}, {52, -1}}), Line(origin = {21.7386, 9.49529}, points = {{-54, 0}, {60, 0}, {58, 0}}), Line(origin = {25.2782, -23.999}, points = {{-44, -7}, {56, 21}}), Line(origin = {21.3346, 1.11031}, points = {{-50, -12}, {60, 2}}), Ellipse(origin = {-55, 55}, rotation = 70, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-63, 21}, rotation = 80, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-59, -15}, rotation = 100, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Ellipse(origin = {-51, -47}, rotation = 110, extent = {{19, 17}, {-5, -7}}, endAngle = 180), Text(origin = {11, -81}, extent = {{-57, 37}, {37, -23}}, textString = "Fluid")}, coordinateSystem(initialScale = 0.1)));
   end PipeFluidBoundary;
+
 
 
   annotation(

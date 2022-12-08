@@ -26,12 +26,39 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
     replaceable Medium.SpecificEnthalpy H "Specific enthalpy";
     replaceable Medium.MassFraction X[Medium.nX] "mass fractions composition";
     annotation(
-      Documentation(info = "<html>
-  <body>
-  <p>The connector uses causal variables for elevation, specific enthalpy and composition. We could think that this limits the application to non-reversible flow, and that for connecting out ports it is necessary an adapter, but it is not as strict as this. In isenthalpic connections, it is possible to connect directly more than one output port to an input port, if we take the caution of allowing just one output connector to give the value for each output variable. We will see this in the TwoFluidPortsModel. The models can be also prepared for manage reverse flow.</p>
-  <p>For non-isenthalpic connections, a non-reversible flow mixer will be used for the connection of several outputs.</p>
-  </body>
-  </html>"));
+      Documentation(info = "<html><head></head><body>
+  <div class=\"standard\" id=\"magicparlabel-8207\">The FluidPort connector is the base of all the Interfaces package. Its composition is:</div><ul class=\"itemize\" id=\"magicparlabel-8208\"><li class=\"itemize_item\">replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium;</li>
+<li class=\"itemize_item\">SI.AbsolutePressure P(displayUnit = \"bar\") \"Pressure\";</li>
+<li class=\"itemize_item\">flow SI.MassFlowRate G(displayUnit = \"kg/h\") \"Mass flow\";</li>
+<li class=\"itemize_item\">replaceable SI.Height Elevation(start = 0) \"Port Height\";</li>
+<li class=\"itemize_item\">replaceable SI.SpecificEnthalpy H \"Specific enthalpy\";</li>
+<li class=\"itemize_item\">replaceable Medium.MassFraction X[Medium.nX] \"mass fractions composition\";</li>
+</ul><div class=\"standard\" id=\"magicparlabel-8214\">An explanation is needed regarding why and how each element is defined.</div><div class=\"standard\" id=\"magicparlabel-8215\">The package Medium is included in the connector mainly because it seems the standard in Modelica.Fluid. It will be useful if the propagation of the Medium package is done, in the future, by the connectors. It is useful also for initialization.</div><div class=\"standard\" id=\"magicparlabel-8216\">P and G are according to the Modelica implementation of a connector: one potential variable and one flow variable. This aids to grant that the number of equations and the number of variables are the same if the relationship between elements is done only by connections.</div><div class=\"standard\" id=\"magicparlabel-8217\">The variables Elevation and H don't conform to the Modelica.Fluid way, that uses stream variables. The Elevation could be avoid, as the only information needed inside the elements with connectors is the elevation difference between ports, not the absolute elevation. But its absence would avoid to enter information, based on elevation data at the ends, directly.</div><div class=\"standard\" id=\"magicparlabel-8218\">The enthalpy is absolutely necessary if we want to pass energy information between connectors. The solution adopted by Modelica 3.0 was the creation of stream variables, but I think that this complicates too much the situation. The alternative is to declare them as causal (input or output). This seems to prevent from allowing reverse flow, but it is not totally true, as can be seen in several examples. They are declared replaceable in order to allow its declaration as causal in derived connectors.</div><p><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p><div class=\"standard\" id=\"magicparlabel-8219\">From the FluidPort connector, a FluidPortA as normal input, and FluidPortB as normal output are derived. The difference is the appearance, the default value for G (positive for the normal input, and negative for the normal output), and the causality of the extra variables. Initialization is also provided for the H and P of FluidPortB, based in the default values of the Medium.</div>
+  
+  </body></html>"));
   end FluidPort;
 
   connector FluidPortA "Is the normal fluid inlet port"
@@ -85,11 +112,39 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
     Hdiff = PortB.H - PortA.H;
     Pdiff = PortB.P - PortA.P;
     annotation(
-      Documentation(info = "<html>
-  <body>
-  <p>The configuration parameters will be used to force, or not, a relationship for specific enthalpy,  elevation, and composition, between the ports. The relations for elevation, and composition, are fully defined, but that for specific enthalpy remains undefined, and must be implemented in the extending models if needed. In this way we can inhibit the calculation of the output variables, allowing more than one output connector to be connected to an input connector.</p>
-  </body>
-  </html>"));
+      Documentation(info = "<html><head></head><body>
+  <div class=\"standard\" id=\"magicparlabel-8270\">This partial model contains a FluidPortA PortA, and a FluidPortB PortB connectors, and some equations linking the values of both connectors variables. The more fundamental equation is:</div><div class=\"standard\" id=\"magicparlabel-8271\">0=PortA.G+PortB.G. This grants that all massic flow entering one port goes out by the other. G is considered positive if the flow enters the port.</div><div class=\"standard\" id=\"magicparlabel-8272\">Some parameters will configure more possible links between the ports variables:</div><ul class=\"itemize\" id=\"magicparlabel-8273\"><li class=\"itemize_item\">parameter Boolean useElevDifference=true will activate the use of an extra equation for ports elevation.</li>
+<li class=\"itemize_item\">parameter FreeFluids.Types.ElevationOption elevCalcMethod. If useElevDifference=true, selects the equation to use for the elevation calculation. If the selection is “differential” the equation PortB.elevation=PortA.Elevation+elevDifference is applied. If the selection is “absolute” the equation PortB.Elevation= portBelevation is applied. Being elevDifference and portBelevation parameters with default value of 0.</li>
+<li class=\"itemize_item\">parameter Boolean calcEnthalpyDifference=true will control if a calculation of the difference of enthalpy between ports is applied or not. But the calculation to apply remains undefined.</li>
+<li class=\"itemize_item\">parameter Boolean passComposition = true will control if the composition of both ports is made equal or not.</li>
+</ul><div class=\"standard\" id=\"magicparlabel-8277\">Finally two variables, with the equations to solve them are added: Hdiff = PortB.H-PortA.H, and Pdiff=PortB.P-PortA.P.</div><div class=\"standard\" id=\"magicparlabel-8278\">With this implementation, the model is imbalanced in two ways: For the two pairs of potential/flow variables, there are three equations(PortA.G=0, PortB.G=0, PortA.G=-PortB.G), so an equation linking these variables is missing. Normally it will be the calculation of the pressure drop as function of flow. The second point of imbalance is that there is no equation for the calculation of the output PortB.H. The extending models must provide the missing equations.</div><div class=\"standard\" id=\"magicparlabel-8279\">Although not correct according to the Modelica standard, the model is prepared for the connection of more than one PortB to a PortA, with the idea of making simpler and faster some connections. When doing so we must take into account that, in a connection, point elevation, enthalpy, and composition, must be supplied only by one connector. If not, we will have an over specification for the value. The situation is different for elevation than for enthalpy and composition. In a connection point all the ports must have the same elevation, so the only thing that we have to do is to inhibit the duplicate propagation of the elevation, making useHeightDifference=true only in one of the elements that can supply the elevation value to the connection. For enthalpy and composition, it must be possible to connect elements with different enthalpy or composition output, and this can be done using mixers, that for simplification are coded as no reverse flow. But, if the enthalpy variation inside the elements is only due to elevation changes, we can grant that all connectors have the same enthalpy at the connection point, and solve the problem in the same way that we did with elevation, allowing reverse flow. The same is applicable for composition, if composition is constant.</div><div class=\"standard\" id=\"magicparlabel-8280\">A second point must be considered: In a connection of more than two connectors, regardless the physical size of the connections could be the same, there is normally a change in velocity, so in kinetic energy and enthalpy. This means that the equal enthalpy solution is only an approximate solution valid when the velocity is low (liquids and gases at not high velocity).</div><p><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p><div class=\"standard\" id=\"magicparlabel-8281\">As a resume, we will develop elements allowing for reverse flow, based in a fixed enthalpy and composition at each connection point, and elements without reverse flow capability, valid for situations with different enthalpy, or composition, of the connectors.</div>
+  
+  </body></html>"));
   end TwoFluidPorts;
 
   model FlowSource "Single or two phases flow source. Mainly necessary to generate pressure, enthalpy, and composition values at a connection"
@@ -107,7 +162,7 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
       Dialog(tab = "Local values"));
     parameter Modelica.Units.SI.Temperature T(displayUnit = "degC") = 298.15 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.Units.SI.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOption.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOption.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) else Medium.h_default annotation(
+    parameter Modelica.Units.SI.SpecificEnthalpy H = if sourceOption == FreeFluids.Types.SourceOption.useP_T then Medium.specificEnthalpy(Medium.setState_pTX(P, T, X)) elseif sourceOption == FreeFluids.Types.SourceOption.useD_T then Medium.specificEnthalpy(Medium.setState_dTX(D, T, X)) elseif sourceOption == FreeFluids.Types.SourceOption.useSatGasP then Medium.dewEnthalpy(Medium.setSat_p(P))  elseif sourceOption == FreeFluids.Types.SourceOption.useSatGasT then Medium.dewEnthalpy(Medium.setSat_T(T)) else Medium.h_default annotation(
       Dialog(tab = "Local values"));
     parameter Modelica.Units.SI.Density D(displayUnit = "kg/m3") = 100 annotation(
       Dialog(tab = "Local values"));
@@ -186,7 +241,7 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
 
   model FlowSourceSP "Single phase flow source. Mainly necessary to generate pressure, enthalpy, and composition values at a connection"
     replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium;
-    replaceable FreeFluids.Interfaces.FluidPortB PortB(redeclare package Medium=Medium) annotation(
+    replaceable FreeFluids.Interfaces.FluidPortB PortB(redeclare package Medium=Medium, P.displayUnit="bar") annotation(
       Placement(transformation(extent = {{90, -10}, {110, 10}})));
     parameter FreeFluids.Types.SourceOptionS sourceOption = FreeFluids.Types.SourceOptionS.useP_T "how to generate port pressure and enthalpy";
     parameter Boolean isElevSource = true "use specified gravitational height";
@@ -195,7 +250,7 @@ package Interfaces "Interfaces.mo by Carlos Trujillo
       Dialog(tab = "Local values"));
     parameter Modelica.Units.SI.MassFlowRate G(displayUnit = "kg/h") = 0.0 annotation(
       Dialog(tab = "Local values"));
-    parameter Modelica.Units.SI.AbsolutePressure P(displayUnit = "bar") = if sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.pressure(Medium.setState_dTX(D, T, X)) else 0.0 annotation(
+    parameter Modelica.Units.SI.AbsolutePressure P(displayUnit = "bar") = if sourceOption == FreeFluids.Types.SourceOptionS.useD_T then Medium.pressure(Medium.setState_dTX(D, T, X)) else Medium.p_default annotation(
       Dialog(tab = "Local values"));
     parameter Modelica.Units.SI.Temperature T(displayUnit = "degC") annotation(
       Dialog(tab = "Local values"));

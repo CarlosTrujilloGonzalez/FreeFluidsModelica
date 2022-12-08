@@ -1951,9 +1951,9 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
     model VesselSimpleWithPump
       extends Modelica.Icons.Example;
-      FreeFluids.Vessels.VesselSimple Vessel(redeclare package MediumL = FreeFluids.LMedia.Fluids.Water, height = 5, redeclare package MediumG = Modelica.Media.Air.DryAirNasa, initialLiquidVolume = 1, initialT = 298.15, inletL = 0.8, lgConductance = 2, overflowL = 1.5, section = 2, ventOutL = 2, vesselVolume = 10)  annotation(
+      FreeFluids.Vessels.VesselSimple Vessel(height = 5, initialLiquidVolume = 1, initialT = 298.15, inletL = 0.8, lgConductance = 2, overflowL = 1.5, section = 2, ventOutL = 2, vesselVolume = 10)  annotation(
         Placement(visible = true, transformation(origin = {44, -8}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 99999.99999999999, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 99999.99999999999, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-56, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
       FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900 / 60, numParallelUnits = 1, q1 = 0.0016667, q2 = 0.0025, r1 = 0.705, r2 = 0.73) annotation(
         Placement(visible = true, transformation(origin = {-16, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
@@ -1965,7 +1965,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       annotation(
         Diagram(coordinateSystem(extent = {{-60, 20}, {80, -40}})),
         experiment(StartTime = 0, StopTime = 1700, Tolerance = 1e-06, Interval = 7.2),
-  Documentation(info = "<html><head></head><body>Vessel preswsurization with a bump pump.</body></html>"));
+  Documentation(info = "<html><head></head><body>Vessel pressurization with a bump pump.</body></html>"));
     end VesselSimpleWithPump;
   
     model VesselLevelTest
@@ -1980,7 +1980,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 99999.99999999999, initialT = 298.15, inletL = 0.8, lgConductance = 5, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar"), T = 323.15, externalP = true) annotation(
+      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar"), T = 323.15, externalP = true) annotation(
         Placement(visible = true, transformation(origin = {-24, 8}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
   FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -2022,7 +2022,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 99999.99999999999, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {84, 0}, extent = {{-34, -34}, {34, 34}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 150000, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 150000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-20, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
   FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {14, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -2040,7 +2040,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 110000, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 180000, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 180000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-18, -6}, extent = {{-6, -6}, {6, 6}}, rotation = 180)));
     FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -2157,13 +2157,13 @@ package Vessels "Vessels.mo by Carlos Trujillo
     model AnchorKettleHeating
       extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 0.0001, InitialValues.TF1initT = 403.15, Exchanger.thermalType = FreeFluids.Types.ThermalType.isenthalpic, Source.T = 453.15, Source.P.displayUnit = "Pa", TV01.aperture = 0.6);
       annotation(
-        experiment(StartTime = 0, StopTime = 1800, Tolerance = 1e-06, Interval = 3.6));
+        experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end AnchorKettleHeating;
 
     model AnchorKettleCooling
       extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 1, InitialValues.TF1initT = 368.15, Exchanger.thermalType = FreeFluids.Types.ThermalType.detailed, Source.T = 363.15, Source.P.displayUnit = "Pa", TV01.aperture = 0, FV1.aperture = 0, InitialValues.initT = 373.15);
       annotation(
-        experiment(StartTime = 0, StopTime = 1800, Tolerance = 1e-06, Interval = 3.6));
+        experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end AnchorKettleCooling;
 
     model TurbineVessel
@@ -2271,7 +2271,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end TurbineKettle;
 
     model TurbineKettleHeating
-      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 523.15, InitialValues.initT = 323.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667);
+      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 463.15, InitialValues.initT = 323.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667);
     equation
 
       annotation(

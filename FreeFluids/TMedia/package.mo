@@ -1472,9 +1472,8 @@ package TMedia "TMedia.mo by Carlos Trujillo
 
 
   annotation(
-    Documentation(info = "<html>
-    <body>
-    <p>There are several very reliable medium packages based en multiparameter equations of state; there are also very simple medium packages based in the ideal gas equation for gases, or in constant properties for liquids. But for many products we do not have multiparameter EOS, or we do not need their complexity, and we need need a good approximation of physical properties. The TMedia package is based in correlations an offers good accuracy for liquids till say 200 bars pressure and for gases till 20-30 bars.</p>
+    Documentation(info = "<html><head></head><body>
+    <p>There are several very reliable medium packages based en multiparameter equations of state; there are also very simple medium packages based in the ideal gas equation for gases, or in constant properties for liquids. But for many products we do not have multiparameter EOS, or we do not need their complexity, but we need a good approximation of physical properties. The TMedia package is based in correlations and offers good accuracy for liquids till say 200 bars pressure and for gases till 20-30 bars.</p>
     <p>The medium is designed for liquid, liquid/vapor, or gas phases. For liquid or biphasic states, its application is limited to the higher temperature limits of the liquid heat capacity and vaporization enthalpy correlations used, but temperature should be lower than 0.85 Tc, and pressure not higher than 200 bars, because at higher values the influence of pressure on properties becomes very difficult to correct for. For gas state, it is limited to the maximum pressure which saturation temperature is below the maximum temperature limit of the liquid heat capacity correlation, but should be limited to a maximum of 20-30 bars. It can't work with supercritical states. It extends the Modelica PartialTwoPhaseMedium. It is somewhat similar to the Modelica TableBased medium, but uses specific correlations for each physical property, allows to work with gas phase, and adds a density dependent correlation for the reduced bulk modulus of the liquid, that improves a lot the calculation of liquid density at high pressure, isothermal compressibility, and isobaric expansion coefficient. Improving also the calculation of liquid heat capacity at constant volume (Cv) and the speed of sound. The medium properties are obtained using correlations that are mainly functions of T, but different pressure corrections are also used. It uses the substances data stored in the MediaCommon package.</p>
     <p>The use of pressure correction is controlled by the constant Boolean 'highPressure'. Its default value is false. If switched to true, pressure correction will be applied (in plus than to liquid density) to liquid specific enthalpy, specific entropy, heat capacity, viscosity and thermal conductivity. It is interesting to make highPressure=true if we need to work over 20 or 30 bars, but the price is a slower simulation.</p>
     <p>The values of enthalpy and entropy are calculated from a reference state. The reference state to use can be selected giving value to the constant string 'refState'. The values can be: 'ASHRAE', 'IIR', 'NBP' or 'User'. Any other value will eliminate any correction for the reference state. When using 'User', the raw values at reference_T will be used as zero for both enthalpy and entropy.</p>
@@ -1496,6 +1495,6 @@ package TMedia "TMedia.mo by Carlos Trujillo
     <p>Viscosity and thermal conductivity are calculated by correlations or, when not available, by the Chung method. Pressure correction is later applied.</p>
     <b><p>Two phases properties</p></b>
     <p>Transport properties are not calculated for the two phases situation.</p>
-    </body>
-    </html>"));
+    
+    </body></html>"));
 end TMedia;

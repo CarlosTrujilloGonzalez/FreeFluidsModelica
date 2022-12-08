@@ -31,7 +31,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Flow"));
     parameter Boolean isLaminarFlow = false "flow regime to apply. Only if useFixedDiffP is false" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.Units.SI.CoefficientOfHeatTransfer u annotation(
+    parameter Modelica.Units.SI.CoefficientOfHeatTransfer u "global heat transfer coefficient" annotation(
       Dialog(tab = "Heat transfer"));
     parameter Boolean fixSurface = true "if true, please fix the surface. If false, fix the power" annotation(
       Dialog(tab = "Heat transfer"));
@@ -43,7 +43,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.Temperature extTin(displayUnit = "degC") = 298.15 "fixed external media inlet temperature" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Boolean fixExternalFlow = false "if false the external media outlet temp. must be given. If true the external flow." annotation(
+    parameter Boolean fixExternalFlow = false "if false, the external media outlet temp. must be given. If true, the external flow." annotation(
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.MassFlowRate extG(displayUnit = "kg/h") "fixed external media massic flow" annotation(
       Dialog(tab = "Heat transfer"));
@@ -112,10 +112,10 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"),
       defaultComponentName = "hex",
       Icon(graphics = {Line(origin = {-0.19, 0}, points = {{-89.8066, 0}, {-59.8066, -20}, {-19.8066, 20}, {20.1934, -20}, {60.1934, 20}, {90.1934, 0}}, color = {255, 0, 0}, thickness = 2), Line(origin = {-20, -18}, points = {{-50, -50}, {50, 50}}), Polygon(origin = {35.1208, 37.1208}, points = {{4.87921, -15.1208}, {-15.1208, 4.87921}, {14.8792, 14.8792}, {4.87921, -15.1208}}), Text(origin = {-52, 100}, extent = {{114, -42}, {-2, -2}}, textString = "%name")}, coordinateSystem(initialScale = 0.1)),
-      Documentation(info = "<html><head></head><body>A very simple, and undefined, heat exchanger.<div>For the pressure drop you can consider it constant or variable with the 1.77 power of the flow.</div><div>Regarding heat transfer, you just have to supply the global heat transfer coefficient and the surface (or the power) of the exchanger, plus the inlet and outlet temperatures for the medium at the other side of the exchanger. The heat exchanged is calculated using the plain LMTD.</div></body></html>"));
+      Documentation(info = "<html><head></head><body>A very simple, and undefined, heat exchanger.<div>For the pressure drop you can consider it constant or variable with the flow.</div><div>Regarding heat transfer, you just have to supply the global heat transfer coefficient and the surface (or the power) of the exchanger, plus the inlet and outlet temperatures for the medium at the other side of the exchanger. The heat exchanged is calculated using the plain LMTD.</div></body></html>"));
   end HEXsimple;
 
-  model HEXgeneric1Ph "Exchanger model without heat transfer coefficient calculation, for forced convection in tubes"
+  model HEXgeneric1Ph "Exchanger model without heat transfer coefficient calculation, for 1 phase flow in tubes"
     extends FreeFluids.Pipes.PipeFlow1Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.detailed);
     parameter FreeFluids.Types.ExchangerType exchangerType = FreeFluids.Types.ExchangerType.undefined "if undefined, raw LMTD will be used, otherwise mixed LMTD/NTU method" annotation(
       Dialog(tab = "Heat transfer"));
@@ -214,7 +214,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Documentation(info = "<html><head></head><body>The model is for a tube heat exchanger that can have several passes and extended surface, in an undefined external flowing media. We need to specify the global U, as it is impossible its calculation. We define also the internal media. For the external media only Cp, inlet temperature, and outlet temperature (or mass flow rate) are needed.<div>As an alternative it is also possible to use a fixed exchanged power, or a fixed temperature for the tubes external surface. And, for better convergence when the exchanger is not in use, switch the pipes to isenthalpic or adiabatic.</div><div>If the exchanger type is undefined, a global LMTD will be used for the exchanged heat calculation, otherwise a mixed NTU/LTMD method will be used.</div></body></html>"));
   end HEXgeneric1Ph;
 
-  model HEXgeneric2Ph "Exchanger model without heat transfer coefficient calculation, for forced convection in tubes"
+  model HEXgeneric2Ph "Exchanger model without heat transfer coefficient calculation, for two phases flow in tubes"
     extends FreeFluids.Pipes.PipeFlow2Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = true, final twoPhaseFlow = true, final rhoL = 0, final muL = 0, final rhoG = 0, final muG = 0, final x = 0, thermalType = FreeFluids.Types.ThermalType.detailed);
     parameter Modelica.Units.SI.Length tubeLength annotation(
       Dialog(tab = "Physical data"));
@@ -268,6 +268,16 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Documentation(info = "<html><head></head><body>The model is for a tube heat exchanger, that can have several passes and extended surface, in an undefined external flowing media. We need to specify the global U, as it is impossible its calculation. We define also the inner media, and the external media Cp, inlet temperature, and outlet temperature or mass flow rate.<div>As an alternative it is also possible to use a fixed exchanged power, or a fixed temperature for the tubes external surface.</div><div>As two phases are coexisting along the exchanger a straight LMTD method is used.</div><div><br></div></body></html>"));
   end HEXgeneric2Ph;
 
+  model DoublePipeHEXfc
+    extends BaseClasses.DoublePipeHEX;
+    extends BaseClasses.HEXtubesForcedConvection;
+  end DoublePipeHEXfc;
+
+  model GasCooledHEXfc
+    extends BaseClasses.GasCooledHEX;
+    extends BaseClasses.HEXtubesForcedConvection(final oElevDiff = 0);
+  end GasCooledHEXfc;
+
   //***DETAILED EXCHANGER MODELS***
   //-------------------------------
   //Shell with sensible heat transfer. tubes with condensing and subcooling
@@ -292,11 +302,13 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
         if nTm == 1 then
           F := 1 / (1 + 0.671 * R ^ 1.055 * NTUm ^ 2.11) ^ 0.534;
         elseif nTm == 2 then
-          F := 1 / (1 + 0.317 * R ^ 1.45 * NTUm ^ 2.09) ^ 0.543;
+          F := 1 / (1 + 0.317 * R ^ 1.045 * NTUm ^ 2.09) ^ 0.543;
         elseif nTm == 3 then
           F := 1 / (1 + 0.431 * R ^ 1.0485 * NTUm ^ 2.33) ^ 0.371;
         elseif nTm == 4 then
           F := 1 / (1 + 0.274 * R ^ 1.05664 * NTUm ^ 2.08) ^ 0.624;
+        elseif nTm == 6 then
+          F := 1 / (1 + 0.262 * R ^ 1.05363 * NTUm ^ 2.07) ^ 0.65;
         end if;
       end if;
     end ShellLMTDfactor;
@@ -333,7 +345,12 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       end if;
 //F:=1.0;
     end CrossLMTDfactor;
+
   end Functions;
 
 
+
+
+  annotation(
+    Documentation(info = "<html><head></head><body>In the package there are three types of models:&nbsp;<div>· A very simple HEXsimple model, where the only equipment related characteristics needed are the global heat transfer coefficient and the exchanger area (or exchanged power).</div><div>· Intermediate models, for one or two phases flow, when there is not enough exchanger details for the calculation of the global heat transfer coefficient. These models assume that one of the streams is inside tubes, and its properties are calculated from a defined medium.</div><div>· Detailed models with enough details for the calculation of the global heat exchange coefficient. The calculation of the physical properties for both fluids is done using the defined mediums.</div></body></html>"));
 end HeatExchangers;

@@ -71,7 +71,37 @@ package Pumps "Pumps.mo by Carlos Trujillo
     Dh = Pdiff / Rho / g_n;
     annotation(
       defaultComponentName = "P",
-      Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {170, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, lineThickness = 0.5, extent = {{-90, 90}, {90, -90}}, endAngle = 360), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -150}}, textString = "%name"), Polygon(lineColor = {0, 54, 162}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-60, 68}, {90, 10}, {90, -10}, {-60, -68}, {-60, 68}}), Text(origin = {51, 106}, extent = {{-29, 30}, {43, -12}}, textString = "Speed"), Text(origin = {-159.083, 33.1429}, extent = {{-16.9167, 22.8571}, {25.0833, -9.14286}}, textString = "Ta")}));
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Ellipse(lineColor = {170, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, lineThickness = 0.5, extent = {{-90, 90}, {90, -90}}, endAngle = 360), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -150}}, textString = "%name"), Polygon(lineColor = {0, 54, 162}, fillColor = {255, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, points = {{-60, 68}, {90, 10}, {90, -10}, {-60, -68}, {-60, 68}}), Text(origin = {51, 106}, extent = {{-29, 30}, {43, -12}}, textString = "Speed"), Text(origin = {-159.083, 33.1429}, extent = {{-16.9167, 22.8571}, {25.0833, -9.14286}}, textString = "Ta")}),
+  Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-4600\">Its function is to define the common elements needed for different type of pumps, providing just few equations between them.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4601\">Parameters:</div>
+
+<ul class=\"itemize\" id=\"magicparlabel-4602\"><li class=\"itemize_item\">forceSpeed=false. If made true, the pump speed will be made equal to the manual defined parameter, or to the speed received via a connector, depending on the selection made.</li>
+<li class=\"itemize_item\">useExternalSpeed=false. If made true, the speed received at the connector is used. Otherwise the manually filled parameter will be used. (the forceSpeed parameter must be true for calculation to apply).</li>
+<li class=\"itemize_item\">fixedSpeed. The manually fixed speed request.</li>
+<li class=\"itemize_item\">numParallelUnits=1. The number of identical pumps working in parallel.</li>
+<li class=\"itemize_item\">directFlow=true. If true, the flow will be from port A to port B. And the reverse if false.</li>
+</ul>
+<div class=\"standard\" id=\"magicparlabel-4607\">Variables:</div>
+
+<ul class=\"itemize\" id=\"magicparlabel-4608\"><li class=\"itemize_item\">N. for the pump speed. In order to assign it, a conditional RealInput connector 'Speed' connected to a protected RealInput connector 'SpeedIn' are used. I 'useExternalSpeed' is false the 'Speed' connector and its connection disappears, and N is made equal to 'fixedSpeed'.</li>
+<li class=\"itemize_item\">Qunit and Qtotal. For the volumetric flow of each individual pump, and of all parallel pumps. They are related by Qtotal = Qunit * numParallelUnits. And Qtotal is related to the mass flow by PortA.G = Qtotal * Rho.</li>
+<li class=\"itemize_item\">A ThermodynamicState 'State' is defined in order to gate the physical properties of the fluid. The state is defined at the enthalpy and pressure of PortA, as we do not expect too much change for the physical properties between the ports.</li>
+<li class=\"itemize_item\">The variables Rho and T, get the density and the temperature of the State.</li>
+<li class=\"itemize_item\">The variables specific energy: 'SE', pump efficiency: 'Efficiency', total absorbed power: 'Wabs'. Two equations are provided here, one comes from the definition of efficiency, and the other relates 'Wabs' with flow, differential pressure and efficiency.</li>
+<li class=\"itemize_item\">A pump impulsion height variable 'Dh' that express the differential pressure between ports a liquid height. An equation relating Dh with the differential pressure and density is given.</li>
+</ul>
+<div class=\"standard\" id=\"magicparlabel-4614\">An equation is missing for finding Efficiency, and it is missing also an equation relating N, Qunit and Dh.</div></body></html>"));
   end PumpBase;
 
   partial model BumpPumpBase "General bump pump model.We have as parameters three points of the curve, includig that at 0 flow"
@@ -109,7 +139,22 @@ package Pumps "Pumps.mo by Carlos Trujillo
     else
       EfficiencyNV = 1;
     end if;
-  end BumpPumpBase;
+  annotation(
+      Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-4674\">It extends the PumpBase model and introduces parameters for the pump curve definition. They are flow, head, and efficiency, at two points of the curve, plus the head at zero flow.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4675\">It defines three variables for: flow, head and efficiency with a nonviscous fluid.</div>
+
+<div class=\"standard\" id=\"magicparlabel-4676\">It defines two equations relating the three variables with the pump speed. So, if the pump speed is fixing, the definition of one of the three variables will allow the calculation of the other two.</div></body></html>"));end BumpPumpBase;
 
   model BumpPump
     extends BumpPumpBase(Qunit.start = q1);
@@ -118,14 +163,22 @@ package Pumps "Pumps.mo by Carlos Trujillo
     Dh = DhNV;
     Efficiency = EfficiencyNV;
     annotation(
-      Documentation(info = "<html>
-        <body>
-        <p>The model is ready to be connected after filling the parameters.</p>
-        <p>If useHeightDifference is set to false, the height of both ports became undefined by the model, so they must be supplied by the connexions. If there are parallell paths, remember to pass only the height of one of the parallel paths, or of none and connect a height refrence.</p>
-        <p>If equalH is set to false, the absorbed power will be added to the PortB enthalpy.</p>
-        <p>If useFixedSpeed is set to false, you must supply value to the Speed connector.</p>
-        </body>
-        </html>"));
+      Documentation(info = "<html><head></head><body>
+        <div class=\"standard\" id=\"magicparlabel-4696\">Is the model for nonviscous fluids.</div><p><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+
+
+</p><div class=\"standard\" id=\"magicparlabel-4697\">Extends the BumpPumpBase model and just makes equal the flow, head, and efficiency, of the pump to those of the nonviscous fluid.&nbsp;</div>
+        
+        </body></html>"));
   end BumpPump;
 
   model BumpPumpViscous "Bump pump for viscous flow"
@@ -149,7 +202,18 @@ package Pumps "Pumps.mo by Carlos Trujillo
     Dh = Fh * DhNV;
     Fr = exp(-0.053 * exp(0.04 * (bhi - 0.5) ^ 0.5) * (bhi - 0.5) ^ 1.08) "rectificado ligeramente sobre el original que era -0.05";
     Efficiency = Fr * EfficiencyNV;
-  end BumpPumpViscous;
+  annotation(
+      Documentation(info = "<html><head></head><body><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+<div class=\"standard\" id=\"magicparlabel-4704\">Extends the BumpPumpBase model, and introduces the viscosity, that is calculated from the ThermodynamicState. The flow, head and efficiency of the pump are related to those of the nonviscous fluid using correction factors derivated from the fluid viscosity.</div></body></html>"));end BumpPumpViscous;
 
   model PositivePump "Possitive desplacement pump with volumetric flow proportional to speed"
     extends PumpBase(directFlow = true, fixedSpeed = n0);
@@ -169,14 +233,32 @@ package Pumps "Pumps.mo by Carlos Trujillo
     Qleak = qLeak * Pdiff / pLeak;
     Qunit = q0 * N / n0 - Qleak;
     annotation(
-      Documentation(info = "<html>
-        <body>
-        <p>The model is ready to be connected after filling the parameters.</p>
-        <p>If useHeightDifference is set to false, the height of both ports became undefined by the model, so they must be supplied by the connexions. If there are parallell paths, remember to pass only the height of one of the parallel paths, or of none and connect a height refrence.</p>
-        <p>If equalH is set to false, the absorbed power will be added to the PortB enthalpy.</p>
-        <p>If useFixedSpeed is set to false, you must supply value to the Speed connector.</p>
-        </body>
-        </html>"));
+      Documentation(info = "<html><head></head><body>
+        <div class=\"standard\" id=\"magicparlabel-4742\">It extends the the PumpBase model. The following parameters are defined:</div><ul class=\"itemize\" id=\"magicparlabel-4743\"><li class=\"itemize_item\">n0: The nominal rotational speed</li>
+<li class=\"itemize_item\">q0: The nomimal volumetric flow at the nominal rotational speed</li>
+<li class=\"itemize_item\">r: The fixed efficiency. The equation Efficiency=r is applied.</li>
+<li class=\"itemize_item\">qLeak: The pump expected volumetric leak at pLeak differential pressure.</li>
+<li class=\"itemize_item\">pLeak: The differential pressure at which the qLeak is induced.</li>
+</ul><div class=\"standard\" id=\"magicparlabel-4748\">The variable Qleak is defined, with the equation for its calculation: Qleak= qLeak*Pdiff/pLeak. So the leak is proportional to the differential pressure, in both directions.</div><p><!--?xml version=\"1.0\" encoding=\"UTF-8\"?-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p><div class=\"standard\" id=\"magicparlabel-4749\">Finally the equation Qunit=q0*N/n0-Qleak is applied. You can reverse the flow of the pump by giving a negative value to the rotational speed.</div>
+        
+        </body></html>"));
+  //,
+  //    Icon(coordinateSystem(extent = {{-180, 140}, {160, -160}}))
   end PositivePump;
 
   model PistonPump "pump governed by the position of a mechanical flange"
@@ -211,20 +293,21 @@ package Pumps "Pumps.mo by Carlos Trujillo
     annotation(
       defaultComponentName = "Source",
       Icon(coordinateSystem(initialScale = 0.1), graphics = {Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -150}}, textString = "%name"), Text(origin = {-84, 68}, extent = {{-56, 42}, {60, -22}}, textString = "Pump"), Rectangle(origin = {0, -49}, fillColor = {43, 111, 205}, fillPattern = FillPattern.Solid, extent = {{-32, 41}, {32, -41}}), Rectangle(origin = {-7.10543e-15, -6}, fillColor = {170, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-32, -2}, {32, 2}}), Rectangle(origin = {-0.169112, 20.2121}, extent = {{-31.8309, -24.2121}, {31.8309, 24.2121}}), Rectangle(origin = {0, 36}, fillColor = {170, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-2, -40}, {2, 40}}), Line(origin = {-61, -80}, points = {{29, 0}, {-29, 0}}, thickness = 1), Line(origin = {61, -80}, points = {{-29, 0}, {29, 0}}, thickness = 1), Polygon(origin = {65, -79}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Solid, points = {{-13, 9}, {-13, -11}, {9, -1}, {-13, 9}})}),
-      Documentation(info = "<html>
-    <body>
-    <p>The pump provides the function of a possitive displacement pump with a moving piston or membrane. The pump movement and speed is governed by the position of the mechanical interface. Reverse flow inhibition is incorporated inside the pump</p>
-    </body>
-    </html>"));
+      Documentation(info = "<html><head></head><body>
+    <p>The pump provides the function of a possitive displacement pump with a moving piston or membrane. The pump movement and speed are governed by the position of the mechanical interface. Reverse flow inhibition is incorporated inside the pump</p>
+    
+    </body></html>"));
   end PistonPump;
 
   package Examples
+  extends Modelica.Icons.ExamplesPackage;
     model BumpPumpTest
+      extends Modelica.Icons.Example;
       FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, calcEnthalpyDifference = true, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900 / 60, numParallelUnits = 2, q1(displayUnit = "m3/s") = 0.0166667, q2(displayUnit = "m3/s") = 0.025, r1 = 0.705, r2 = 0.73, useElevDifference = true) annotation(
         Placement(visible = true, transformation(origin = {-42, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Pipes.PipeFlow1Ph Pipe(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Rho(displayUnit = ""), RhoA(displayUnit = ""), Ta(displayUnit = ""), Tb(displayUnit = ""), calcEnthalpyDifference = false, di = 0.064, lTube = 100.0, passComposition = false, useElevDifference = false, useTubeLength = true) annotation(
         Placement(visible = true, transformation(origin = {6, 34}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Elevation = 0, G = 15, P = 1e5, T = 523.15, isGsource = false) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Elevation = 0, P(displayUnit = "Pa") = 1e5, T = 523.15, isGsource = false) annotation(
         Placement(visible = true, transformation(origin = {-106, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Rho(displayUnit = ""), RhoA(displayUnit = ""), Ta(displayUnit = ""), Tb(displayUnit = ""), calcEnthalpyDifference = false, di = 0.064, lTube = 200.0, passComposition = false, useElevDifference = false, useTubeLength = true) annotation(
         Placement(visible = true, transformation(origin = {8, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -247,12 +330,14 @@ package Pumps "Pumps.mo by Carlos Trujillo
         Line(points = {{-32, 8}, {-32, -25}, {-2, -25}, {-2, -24}}, color = {0, 127, 255}));
       connect(Pump.PortB, Pipe.PortA) annotation(
         Line(points = {{-32, 8}, {-32, 34}, {-4, 34}}, color = {0, 127, 255}));
-    end BumpPumpTest;
+    annotation(
+        Diagram(coordinateSystem(extent = {{-120, 40}, {80, -60}})));end BumpPumpTest;
 
     model BumpPumpViscousTest
+      extends Modelica.Icons.Example;
       FreeFluids.Pumps.BumpPumpViscous Pump(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, forceSpeed = true, h0 = 50, h1 = 30, h2 = 5, n0 = 1450 / 60, q1 = 3.5 / 3600, q2 = 7.5 / 3600, r1 = 0.259, r2 = 0.231) annotation(
         Placement(visible = true, transformation(origin = {-6, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 0, redeclare package Medium = FreeFluids.TMedia.Fluids.EG, P = 1e5, T = 273.15, isGsource = false) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source( redeclare package Medium = FreeFluids.TMedia.Fluids.EG,Elevation = 0, P (displayUnit = "Pa") = 1e5, T = 273.15, isGsource = false) annotation(
         Placement(visible = true, transformation(origin = {-80, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.TMedia.Fluids.EG, P = 247300, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {62, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -265,17 +350,18 @@ package Pumps "Pumps.mo by Carlos Trujillo
     end BumpPumpViscousTest;
 
     model PumpPipesTest
+      extends Modelica.Icons.Example;
       FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900 / 60, numParallelUnits = 1, q1 = 0.0166667, q2 = 0.025, r1 = 0.705, r2 = 0.73) annotation(
         Placement(visible = true, transformation(origin = {-78, 12}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Pipes.PipeFlow1Ph Pipe1(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, di = 0.06, equivL_Di = 2 * 340 + 5 * 15, lTube = 25, thermalType = FreeFluids.Types.ThermalType.isenthalpic, useTubeLength = true) annotation(
         Placement(visible = true, transformation(origin = {12, 12}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP Source( Elevation = 0, G = 15,redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, P = 150000, T = 393.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source( redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH,Elevation = 0, P (displayUnit = "Pa") = 160000, T = 393.15) annotation(
         Placement(visible = true, transformation(origin = {-127, 61}, extent = {{-11, -11}, {11, 11}}, rotation = 0)));
       FreeFluids.Pipes.MixerPH MixerIn(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH) annotation(
         Placement(visible = true, transformation(origin = {-106, 12}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, P = 120000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {127, 11}, extent = {{-11, -11}, {11, 11}}, rotation = 0)));
-      FreeFluids.Valves.ValveIncompressible FV10(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, fixedKv = 80) annotation(
+      FreeFluids.Valves.ValveIncompressible FV10(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, fixedKv = 80, useFixedAperture = false) annotation(
         Placement(visible = true, transformation(origin = {-99, 61}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
       FreeFluids.Pipes.CoilForcedConvection Coil1(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, PLossFriction(displayUnit = "Pa"), di = 0.06, fixedW = 50e3, numActiveTubes = 2, numTubes = 2, thermalType = FreeFluids.Types.ThermalType.fixedPower, useThermalConnector = false) annotation(
         Placement(visible = true, transformation(origin = {46, 34}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -293,6 +379,8 @@ package Pumps "Pumps.mo by Carlos Trujillo
         Placement(visible = true, transformation(origin = {-68, -52}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
       FreeFluids.Pipes.MixerPH MixerCAA(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH) annotation(
         Placement(visible = true, transformation(origin = {-20, 12}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+  Modelica.Blocks.Sources.Ramp Ramp(duration = 0.9, height = 0.9, offset = 0.1)  annotation(
+        Placement(visible = true, transformation(origin = {-162, 88}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(Source.PortB, FV10.PortA) annotation(
         Line(points = {{-116, 61}, {-107, 61}}, color = {0, 127, 255}));
@@ -328,69 +416,71 @@ package Pumps "Pumps.mo by Carlos Trujillo
         Line(points = {{-12, 12}, {2, 12}, {2, 12}, {2, 12}}, color = {0, 127, 255}));
       connect(FV18.PortB, MixerCAA.PortA) annotation(
         Line(points = {{-37, 12}, {-31.5, 12}, {-31.5, 16}, {-26, 16}}, color = {0, 127, 255}));
+      connect(Ramp.y, FV10.Opening) annotation(
+        Line(points = {{-150, 88}, {-98, 88}, {-98, 68}}, color = {0, 0, 127}));
     end PumpPipesTest;
 
     model PositivePumpTest
+      extends Modelica.Icons.Example;
       FreeFluids.Pumps.PositivePump pump(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Qunit(displayUnit = "m3/s"), forceSpeed = true, n0 = 300 / 60, pLeak(displayUnit = ""), q0(displayUnit = "m3/s") = 0.00833333, r = 0.7) annotation(
-        Placement(visible = true, transformation(origin = {-42, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-50, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Pipes.PipeFlow1Ph pipe(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Rho(displayUnit = ""), RhoA(displayUnit = ""), Ta(displayUnit = ""), Tb(displayUnit = ""), calcEnthalpyDifference = false, di = 0.064, lTube = 100.0, passComposition = false, useElevDifference = false, useTubeLength = true) annotation(
         Placement(visible = true, transformation(origin = {6, 34}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP source(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Elevation = 0, G = 15, P = 110000, T = 513.15, isGsource = false) annotation(
+      FreeFluids.Interfaces.FlowSourceSP source(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Elevation = 0, P(displayUnit = "Pa") = 110000, T = 513.15, isGsource = false) annotation(
         Placement(visible = true, transformation(origin = {-106, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Pipes.PipeFlow1Ph pipe1(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, Rho(displayUnit = ""), RhoA(displayUnit = ""), Ta(displayUnit = ""), Tb(displayUnit = ""), calcEnthalpyDifference = false, di = 0.064, lTube = 200.0, passComposition = false, useElevDifference = false, useTubeLength = true) annotation(
-        Placement(visible = true, transformation(origin = {8, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {10, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Valves.ValveIncompressible valve(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, fixedKv = 80.0) annotation(
         Placement(visible = true, transformation(origin = {-76, 8}, extent = {{-5, -5}, {5, 5}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.TMedia.Fluids.MarlothermSH, P = 100000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {70, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
-      connect(Sink.PortA, pump.PortA) annotation(
-        Line(points = {{60, 2}, {60, -42}, {-52, -42}, {-52, 8}}, color = {0, 127, 255}));
-      connect(pipe1.PortB, Sink.PortA) annotation(
-        Line(points = {{18, -24}, {60, -24}, {60, 2}, {60, 2}}, color = {0, 127, 255}));
+  connect(Sink.PortA, pump.PortA) annotation(
+        Line(points = {{60, 2}, {60, -42}, {-56, -42}, {-56, 8}}, color = {0, 127, 255}));
+  connect(pipe1.PortB, Sink.PortA) annotation(
+        Line(points = {{20, -24}, {60, -24}, {60, 2}}, color = {0, 127, 255}));
       connect(pipe.PortB, Sink.PortA) annotation(
         Line(points = {{16, 34}, {60, 34}, {60, 2}, {60, 2}}, color = {0, 127, 255}));
-      connect(valve.PortB, pump.PortA) annotation(
-        Line(points = {{-70, 8}, {-52, 8}, {-52, 8}, {-52, 8}}, color = {0, 127, 255}));
+  connect(valve.PortB, pump.PortA) annotation(
+        Line(points = {{-70, 8}, {-56, 8}}, color = {0, 127, 255}));
       connect(source.PortB, valve.PortA) annotation(
         Line(points = {{-96, 8}, {-81, 8}}, color = {0, 127, 255}));
-      connect(pump.PortB, pipe1.PortA) annotation(
-        Line(points = {{-32, 8}, {-32, -25}, {-2, -25}, {-2, -24}}, color = {0, 127, 255}));
-      connect(pump.PortB, pipe.PortA) annotation(
-        Line(points = {{-32, 8}, {-32, 34}, {-4, 34}}, color = {0, 127, 255}));
-    end PositivePumpTest;
+  connect(pump.PortB, pipe1.PortA) annotation(
+        Line(points = {{-44, 8}, {-44, -25}, {0, -25}, {0, -24}}, color = {0, 127, 255}));
+  connect(pump.PortB, pipe.PortA) annotation(
+        Line(points = {{-44, 8}, {-44, 34}, {-4, 34}}, color = {0, 127, 255}));
+    annotation(
+        Diagram(coordinateSystem(extent = {{-120, 40}, {80, -40}})));end PositivePumpTest;
     
     model PistonPumpTest
-  replaceable package medium = FreeFluids.TMedia.Fluids.Water;
-  constant Modelica.Units.SI.Frequency freq = 46;
-  parameter Modelica.Units.SI.Length amplitude = 0.005567;
-  Modelica.Blocks.Sources.Sine Pulse(amplitude = amplitude, f = freq, offset = amplitude, phase(displayUnit = "rad")) annotation(
+      extends Modelica.Icons.Example;
+      replaceable package medium = FreeFluids.TMedia.Fluids.Water;
+      Modelica.Blocks.Sources.Sine Pulse(amplitude = 0.005567, f = 46, offset = 0.005567, phase(displayUnit = "rad")) annotation(
     Placement(visible = true, transformation(extent = {{-113.9, -2.89999}, {-90.2, 20.9}}, rotation = 0)));
-  Modelica.Mechanics.Translational.Sources.Position Pump_Position(exact = true, useSupport = false, s(start = 0)) annotation(
+      Modelica.Mechanics.Translational.Sources.Position Pump_Position(exact = true, useSupport = false, s(start = 0)) annotation(
     Placement(visible = true, transformation(extent = {{-53.8, -1.2}, {-27.9, 19.2}}, rotation = 0)));
-  Modelica.Mechanics.Translational.Sensors.PositionSensor Pump_PosMeasure annotation(
+      Modelica.Mechanics.Translational.Sensors.PositionSensor Pump_PosMeasure annotation(
     Placement(visible = true, transformation(extent = {{10, 2.10001}, {34.2, 16.4}}, rotation = 0)));
-  FreeFluids.Pumps.PistonPump Pump(redeclare package Medium = medium, Vpumped, section = 0.0001131, v0 = 2e-06) annotation(
+      FreeFluids.Pumps.PistonPump Pump(redeclare package Medium = medium, Vpumped, section = 0.0001131, v0 = 2e-06) annotation(
     Placement(visible = true, transformation(origin = {-12, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Pipes.PipeFlow1Ph Pipe(redeclare package Medium = medium, PLossFriction, PortA(G(start = -0.001)), di = 0.005000000000000001, lTube = 0.24, roughness = 2.500000000000001e-05) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph Pipe(redeclare package Medium = medium, PLossFriction, PortA(G(start = -0.001)), di = 0.005000000000000001, lTube = 0.24, roughness = 2.500000000000001e-05) annotation(
     Placement(visible = true, transformation(origin = {32, -40}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSourceSP Bondary1(redeclare package Medium = medium, P(displayUnit = "bar") = 99999.99999999999, T(displayUnit = "K") = 298) annotation(
+    FreeFluids.Interfaces.FlowSourceSP Bondary1(redeclare package Medium = medium, P(displayUnit = "bar") = 99999.99999999999, T(displayUnit = "K") = 298) annotation(
     Placement(visible = true, transformation(origin = {-70, -40}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = medium, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
+      FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = medium, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
     Placement(visible = true, transformation(origin = {90, -40}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
-//Connection(s)
-  connect(Pulse.y, Pump_Position.s_ref) annotation(
+      connect(Pulse.y, Pump_Position.s_ref) annotation(
     Line(points = {{-89, 9}, {-56, 9}}, color = {0, 0, 127}));
-  connect(Pump_Position.flange, Pump_PosMeasure.flange) annotation(
+      connect(Pump_Position.flange, Pump_PosMeasure.flange) annotation(
     Line(points = {{-28, 9}, {10, 9}}, color = {0, 127, 0}));
-  connect(Pump_Position.flange, Pump.Flange) annotation(
+      connect(Pump_Position.flange, Pump.Flange) annotation(
     Line(points = {{-28, 10}, {-12, 10}, {-12, -23}}, color = {0, 127, 0}));
-  connect(Pipe.PortB, Sink.PortA) annotation(
+      connect(Pipe.PortB, Sink.PortA) annotation(
     Line(points = {{42, -40}, {80, -40}}, color = {0, 127, 255}));
-  connect(Bondary1.PortB, Pump.PortA) annotation(
+      connect(Bondary1.PortB, Pump.PortA) annotation(
     Line(points = {{-60, -40}, {-22, -40}}, color = {0, 127, 255}));
-  connect(Pump.PortB, Pipe.PortA) annotation(
+      connect(Pump.PortB, Pipe.PortA) annotation(
     Line(points = {{-2, -40}, {22, -40}}, color = {0, 127, 255}));
   annotation(
     experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.001));
