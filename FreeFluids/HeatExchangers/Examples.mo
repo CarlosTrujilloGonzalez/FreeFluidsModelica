@@ -7,6 +7,10 @@ package Examples
     extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "MineralOil", cp_const = 1902, cv_const = 1902, d_const = 885.27, eta_const = 0.075, lambda_const = 0.1442, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 273.15, MM_const = 3);
   end MineralOil;
 
+  package Hydrocarbon
+    extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "Hydrocarbon", cp_const = 2302.74, cv_const = 2302.74, d_const = 799.96, eta_const = 0.0005, lambda_const = 0.1419, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 373.15, MM_const = 3);
+  end Hydrocarbon;
+
   model HEXsimpleWater
     extends Modelica.Icons.Example;
     FreeFluids.HeatExchangers.HEXsimple HEX(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, dP(displayUnit = "bar") = -12750, extCp = 1000, extTin = 383.15, extTout = 353.15, refG = 19.44444444444444, s = 31.1646, u = 400, useFixedDiffP = false) annotation(
@@ -103,7 +107,7 @@ package Examples
   end TestFactors;
 
 model DoublePipeTest
-FreeFluids.HeatExchangers.DoublePipeHEXfc HEX(redeclare package MediumA=MineralOil, redeclare package MediumI=FreeFluids.TMedia.Fluids.Water, finHeight = 0.0127, finK = 52, finNum = 30, finThickness = 0.0009000000000000002, iDi = 0.02093, iFoulingF = 0.088e-3, iKwall = 52, iLTube = 4.5, iNumSerial = 4, iRoughness = 1e-05, iThickness = 0.002870000000000001, oDi = 0.05250000000000001, oFoulingF = 0.176e-3, oThickness = 0.005000000000000001, useFins = true)  annotation(
+FreeFluids.HeatExchangers.DoublePipeHEXfc HEX(redeclare package MediumO=MineralOil, redeclare package MediumI=FreeFluids.TMedia.Fluids.Water, finHeight = 0.0127, finK = 52, finNum = 30, finThickness = 0.0009000000000000002, iDi = 0.02093, iFoulingF = 0.088e-3, iKwall = 52, iLTube = 4.5, iNumSerial = 4, iRoughness = 1e-05, iThickness = 0.002870000000000001, oDi = 0.05250000000000001, oFoulingF = 0.176e-3, oThickness = 0.005000000000000001, useFins = true)  annotation(
     Placement(visible = true, transformation(origin = {0, 0}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
 FreeFluids.Interfaces.FlowSourceSP SourceA(redeclare package Medium = MineralOil, P(displayUnit = "Pa") = 1e9, T = 338.15) annotation(
     Placement(visible = true, transformation(origin = {70, -48}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
@@ -128,18 +132,19 @@ connect(SinkA.PortA, HEX.Oout) annotation(
     Line(points = {{-60, 70}, {0, 70}, {0, 18}}, color = {0, 127, 255}));
 connect(SourceA.PortB, HEX.Oin) annotation(
     Line(points = {{60, -48}, {0, -48}, {0, -18}}, color = {0, 127, 255}));
-end DoublePipeTest;
-  
+annotation(
+      Documentation(info = "<html><head></head><body>Modified example 7.2 from Heat Exchangers (S.Kalkaç et. alt.)</body></html>"));end DoublePipeTest;
+
   model GasCooledTest
-  FreeFluids.HeatExchangers.GasCooledHEXfc HEX(redeclare package MediumI=FreeFluids.TMedia.Fluids.Water, redeclare package MediumA=Modelica.Media.Air.DryAirNasa,finDiameter = 0.05715, finDistance = 0.00254, finHeight = 0.054, finK = 209, finThickness = 0.00033, finWidth = 0.054, iDi = 0.02058, iFoulingF = 0.000176, iKwall = 16.7, iLTube = 10.9728, iNumPipes = 56, iNumRows = 4, iNumSerial = 4, iRoughness = 4.6e-05, iStaggered = false, iThickness = 0.00241, iTubePitch(displayUnit = "m") = 0.0635, oFoulingF = 0, useFins = true)  annotation(
+  FreeFluids.HeatExchangers.GasCooledHEXfc HEX(redeclare package MediumI=Hydrocarbon, redeclare package MediumO=Modelica.Media.Air.DryAirNasa,finDiameter = 0.05715, finDistance = 0.00254, finHeight = 0.054, finIsCircular = true, finK = 209, finThickness = 0.00033, finWidth = 0.054, iDi = 0.02058, iFoulingF = 0.000176, iKwall = 16.7, iLTube = 10.9728, iNumPipes = 56, iNumRows = 4, iNumSerial = 4, iNumVelocityHeads = 0, iRoughness = 2.000000000000001e-05, iStaggered = true, iThickness = 0.00241, iTubePitch(displayUnit = "m") = 0.0635, oFoulingF = 0, useBYnusselt = true, useFins = true)  annotation(
       Placement(visible = true, transformation(origin = {-20, 8}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSourceSP SourceA(redeclare package Medium = Modelica.Media.Air.DryAirNasa, P(displayUnit = "Pa") = 100325, T = 308.15) annotation(
+  FreeFluids.Interfaces.FlowSourceSP SourceA(redeclare package Medium = Modelica.Media.Air.DryAirNasa, P (displayUnit = "Pa")= 100325, T = 308.15) annotation(
       Placement(visible = true, transformation(origin = {-20, -48}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
-  FreeFluids.Interfaces.FlowSink SinkA(G(displayUnit = "kg/h") = 126.389, fix = FreeFluids.Types.BoundaryOption.fixFlow)  annotation(
+  FreeFluids.Interfaces.FlowSink SinkA(redeclare package Medium = Modelica.Media.Air.DryAirNasa, G(displayUnit = "kg/h") = 130.7030555555556, fix = FreeFluids.Types.BoundaryOption.fixFlow)  annotation(
       Placement(visible = true, transformation(origin = {-20, 76}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
-  FreeFluids.Interfaces.FlowSource SourceI(redeclare package Medium = FreeFluids.TMedia.Fluids.Water, P = 444000, T = 394.25) annotation(
+  FreeFluids.Interfaces.FlowSourceSP SourceI(redeclare package Medium = Hydrocarbon, P (displayUnit = "Pa")= 444000, T = 394.25) annotation(
       Placement(visible = true, transformation(origin = {-90, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSink SinkI(G(displayUnit = "kg/h") = 31.4995, fix = FreeFluids.Types.BoundaryOption.fixFlow)  annotation(
+  FreeFluids.Interfaces.FlowSink SinkI(redeclare package Medium = Hydrocarbon, G(displayUnit = "kg/h") = 31.4995, fix = FreeFluids.Types.BoundaryOption.fixFlow)  annotation(
       Placement(visible = true, transformation(origin = {52, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
 //HEX.IW=-5.46e6;
@@ -152,7 +157,8 @@ end DoublePipeTest;
   connect(SourceA.PortB, HEX.Oin) annotation(
       Line(points = {{-20, -38}, {-20, -10}}, color = {0, 127, 255}));
   annotation(
-      Diagram(coordinateSystem(extent = {{-100, 100}, {80, -60}})));
-
-end GasCooledTest;
+      Diagram(coordinateSystem(extent = {{-100, 100}, {80, -60}})),
+      Documentation(info = "<html><head></head><body>Example 12.1 from Process Heat Transfer Principles and Applications (R.W.Serth)</body></html>"));
+  end GasCooledTest;
+  
 end Examples;
