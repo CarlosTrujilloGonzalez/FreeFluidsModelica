@@ -67,7 +67,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
     StateB = Medium.setState_phX(PortB.P, PortB.H, PortB.X);
     Ta = Medium.temperature(StateA);
     Tb = Medium.temperature(StateB);
-//Flow
+  //Flow
     if useFixedDiffP == true then
       Pdiff = dP;
     else
@@ -77,7 +77,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
         Pdiff = dP * PortA.G ^ 1.77 / refG ^ 1.77 "approximation with correction for the Reynolds in turbulent flow";
       end if;
     end if;
-//Heat transfer
+  //Heat transfer
     if fixExternalFlow == true then
       Gext = extG;
     else
@@ -194,9 +194,9 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Rntu = (TextOut - extTin)/(Ta - Tb);
       NTU=ThConductance/(PortA.G*Medium.specificHeatCapacityCp(StateAvg));
       if exchangerType == FreeFluids.Types.ExchangerType.shellAndTubes then
-        Flmtd = FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, 1, numPasses, Rntu, NTU);
+        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, 1, numPasses, Rntu, NTU),1);
       else
-        Flmtd = FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(numPasses, numRows, Rntu, NTU);
+        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(numPasses, numRows, Rntu, NTU),1);
       end if;
       if noEvent((extTin - Tb) * (TextOut - Ta) <= 0) then
         LMTD = 0;
@@ -282,6 +282,13 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
     extends BaseClasses.HEXtubesForcedConvection(final oElevDiff=0);annotation(
       Documentation(info = "<html><head></head><body>Gas exchanger with forced convection heat transfer for both fluids.</body></html>"));
   end GasCooledHEXfc;
+  
+  model ShellAndTubesHEXfc_fc
+    extends BaseClasses.HEXtubesForcedConvection;
+    extends BaseClasses.ShellAndTubesHEXfc(final counterCurrent=true);
+  annotation(
+      Documentation(info = "<html><head></head><body>Gas exchanger with forced convection heat transfer for both fluids.</body></html>"));
+  end ShellAndTubesHEXfc_fc;
 
   //***DETAILED EXCHANGER MODELS***
   //-------------------------------

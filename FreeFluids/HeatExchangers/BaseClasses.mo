@@ -46,8 +46,6 @@ package BaseClasses
       Dialog(tab = "Inner pipe data"));
     parameter Real iNumVelocityHeads=1.5 "inner pipe number of velocity heads to consider in pressure loss" annotation(
       Dialog(tab = "Flow data"));
-    parameter Boolean iUturnHT=false "if true, the U turn surface is used for heat transfer"  annotation(
-      Dialog(tab = "Inner pipe data"));
     parameter Modelica.Units.SI.ThermalInsulance oFoulingF = 0.0002 "outer flow fouling factor.Typical: 0.00018 for thermal oil, or treated cooling water" annotation(
       Dialog(tab = "Heat transfer"));
     parameter Boolean useHTcorr=true "if true, the heat transfer correction factor is used"  annotation(
@@ -57,7 +55,7 @@ package BaseClasses
       Dialog(tab = "Fins data"));
     parameter Modelica.Units.SI.Density finRho = 0 "fin density. Al=2700, Cu=8930, Steel=7830, SS=8000" annotation(
       Dialog(tab = "Fins data"));
-    parameter Modelica.Units.SI.ThermalConductivity finK = 210 "fin thermal conductivity. Al=210, Cu=390, Steel=50, SS=17" annotation(
+    parameter Modelica.Units.SI.ThermalConductivity finK = 0 "fin thermal conductivity. Al=210, Cu=390, Steel=50, SS=17" annotation(
       Dialog(tab = "Fins data"));
     parameter Modelica.Units.SI.Distance finThickness(displayUnit = "mm") = 0.0 "fin thickness" annotation(
       Dialog(tab = "Fins data"));
@@ -111,6 +109,8 @@ package BaseClasses
     
     Modelica.Units.SI.Length IEquivLength "internal pipe equivalent length for pressure drop";
     Fraction ILMTDcorr(min=0.5) "internal LMTD correction factor";
+    Real Rntu(min=0.0);
+    Real NTU(min=0.0);
   annotation(
       Documentation(info = "<html><head></head><body>Contains just the definitions of the inner pipe elements needed for the development of the outer flow models. With no equations, in order to allow multiple inheritance of the model without giving too many equations.</body></html>")); 
   end HEXtubesDefinition;
@@ -278,6 +278,7 @@ package BaseClasses
   if noEvent(IRe > 10000) then
       IfSmooth = (0.78173 * log(IRe) - 1.5) ^ (-2);
       INu = OpenModelica.Internal.realAbs(IfSmooth / 8 * IRe * IPr / (1 + 12.7 * (IfSmooth / 8) ^ 0.5 * (IPr ^ (2 / 3) - 1)) * (1 + (IDh / iLTube) ^ (2 / 3)) * IHTcorr) "Pethukov/Gnielinsky equation for smooth tubes, VDI mean";
+      //INu=0.023*IRe^0.8*IPr^(1/3);
     elseif noEvent(IRe < 2100) then
       IfSmooth = 0;
       if noEvent(iLTube > 0.05 * IRe * IPr * IDh) then
@@ -293,8 +294,11 @@ package BaseClasses
       INu = (abs(IfSmooth / 8 * 10000 * IPr / (1 + 12.7 * (IfSmooth / 8) ^ 0.5 * (IPr ^ (2 / 3) - 1)) * (1 + (IDh / iLTube) ^ (2 / 3))) * (IRe - 2100) / 7900 + abs((3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (2100 * IPr * IDh / iLTube) ^ (1 / 3) - 0.7) ^ 3) ^ (1 / 3)) * (10000 - IRe) / 7900) * IHTcorr "VDI G1 4.2";
     end if;
     IH=INu*IK/IDh;
-      
-  end HEXtubesForcedConvection;
+    
+    Rntu = (OTout - OTin) / (ITin - ITout);
+    NTU=(ITout-ITin)/(TRi*IW);    
+  annotation(
+      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient, and the pressure loss, of tubes side of an exchanger.<div>Twistted tape inserts can be used optionally.</div></body></html>"));end HEXtubesForcedConvection;
 
   partial model DoublePipeHEX
   "double pipe heat exchanger with internal and external forced convection transfer"
@@ -414,7 +418,7 @@ package BaseClasses
   equation
    
     OStateAvg = MediumO.setState_phX((Oin.P + Oout.P) / 2, (Oin.H + Oout.H) / 2, Oin.X);
-  OiStateWall = MediumO.setState_pTX((Oin.P + Oout.P) / 2, ITwall, Oin.X);
+    OiStateWall = MediumO.setState_pTX((Oin.P + Oout.P) / 2, ITwall, Oin.X);
     OT = MediumO.temperature(OStateAvg);   
     ORho = abs(MediumO.density(OStateAvg));
     OMu = MediumO.dynamicViscosity(OStateAvg);
@@ -437,9 +441,13 @@ package BaseClasses
       OF = 6400;
     end if;
     if ORho >= 300 then
-//OPlossCorr = 1.64;
+      //OPlossCorr = 1.64;
       OPlossCorr = (OiMuWall/OMu)^0.25 "friction correction factor for liquids. In laminar flow is higher(0.5) according to S.Kalkaç pag. 89, 95, 105. Serth recommends 0.14 for turbulent and 0.25 for laminar";
-      OiHTcorr=homotopy((OMu/OiMuWall)^0.11,1) "Kalkaç turbulent: 0.11 for heating, 0.25 for cooling, laminar: 0.14 for heating and cooling. VDI Atlas 0.11" ;
+      if useHTcorr then
+        OiHTcorr=homotopy((OMu/OiMuWall)^0.11,1) "Kalkaç turbulent: 0.11 for heating, 0.25 for cooling, laminar: 0.14 for heating and cooling. VDI Atlas 0.11" ;
+      else
+        OiHTcorr=1;
+      end if;
     else
       OPlossCorr = (OT/ITwall)^0.3; //(ITwall / OT) ^ m "laminar m=0.9, turbulent m=-0.3 friction correction factor for gases as per Kalkaç";
       OiHTcorr=1 "(OT/ITwall)^n Kalkaç turbulent: heating 0.47, cooling 0.36  ,laminar: gas 0. VDI Atlas very variable";
@@ -458,11 +466,11 @@ package BaseClasses
         ONu = abs((3.66 ^ 3 + 0.7 ^ 3 + (1.615 * (ORe * OPr * ODh / iLTube) ^ (1 / 3) - 0.7) ^ 3) ^ (1 / 3)) * OiHTcorr "VDI Atlas";
       else
         ONu = 1.615 * (ORe * OPr * ODh / iLTube) ^ (1 / 3) * OiHTcorr "VDI Atlas mean. Developing laminar flow, constant wall temperature";
-//ONu=1.86 * (ORe * OPr * ODh / iLTube) ^ (1/3)* OiHTcorr "Sieder-Tate. Recommended by Kalkaç. But this is for local Nusselt, not for average";
-//ONu=3.66+1.2*(4*OiSection/((IDh+2*iThickness)*OiPerimeter))^0.8+(0.19*(1+0.14*(4*OiSection/((IDh+2*iThickness)*OiPerimeter))^0.5)*(ORe*OPr*ODh/iLTube)^0.8)/(1+0.117*(ORe*OPr*ODh/iLTube)^0.467) "Gnielinski, Serth, pag.55";
+  //ONu=1.86 * (ORe * OPr * ODh / iLTube) ^ (1/3)* OiHTcorr "Sieder-Tate. Recommended by Kalkaç. But this is for local Nusselt, not for average";
+  //ONu=3.66+1.2*(4*OiSection/((IDh+2*iThickness)*OiPerimeter))^0.8+(0.19*(1+0.14*(4*OiSection/((IDh+2*iThickness)*OiPerimeter))^0.5)*(ORe*OPr*ODh/iLTube)^0.8)/(1+0.117*(ORe*OPr*ODh/iLTube)^0.467) "Gnielinski, Serth, pag.55";
       end if;
     else
-//interpolation between turbulent and laminar flow
+  //interpolation between turbulent and laminar flow
       OfSmooth = (0.78173 * log(10000) - 1.5) ^ (-2);
       ONu = (abs(OfSmooth / 8 * 10000 * OPr / (1 + 12.7 * (OfSmooth / 8) ^ 0.5 * (OPr ^ (2 / 3) - 1)) * (1 + (ODh / iLTube) ^ 0.667)) * (ORe - 2100) / 7900 + abs((3.66 ^ 3 + 0.7 ^ 3 + (1.615 * (2100 * OPr * ODh / iLTube) ^ (1 / 3) - 0.7) ^ 3) ^ (1 / 3)) * (10000 - ORe) / 7900) * OiHTcorr "VDI G1 4.2";
     end if;
@@ -478,18 +486,19 @@ package BaseClasses
     
     ILMTDcorr=1;
   annotation(
-      Icon(graphics = {Rectangle(origin = {0, 35}, fillColor = {0, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-80, 5}, {80, -15}}), Text(origin = {90, -8}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name"), Rectangle(origin = {0, -35}, fillColor = {0, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-80, 15}, {80, -5}}), Rectangle(origin = {-20, 14}, lineColor = {0, 85, 255}, extent = {{-60, 6}, {100, -34}}), Line(origin = {0, 60}, points = {{0, -20}, {0, 20}}, color = {32, 102, 241}, thickness = 0.5), Line(origin = {0, -60}, points = {{0, 20}, {0, -20}, {0, -20}}, color = {30, 81, 241}, thickness = 0.5)}));       
+      Icon(graphics = {Rectangle(origin = {0, 35}, fillColor = {0, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-80, 5}, {80, -15}}), Text(origin = {90, -8}, lineColor = {0, 0, 255}, extent = {{-150, 100}, {146, 42}}, textString = "%name"), Rectangle(origin = {0, -35}, fillColor = {0, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-80, 15}, {80, -5}}), Rectangle(origin = {-20, 14}, lineColor = {0, 85, 255}, extent = {{-60, 6}, {100, -34}}), Line(origin = {0, 60}, points = {{0, -20}, {0, 20}}, color = {32, 102, 241}, thickness = 0.5), Line(origin = {0, -60}, points = {{0, 20}, {0, -20}, {0, -20}}, color = {30, 81, 241}, thickness = 0.5)}),
+      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient, and pressure drop, of the annulus of a doble pipe heat exchanger. Longitudinal fins can be optionally used.</body></html>"));       
   end DoublePipeHEX;
-
+  
   partial model GasCooledHEX
-    extends HEXtubesDefinition(redeclare replaceable package MediumO = Modelica.Media.Air.DryAirNasa, iKwall = 50);
+    extends HEXtubesDefinition(redeclare replaceable package MediumO=Modelica.Media.Air.DryAirNasa, final counterCurrent=true);
     parameter Integer iNumRows(start = 1) "number of pipe rows passed by the gas flow" annotation(
       Dialog(tab = "Inner pipe data"));
     parameter Boolean iStaggered = true "if false, inline distribution" annotation(
       Dialog(tab = "Inner pipe data"));
-    parameter Modelica.Units.SI.Distance iTubePitch(displayUnit = "mm") = 2*iDi "distance between tubes" annotation(
+    parameter Modelica.Units.SI.Distance iTubePitch(displayUnit = "mm")=2*iDi "distance between tubes" annotation(
       Dialog(tab = "Inner pipe data"));
-    parameter Modelica.Units.SI.Distance iDop(displayUnit = "mm") = iDi + 2*iThickness "inner pipe outer diameter, or width, perpenticular to gas flow" annotation(
+    parameter Modelica.Units.SI.Distance iDop(displayUnit = "mm")=iDi+2*iThickness "inner pipe outer diameter, or width, perpenticular to gas flow" annotation(
       Dialog(tab = "Inner pipe data"));
     parameter Modelica.Units.SI.Distance finDistance(displayUnit = "mm") "distance between fins" annotation(
       Dialog(tab = "Fins data"));
@@ -500,7 +509,7 @@ package BaseClasses
     parameter Modelica.Units.SI.Distance finWidth(displayUnit = "mm") "side length perpenticular to flow, if rectangular" annotation(
       Dialog(tab = "Fins data"));
     parameter Modelica.Units.SI.Distance finHeight(displayUnit = "mm") "side length along flow, if rectangular" annotation(
-      Dialog(tab = "Fins data"));
+      Dialog(tab = "Fins data"));    
     parameter Boolean useBYnusselt = false "if true, the Briggs and Youg Nusselt calc. will be used, otherwise the Ganguli's one" annotation(
       Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.Area IoAreaRaw(start = 1.0) "total external surface of tubes without the fins";
@@ -524,86 +533,441 @@ package BaseClasses
     Modelica.Units.SI.ReynoldsNumber OReff "outer flow effective Reynolds number";
     Real OF(start = 0.01) "outer flow Fanning's friction factor at average conditions";
     Modelica.Units.SI.NusseltNumber ONuGan "gas side Nusselt number as per Ganguli";
-    Modelica.Units.SI.NusseltNumber ONuBY "gas side Nusselt as for Briggs and Young";
+    Modelica.Units.SI.NusseltNumber ONuBY "gas side Nusselt as for Briggs and Young"; 
     Real OX;
-    Real Rntu(min = 0.0);
-    Real NTU(min = 0.0);
+    
   algorithm
-    IoAreaRaw := ItotalNumPipes*iLTube*IoPerimeter;
-    Sface := iLTube*iTubePitch*ItotalNumPipes/iNumRows;
-    if finIsCircular == true then
-      FinsArea := (0.5*pi*finDiameter^2 - 2*IoSection)*iLTube/finDistance*ItotalNumPipes;
-      Sflow := (iTubePitch - iDop - (finDiameter - iDop)*finThickness/finDistance)*iLTube*ItotalNumPipes/iNumRows;
-      OFinRatio := finDiameter/iDop;
+    IoAreaRaw:=ItotalNumPipes*iLTube*IoPerimeter;
+    Sface := iLTube * iTubePitch * ItotalNumPipes / iNumRows;
+  if finIsCircular == true then
+      FinsArea := (0.5 * pi * finDiameter ^ 2 - 2 * IoSection) * iLTube / finDistance * ItotalNumPipes;
+      Sflow := (iTubePitch - iDop - (finDiameter - iDop) * finThickness / finDistance) * iLTube * ItotalNumPipes / iNumRows;
+      OFinRatio := finDiameter / iDop;
     else
-      FinsArea := 2*(finWidth*finHeight - IoSection)*iLTube/finDistance*ItotalNumPipes;
-      Sflow := (iTubePitch - iDop - (finWidth - iDop)*finThickness/finDistance)*iLTube*ItotalNumPipes/iNumRows;
+      FinsArea := 2 * (finWidth * finHeight - IoSection) * iLTube / finDistance * ItotalNumPipes;
+      Sflow := (iTubePitch - iDop - (finWidth - iDop) * finThickness / finDistance) * iLTube * ItotalNumPipes / iNumRows;
       if iStaggered == false then
-        OFinRatio := 1.28*min(finWidth, finHeight)/iDop*(max(finWidth, finHeight)/min(finWidth, finHeight) - 0.2)^0.5 "as per Schmidt, Zabronsky, and
-                  Rich, Air Cooled Heat Exchangers, D.G.Kroger. But rectified according to VDI Atlas";
+        OFinRatio := 1.28 * min(finWidth, finHeight) / iDop * (max(finWidth, finHeight) / min(finWidth, finHeight) - 0.2) ^ 0.5 "as per Schmidt, Zabronsky, and
+          Rich, Air Cooled Heat Exchangers, D.G.Kroger. But rectified according to VDI Atlas";
       else
-        OFinRatio := 1.27*min(finWidth, finHeight)/iDop*(max(finWidth, finHeight)/min(finWidth, finHeight) - 0.3)^0.5 "as per Schmidt, Zabronsky, and
-                  Rich, Air Cooled Heat Exchangers, D.G.Kroger. According to VDI Atlas this is not totally correct";
+        OFinRatio := 1.27 * min(finWidth, finHeight) / iDop * (max(finWidth, finHeight) / min(finWidth, finHeight) - 0.3) ^ 0.5 "as per Schmidt, Zabronsky, and
+          Rich, Air Cooled Heat Exchangers, D.G.Kroger. According to VDI Atlas this is not totally correct";
       end if;
     end if;
 //Sflow := ((iTubePitch - iDop) * (finDistance - finThickness) - (iTubePitch - finDiameter) * finThickness) * iLTube / finDistance * (ItotalNumPipes / iNumRows);
-    OPhi := (OFinRatio - 1)*(1 + 0.35*log(OFinRatio));
-    if useFins == true then
-      IoArea := ItotalNumPipes*iLTube*IoPerimeter*(finDistance - finThickness)/finDistance;
+    OPhi := (OFinRatio - 1) * (1 + 0.35 * log(OFinRatio));
+  
+    if useFins==true then
+      IoArea:=ItotalNumPipes*iLTube*IoPerimeter*(finDistance-finThickness)/finDistance;    
       OiArea := FinsArea + IoArea;
     else
-      Sflow := Sface;
-      IoArea := ItotalNumPipes*iLTube*IoPerimeter;
-      OiArea := IoArea;
+      Sflow:=Sface;
+      IoArea:=ItotalNumPipes*iLTube*IoPerimeter;
+      OiArea := IoArea;         
     end if;
 //missing quadrangular
   equation
-    OStateAvg = MediumO.setState_phX((Oin.P + Oout.P)/2, (Oin.H + Oout.H)/2, Oin.X);
-    OT = MediumO.temperature(OStateAvg);
+    OStateAvg = MediumO.setState_phX((Oin.P + Oout.P) / 2, (Oin.H + Oout.H) / 2, Oin.X);
+    OT = MediumO.temperature(OStateAvg);   
     ORho = abs(MediumO.density(OStateAvg));
     OMu = MediumO.dynamicViscosity(OStateAvg);
     OCp = MediumO.specificHeatCapacityCp(OStateAvg);
     OK = MediumO.thermalConductivity(OStateAvg);
-    OPr = OCp*OMu/OK;
-    OQ = Oin.G/ORho;
-    Vmax = OQ/Sflow;
-    Vface = OQ/Sface;
-    ORe = iDop*Vmax*ORho/OMu;
-    Oa = (iTubePitch - finDiameter)/iDop;
-    OReff = 2*ORe*(finDistance - finThickness)/(finDiameter - iDop);
-    OF = (1 + 2*exp(Oa/4)/(1 + Oa))*(0.021 + 27.2/OReff + 0.29/OReff^0.2);
-    OPlossCorr = 1.0;
-    OPloss = 2*OF*iNumRows*Vmax^2*ORho;
-    Oout.P - Oin.P = (-sign(Oin.G)*OPloss) + (Oin.Elevation - Oout.Elevation + 1e-5)*g_n*ORho "momentum change is not taken into account. 1 e-5 is to avoid division by 0";
+    OPr = OCp * OMu / OK;
+    OQ = Oin.G / ORho;
+    Vmax = OQ / Sflow;
+    Vface = OQ / Sface;
+    ORe = iDop * Vmax * ORho / OMu;
+    Oa = (iTubePitch - finDiameter) / iDop;
+    OReff = 2 * ORe * (finDistance - finThickness) / (finDiameter - iDop);
+    OF = (1 + 2 * exp(Oa / 4) / (1 + Oa)) * (0.021 + 27.2 / OReff + 0.29 / OReff ^ 0.2);
+    OPlossCorr=1.0;
+    OPloss = 2 * OF * iNumRows * Vmax ^ 2 * ORho;
+    Oout.P-Oin.P = (-sign(Oin.G) * OPloss) + (Oin.Elevation - Oout.Elevation + 1e-5) * g_n * ORho "momentum change is not taken into account. 1 e-5 is to avoid division by 0";
+    
     if iNumRows < 4 then
       if iStaggered == false then
-        ONuGan = 0.2*ORe^0.6*OPr^0.33333*(OiArea/IoAreaRaw)^(-0.15);
+        ONuGan = 0.2 * ORe ^ 0.6 * OPr ^ 0.33333 * (OiArea / IoAreaRaw) ^ (-0.15);
       else
-        ONuGan = if iNumRows == 3 then 0.36*ORe^0.6*OPr^0.33333*(OiArea/IoAreaRaw)^(-0.15) else 0.33*ORe^0.6*OPr^0.33333*(OiArea/IoAreaRaw)^(-0.15);
+        ONuGan = if iNumRows == 3 then 0.36 * ORe ^ 0.6 * OPr ^ 0.33333 * (OiArea / IoAreaRaw) ^ (-0.15) else 0.33 * ORe ^ 0.6 * OPr ^ 0.33333 * (OiArea / IoAreaRaw) ^ (-0.15);
       end if;
     else
-      ONuGan = if iStaggered == true then 0.38*ORe^0.6*OPr^0.33333*(OiArea/IoAreaRaw)^(-0.15) else 0.22*ORe^0.6*OPr^0.33333*(OiArea/IoAreaRaw)^(-0.15);
+      ONuGan = if iStaggered == true then 0.38 * ORe ^ 0.6 * OPr ^ 0.33333 * (OiArea / IoAreaRaw) ^ (-0.15) else 0.22 * ORe ^ 0.6 * OPr ^ 0.33333 * (OiArea / IoAreaRaw) ^ (-0.15);
     end if;
-    ONuBY = 0.134*ORe^0.681*OPr^0.3333*((finDistance - finThickness)/(finDiameter - iDop))^0.2*((finDistance - finThickness)/finThickness)^0.1134;
+    ONuBY = 0.134 * ORe ^ 0.681 * OPr ^ 0.3333 * ((finDistance - finThickness) / (finDiameter - iDop)) ^ 0.2 * ((finDistance - finThickness) / finThickness) ^ 0.1134;
     if useBYnusselt == true then
       ONu = ONuBY;
     else
       ONu = ONuGan;
     end if;
-    OHi = ONu*OK/iDop;
-    if useFins == true then
-      OX = 0.5*OPhi*iDop*(2*OHi/(finK*finThickness))^0.5;
-      OiEfficiency = 1 - (1 - tanh(OX)/OX)*FinsArea/OiArea;
+      OHi = ONu * OK / iDop;
+    if useFins==true then
+      OX = 0.5 * OPhi * iDop * (2 * OHi / (finK * finThickness)) ^ 0.5;
+      OiEfficiency=1 - (1 - tanh(OX) / OX) * FinsArea / OiArea;
     else
-      OX = 0;
-      OiEfficiency = 1;
+      OX=0;
+      OiEfficiency=1;
     end if;
-    Rntu = (OTout - OTin)/(ITin - ITout);
-    NTU = (ITout - ITin)/(TRi*IW);
-    ILMTDcorr = homotopy(FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(iNumSerial, iNumRows, Rntu, NTU), 1);
-    annotation(
-      Icon(graphics = {Line(origin = {-79.8217, -0.588363}, points = {{0, 20}, {0, -20}}), Line(origin = {79.0307, -0.479763}, points = {{0, 20}, {0, -20}, {0, -20}}), Line(origin = {-0.682365, -0.371163}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {-70.3095, -0.766643}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.705, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.818, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.2135, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.761468, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.157, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.6485, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.253, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.4475, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {58.956, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.3515, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.7865, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.391, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {18.8995, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.29505, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.5605, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.569375, 19.1203}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {59.069, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.4645, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.8995, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.504, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {19.0125, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.40803, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.648474, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.044, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.5355, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.14, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.705, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.1005, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.592, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-70.1965, 18.7248}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.5605, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.56937, -20.8232}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {59.069, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.4645, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.8995, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.504, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {19.0125, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.40803, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.648474, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.044, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.5355, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.14, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.705, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.1005, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.592, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-70.1965, -21.2187}, points = {{0, 4}, {0, -4}, {0, -4}}), Ellipse(origin = {-33, -74}, extent = {{-33, 6}, {33, -6}}), Ellipse(origin = {33, -74}, extent = {{-33, 6}, {33, -6}}), Line(origin = {-59.7131, -49.5658}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {-61, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {-29.5437, -49.4527}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {-31, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {30.9692, -49.5179}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {29, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Polygon(origin = {-1, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {0.0476988, -49.9179}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {59, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {60.4952, -49.6221}, points = {{0, -14}, {0, 6}, {0, 6}}), Text(origin = {72, 53}, lineColor = {22, 41, 240}, extent = {{-58, -25}, {58, 25}}, textString = "%name")}));
+  
+    ILMTDcorr=homotopy(FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(iNumSerial, iNumRows, Rntu, NTU),1);
+  annotation(
+      Icon(graphics = {Line(origin = {-79.8217, -0.588363}, points = {{0, 20}, {0, -20}}), Line(origin = {79.0307, -0.479763}, points = {{0, 20}, {0, -20}, {0, -20}}), Line(origin = {-0.682365, -0.371163}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {-70.3095, -0.766643}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.705, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.818, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.2135, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.761468, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.157, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.6485, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.253, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.4475, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {58.956, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.3515, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.7865, -0.427663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.391, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {18.8995, -0.540663}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.29505, -0.653653}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.5605, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.569375, 19.1203}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {59.069, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.4645, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.8995, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.504, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {19.0125, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.40803, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.648474, 19.0638}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.044, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.5355, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.14, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.705, 18.9508}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.1005, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.592, 18.8378}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-70.1965, 18.7248}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {68.5605, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.56937, -20.8232}, points = {{-80, 0}, {80, 0}, {80, 0}}), Line(origin = {59.069, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {49.4645, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {38.8995, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {28.504, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {19.0125, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {9.40803, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-0.648474, -20.8797}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-11.044, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-20.5355, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-30.14, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-40.705, -20.9927}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-51.1005, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-60.592, -21.1057}, points = {{0, 4}, {0, -4}, {0, -4}}), Line(origin = {-70.1965, -21.2187}, points = {{0, 4}, {0, -4}, {0, -4}}), Ellipse(origin = {-33, -74}, extent = {{-33, 6}, {33, -6}}), Ellipse(origin = {33, -74}, extent = {{-33, 6}, {33, -6}}), Line(origin = {-59.7131, -49.5658}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {-61, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {-29.5437, -49.4527}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {-31, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {30.9692, -49.5179}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {29, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Polygon(origin = {-1, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {0.0476988, -49.9179}, points = {{0, -14}, {0, 6}, {0, 6}}), Polygon(origin = {59, -38}, points = {{1, 6}, {-5, -6}, {7, -6}, {1, 6}, {1, 6}}), Line(origin = {60.4952, -49.6221}, points = {{0, -14}, {0, 6}, {0, 6}}), Text(origin = {72, 53}, lineColor = {22, 41, 240}, extent = {{-58, -25}, {58, 25}}, textString = "%name")}),
+      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat exchange coefficient, and pressure drop, of the gas part (normally air) of an air cooled, finned tubes, exchanger.<div>The LMTD correction factor is also calculated.</div></body></html>"));
   end GasCooledHEX;
+  
+  model ShellAndTubesHEX
+    extends HEXtubesDefinition(final iNumParallel=1, final iIsCircular=true, final iPerimeter=0, final iSection=0, final useFins=false, final finRho=0, final finK=0, final finThickness=0);
+    parameter Real pitchRatio = 1.33 "ratio between tube pitch and tube diameter. Normally 1.25-1.5" annotation(
+      Dialog(tab = "Inner pipe data"));
+    parameter Boolean triangularPitch = true "if false, square layout" annotation(
+      Dialog(tab = "Inner pipe data"));
+    parameter Boolean rotatedPitch = false "if true, rotated 45º square layout" annotation(
+      Dialog(tab = "Inner pipe data"));
+    parameter Integer numShells = 1 "total number of serial shells" annotation(
+      Dialog(tab = "Shell data"));
+    parameter Types.TemaShell shellType=Types.TemaShell.E "shell type" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Diameter dShI(displayUnit = "mm") = 0 "internal shell diameter" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.ShearStress shellDTS = 60.0e6 "shell design tensile stress. AISI316L=60e6. AISI316=68.9e6" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Diameter shellNozzlesDi(displayUnit = "mm") "diameter of shell nozzles" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Distance cTuBa(displayUnit = "mm") = 0.8e-3 "tube-baffle hole diameter clearance. Typical: 0.8 mm" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Distance cBaSh(displayUnit = "mm") = 1.6e-3+0.004*dShI "baffle-shell diameter clearance. Typical 5 mm" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Distance cBuSh(displayUnit = "mm") = 35e-3 "tube bundle-shell diameter clearance. Typical: 35 mm" annotation(
+      Dialog(tab = "Shell data"));
+    parameter Integer numBa = 23 annotation(
+      Dialog(tab = "Shell data"));
+    parameter Boolean equalBaffleDistance = true "if true, all baffles are at equal distance. If false, inlet and outlet are different" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Distance inletBaffleDistance(displayUnit = "mm") = 0 "if equalBaffleDistance=false" annotation(
+      Dialog(tab = "Shell data"));
+    parameter SI.Distance outletBaffleDistance(displayUnit = "mm") = 0 "if equalBaffleDistance=false" annotation(
+      Dialog(tab = "Shell data"));
+    parameter Fraction BaCutRatio = 0.25 "between 0.15 and 0.45 of shell diameter. Normally 0.2-0.35" annotation(
+      Dialog(tab = "Shell data"));
+    parameter Integer numSS = 0 "number of sealing strips pairs" annotation(
+      Dialog(tab = "Shell data"));
+    Integer TubesInShell;
+    Integer PassesInShell;
+    Modelica.Units.SI.Diameter IDo "inner pipe external diameter";
+    Real TubeCountFactor;
+    Real TubeLayoutFactor;
+    SI.Distance Pitch "should be at least 6 mm more than IDo";
+    SI.Distance PitchP "pitch parallel to flow";
+    SI.Distance PitchN "pitch normal to flow";
+    SI.Diameter DshIProposal "internal shell diameter recommended from number of tubes";
+    SI.Diameter DbuO "tube bundle external diameter";
+    SI.Distance BaCut "max distance from baffle to shell";
+    SI.Distance BaSep "inter baffles distance. Minimum 1/5 of shell diameter or 5 cms. max: 29.54*IDo^0.75. Optimum: 0.3-0.6 of dShI";
+    SI.Angle ThetaBuC "angle of baffle cut intersection with outer tubes centers diameter";
+    SI.Angle ThetaSh "angle of baffle cut intersection with shell";
+    Fraction Fw "fraction of total tubes in each window";
+    Fraction Fc "fraction of total tubes in full crossflow";
+    SI.Area OSm "crossflow area at axis of exchanger";
+    SI.Area OSBaSh "baffle to shell leakage area for each baffle";
+    SI.Area OSTuBa "tube to baffle leakage area for each baffle";
+    //For multiple pass tubes, OSb must be corrected if partition lane is parallel to flow
+    SI.Area OSb "bundle bypass area";
+    Real Nc "number of rows in full crossflow";
+    Real Ncw "number of effective crossflow rows in each window";
+    SI.Area OSw "free area for shell flow at windows";
+  equation
+    TubesInShell=ItotalNumPipes/numShells;
+    PassesInShell=iNumSerial/numShells;
+    IDo=iDi+2*iThickness;
+    if iNumSerial == 1 then
+      TubeCountFactor = 0.93;
+    elseif iNumSerial == 2 then
+      TubeCountFactor = 0.9;
+    elseif iNumSerial == 3 then
+      TubeCountFactor = 0.85;
+    else
+      TubeCountFactor = 0.825;
+    end if;
+    if triangularPitch == true then
+      TubeLayoutFactor = 0.866;
+    else
+      TubeLayoutFactor = 1;
+    end if;
+    BaCut = dShI * BaCutRatio;
+    if equalBaffleDistance == true then
+      BaSep = iLTube / (numBa + 1);
+    else
+      BaSep = (iLTube - inletBaffleDistance - outletBaffleDistance) / (numBa - 1);
+    end if;
+    DbuO = dShI - cBuSh;
+    ThetaBuC = pi - 2 * asin((dShI / 2 - BaCut) * 2 / (DbuO - IDo));
+    ThetaSh = pi - 2 * asin((dShI / 2 - BaCut) * 2 / dShI);
+    Fw = ThetaBuC / (2 * pi) - sin(ThetaBuC) / (2 * pi);
+    Fc = 1 - 2 * Fw;
+    DshIProposal = (ItotalNumPipes * Pitch ^ 2 * TubeLayoutFactor / TubeCountFactor * 4 / pi) ^ 0.5;
+  //baffle leakage correction factor, streams between baffle and tubes, and between baffle and shell
+    Pitch = pitchRatio * IDo;
+    if triangularPitch == true then
+      if rotatedPitch == false then
+        PitchP = Pitch * 0.866;
+        PitchN = Pitch * 0.5;
+      else
+        PitchP = Pitch * 0.5;
+        PitchN = Pitch * 0.866;
+      end if;
+    else
+      if rotatedPitch == false then
+        PitchP = Pitch;
+        PitchN = Pitch;
+      else
+        PitchP = Pitch * 0.7071;
+        PitchN = Pitch * 0.7071;
+      end if;
+    end if;
+    Nc = (dShI - 2 * BaCut) / PitchP "number of rows in full crossflow";
+  //Fc=1.2-2.27*BaCut/dShI;
+  //Fc=1/pi*(pi+2*(dShI-2*BaCut)/DbuO*sin(acos((dShI-2*BaCut)/DbuO))-2*acos((dShI-2*BaCut)/DbuO));
+    Ncw = 0.8 * BaCut / PitchP "number of effective rows in window crossflow";
+    if triangularPitch == false then
+      OSm = BaSep * (cBuSh + (DbuO - IDo) / PitchN * (Pitch - IDo));
+    else
+      OSm = BaSep * (cBuSh + (DbuO - IDo) / Pitch * (Pitch - IDo));
+    end if;
+    OSBaSh = (dShI ^ 2 - (dShI - cBaSh) ^ 2) * (2 * pi - ThetaSh) / 8;
+    OSTuBa = pi / 4 * ((IDo + cTuBa) ^ 2 - IDo ^ 2) * ItotalNumPipes * (1 - Fw);
+    OSb = BaSep * cBuSh;
+    OSw = dShI * dShI * (ThetaSh / 8 - abs(sin(ThetaSh / 2) * cos(ThetaSh / 2)) / 4) - ItotalNumPipes * Fw * pi * IDo ^ 2 / 4;
+  
+    IoArea=ItotalNumPipes*iLTube*IoPerimeter;  
+    OiArea=IoArea;  
+    OiEfficiency=1;
+   
+  annotation(
+      Icon(graphics = {Rectangle(origin = {2, 0}, rotation = 90, fillColor = {85, 170, 0}, fillPattern = FillPattern.Solid, extent = {{-30, 60}, {30, -60}}), Ellipse(origin = {60, 0}, rotation = 90, fillColor = {85, 170, 0}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, 6}, {30, -10}}), Ellipse(origin = {-60, 0}, rotation = 90, fillColor = {85, 170, 0}, pattern = LinePattern.None, fillPattern = FillPattern.Solid, extent = {{-30, 6}, {30, -10}}), Line(origin = {0.02, 23.57}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {-58.5738, 0}, points = {{0, -30}, {0, 30}}), Line(origin = {60.7295, -0.0409836}, points = {{0, -30}, {0, 30}}), Line(origin = {0.27, 16.07}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {0.23, 0.53}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {-0.02, 8.32}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {0.56, -7.74}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {0.52, -15.82}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {0.52, -23.85}, rotation = -90, points = {{0, 60}, {0, -58}}, thickness = 1), Line(origin = {-72.5, 0}, points = {{6.5, 0}, {-7.5, 0}, {-5.5, 0}}), Line(origin = {75, 0}, points = {{-5, 0}, {5, 0}}), Line(origin = {0, -55}, points = {{0, -25}, {0, 25}}), Line(origin = {0, 55}, points = {{0, 25}, {0, -25}, {0, -25}}), Text(origin = {53, 49}, lineColor = {15, 10, 253}, extent = {{-43, 15}, {43, -15}}, textString = "%name")}));end ShellAndTubesHEX;
+
+  partial model ShellAndTubesHEXfc
+    extends FreeFluids.HeatExchangers.BaseClasses.ShellAndTubesHEX;
+    Real Jc "bafflecut correction factor";
+    Real Jl "baffle leakage correction factor";
+    Real Jb "Bundle bypass correction factor";
+    Real Cbh "empirical factor for bundle bypass correction, depending on Reynolds number";
+    Real Js "unequal baffle spacing correction factor";
+    Real Jm "wall viscosity correction factor";
+    Real N "exponent for baffle spacing correction"; 
+    
+    Real A1, A2, A3, A4 "empirical constants for ideal heat transfer calculation";
+    Real B1, B2, B3, B4 "empirical constants for pressure loss calculation"; 
+  
+    MediumO.ThermodynamicState OStateAvg "shell average state for physical properties calculation";
+    MediumO.ThermodynamicState OiStateWall "shell internal wall state for correction factors calculation";
+    Modelica.Units.SI.Density ORho(displayUnit = "kg/m3") "shell average density";
+    Modelica.Units.SI.DynamicViscosity OMu(min = 1e-6, start = 1e-3, max = 1e6) "annulus average dynamic viscosity";
+    Modelica.Units.SI.SpecificHeatCapacity OCp(start = 2000.0) "shell average heat capacity";
+    Modelica.Units.SI.ThermalConductivity OK(start = 0.1) "shell average thermal conductivity";  
+    Modelica.Units.SI.DynamicViscosity OiMuWall(min = 1e-6, start = 1e-3, max = 1e6) "shell inner wall dynamic viscosity"; 
+    Modelica.Units.SI.PrandtlNumber OPr "shell Prandt number";
+    Modelica.Units.SI.VolumeFlowRate OQ(displayUnit = "m3/h") "total shell volume flow rate at average conditions";
+    Modelica.Units.SI.Velocity OV(start = 1) "shell flow velocity at average conditions. Normally between 0.9 and 3.0 m/s for liquids";
+    Modelica.Units.SI.ReynoldsNumber ORe(min = 0.01, start = 20000) "shell average Reynolds number";
+    Modelica.Units.SI.CoefficientOfHeatTransfer OHiIdeal(min = 1, start = 1000) "outer flow ideal heat transfer coefficient to inner pipe";
+    Real OFcf "crossflow friction factor";    
+    SI.Pressure OPlossCfId(start = 0) "ideal crossflow friction head loss in each baffle compartment";
+    SI.Pressure OPlossCf(start = 0) "crossflow friction loss for all baffle compartments";
+    Real Cbp "empirical factor for bundle bypass correction, depending on Reynolds number";
+    Real Rb "bypass correction factor";
+    Real Rl "leakage correction factor";
+    SI.Pressure OPlossWin(start = 0) "windows friction loss for all baffle compartments";
+    SI.Pressure OPlossEn(start = 0) "entrance friction loss";
+    SI.Pressure OPlossNoz(start = 0) "nozzles friction loss";
+    Modelica.Units.SI.Velocity OVnoz(start = 1) "nozzles velocity";
+    Modelica.Units.SI.ReynoldsNumber OReNoz(min = 0.01, start = 20000) "nozzles average Reynolds number";
+    
+  algorithm
+    if triangularPitch == true then
+      if rotatedPitch == false then
+        A3 := 1.45;
+        A4 := 0.519;
+        B3 := 7.0;
+        B4 := 0.5;
+        if ORe > 1e4 then
+          A1 := 0.321;
+          A2 := -0.388;
+          B1 := 0.372;
+          B2 := -0.123;
+        elseif ORe > 1e3 then
+          A1 := 0.321;
+          A2 := -0.388;
+          B1 := 0.486;
+          B2 := -0.152;
+        elseif ORe > 1e2 then
+          A1 := 0.593;
+          A2 := -0.477;
+          B1 := 4.57;
+          B2 := -0.476;
+        elseif ORe > 1e1 then
+          A1 := 1.36;
+          A2 := -0.657;
+          B1 := 45.1;
+          B2 := -0.973;
+        else
+          A1 := 1.4;
+          A2 := -0.667;
+          B1 := 48.0;
+          B2 := -1.0;
+        end if;
+      else
+        A3 := 0;
+        A4 := 0;
+        B3 := 0;
+        B4 := 0;
+        A1 := 0;
+        A2 := 0;
+        B1 := 0;
+        B2 := 0;
+      end if;
+    else
+      if rotatedPitch == false then
+        A3 := 1.187;
+        A4 := 0.37;
+        B3 := 6.3;
+        B4 := 0.378;
+        if ORe > 1e4 then
+          A1 := 0.37;
+          A2 := -0.395;
+          B1 := 0.391;
+          B2 := -0.148;
+        elseif ORe > 1e3 then
+          A1 := 0.107;
+          A2 := -0.266;
+          B1 := 0.0815;
+          B2 := 0.022;
+        elseif ORe > 1e2 then
+          A1 := 0.408;
+          A2 := -0.46;
+          B1 := 6.09;
+          B2 := -0.602;
+        elseif ORe > 1e1 then
+          A1 := 0.9;
+          A2 := -0.631;
+          B1 := 32.1;
+          B2 := -0.963;
+        else
+          A1 := 0.97;
+          A2 := -0.667;
+          B1 := 35;
+          B2 := -1;
+        end if;
+      else
+        A3 := 1.93;
+        A4 := 0.5;
+        B3 := 6.59;
+        B4 := 0.52;
+        if ORe > 1e4 then
+          A1 := 0.37;
+          A2 := -0.396;
+          B1 := 0.303;
+          B2 := -0.126;
+        elseif ORe > 1e3 then
+          A1 := 0.37;
+          A2 := -0.396;
+          B1 := 0.333;
+          B2 := -0.136;
+        elseif ORe > 1e2 then
+          A1 := 0.73;
+          A2 := -0.5;
+          B1 := 3.5;
+          B2 := -0.476;
+        elseif ORe > 1e1 then
+          A1 := 0.498;
+          A2 := -0.656;
+          B1 := 26.2;
+          B2 := -0.913;
+        else
+          A1 := 1.55;
+          A2 := -0.667;
+          B1 := 32;
+          B2 := -1;
+        end if;
+      end if;
+    end if;
+  equation
+    OStateAvg = MediumO.setState_phX((Oin.P + Oout.P) / 2, (Oin.H + Oout.H) / 2, Oin.X);
+    OiStateWall = MediumO.setState_pTX((Oin.P + Oout.P) / 2, ITwall, Oin.X);
+    OT = MediumO.temperature(OStateAvg);   
+    ORho = abs(MediumO.density(OStateAvg));
+    OMu = MediumO.dynamicViscosity(OStateAvg);
+    OCp = MediumO.specificHeatCapacityCp(OStateAvg);
+    OK = MediumO.thermalConductivity(OStateAvg);
+    OiMuWall = MediumO.dynamicViscosity(OiStateWall);
+    OPr = OCp * OMu / OK;
+    OQ = Oin.G / ORho;
+    OV = OQ/iNumParallel / OSm;
+    ORe = IDo * abs(OV) * ORho / OMu;
+    if ORe > 100 then
+      Cbh = 1.25;
+      N = 0.6;
+    else
+      Cbh = 1.35;
+      N = 0.333;
+    end if;
+    Jb = exp(-Cbh * OSb / OSm * (1 - (2 * numSS / Nc) ^ 0.333));
+    if equalBaffleDistance == true then
+      Js = 1;
+    else
+      Js = (numBa - 1 + (inletBaffleDistance / BaSep) ^ (1 - N) + (outletBaffleDistance / BaSep) ^ (1 - N)) / (numBa - 1 + inletBaffleDistance / BaSep + outletBaffleDistance / BaSep);
+    end if;
+    if ORho > 300 then
+      Jm = (OMu / OiMuWall) ^ 0.11;
+    else
+      if Oin.H > Oout.H then
+        Jm = (OT / ITwall) ^ 0.25;
+      else
+        Jm = 1.0;
+      end if;
+    end if;
+  //bafflecut correction factor
+    Jc = 0.55 + 0.72 * Fc;
+  //baffle leak correction factor
+    Jl = 0.44 * (1 - OSBaSh / (OSBaSh + OSTuBa)) + (1 - 0.44 * (1 - OSBaSh / (OSBaSh + OSTuBa))) * exp(-2.2 * (OSBaSh + OSTuBa) / OSm);
+    
+    OHiIdeal = A1 * (1.33 * IDo / Pitch) ^ (A3 / (0.14 * ORe ^ A4)) * ORe ^ A2 * OCp * Oin.G / OSm * OPr ^ (-0.666667);
+    
+    OHi = OHiIdeal * Jc * Jl * Jb * Js * Jm;
+  
+  //Pressure loss calculation
+    OFcf=B1 * (1.33 * IDo / Pitch) ^ (B3 / (1 + 0.14 * ORe ^ B4)) * ORe ^ B2;
+    OPlossCfId = 2 * OFcf * Nc * (Oin.G / OSm) ^ 2/ ORho * OPlossCorr;
+    if ORe > 100 then
+      Cbp = 3.7;
+    else
+      Cbp = 4.5;
+    end if;
+    Rb = exp(-Cbp * OSb / OSm * (1 - (2 * numSS / Nc) ^ 0.333));
+    Rl = exp(-1.33 * (1 + OSBaSh / (OSBaSh + OSTuBa)) * ((OSBaSh + OSTuBa) / OSm) ^ ((-0.15 * (1 + OSBaSh / (OSBaSh + OSTuBa))) + 0.8));
+    OPlossCf = OPlossCfId * (numBa - 1) * Rb * Rl;
+    OPlossWin = numBa * ((2 + 0.6 * Ncw) * Oin.G ^ 2 / (OSm * OSw * ORho * 2)) * Rl;
+    OPlossEn = 2 * ORho * (OQ / (pi * shellNozzlesDi ^ 2 / 4)) ^ 2; 
+    OVnoz=4*OQ/(numShells*pi*shellNozzlesDi^2);
+    OReNoz=shellNozzlesDi*OVnoz*ORho/OMu;
+    if OReNoz>1e4 then
+      OPlossNoz=0.75*numShells*OVnoz^2*ORho;
+    else
+      OPlossNoz=1.5*numShells*OVnoz^2*ORho;  
+    end if;        
+    OPloss = OPlossCf + OPlossWin + OPlossEn+OPlossNoz;
+    
+  
+    OPlossCorr=1;
+    Oout.P-Oin.P = (-sign(Oin.G) * OPloss) + (Oin.Elevation - Oout.Elevation + 1e-5) * g_n * ORho "momentum change is not taken into account. 1 e-5 is to avoid division by 0";
+    ONu=0;
+    if (iNumSerial==1 and counterCurrent==true) then
+      ILMTDcorr=1.0;
+    else
+      ILMTDcorr=homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, numShells, iNumSerial, Rntu, NTU),1);
+    end if;
+    //ILMTDcorr=1;
+  annotation(
+      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient and the pressure drop of a TEMA E shell, according to the Bell-Delaware methodology.<div>The LMTD correction factor is also calculated.</div></body></html>"));end ShellAndTubesHEXfc;
   annotation(
     Documentation(info = "<html><head></head><body>Partial classes for detailed heat exchangers.</body></html>"));
 end BaseClasses;
