@@ -4,12 +4,20 @@ package Examples
   extends Modelica.Icons.ExamplesPackage;
 
   package MineralOil
-    extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "MineralOil", cp_const = 1902, cv_const = 1902, d_const = 885.27, eta_const = 0.075, lambda_const = 0.1442, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 273.15, MM_const = 3);
+    extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "Mineral Oil", cp_const = 1902, cv_const = 1902, d_const = 885.27, eta_const = 0.075, lambda_const = 0.1442, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 273.15, MM_const = 3);
   end MineralOil;
 
   package Hydrocarbon
     extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "Hydrocarbon", cp_const = 2302.74, cv_const = 2302.74, d_const = 799.96, eta_const = 0.0005, lambda_const = 0.1419, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 373.15, MM_const = 3);
   end Hydrocarbon;
+
+  package Kerosene
+    extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "Kerosene", cp_const = 2470.212, cv_const = 2470.212, d_const = 785, eta_const = 0.00040097751, lambda_const = 0.13672804, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 373.15, MM_const = 3);
+  end Kerosene;
+  
+  package CrudeOil
+    extends Modelica.Media.Interfaces.PartialSimpleMedium(mediumName = "Crude Oil", cp_const = 2051.532, cv_const = 2051.532, d_const = 850, eta_const = 0.0035963962, lambda_const = 0.13326657, a_const = 1000, T_min = 273.15, T_max = 573.15, T0 = 373.15, MM_const = 3);
+  end CrudeOil;
 
   model HEXsimpleWater
     extends Modelica.Icons.Example;
@@ -117,7 +125,7 @@ Interfaces.FlowSource SourceI(redeclare package Medium = FreeFluids.TMedia.Fluid
     Placement(visible = true, transformation(origin = {-70, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 Interfaces.FlowSink SinkI(G(displayUnit = "kg/s") = 1.425, fix = FreeFluids.Types.BoundaryOption.fixFlow)  annotation(
     Placement(visible = true, transformation(origin = {72, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-Modelica.Blocks.Sources.Ramp Gramp(duration = 1, height = -10, offset = 13)  annotation(
+Modelica.Blocks.Sources.Ramp Gramp(duration = 1, height = -90, offset = 93)  annotation(
     Placement(visible = true, transformation(origin = {-120, 44}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
 //HEX.IW=58638;
@@ -135,7 +143,7 @@ connect(SourceA.PortB, HEX.Oin) annotation(
 annotation(
       Documentation(info = "<html><head></head><body>Modified example 7.2 from Heat Exchangers (S.Kalkaç et. alt.)</body></html>"));end DoublePipeTest;
 
-  model GasCooledTest
+  model GasCoolerTest
   FreeFluids.HeatExchangers.GasCooledHEXfc HEX(redeclare package MediumI=Hydrocarbon, redeclare package MediumO=Modelica.Media.Air.DryAirNasa,finDiameter = 0.05715, finDistance = 0.00254, finHeight = 0.054, finIsCircular = true, finK = 209, finThickness = 0.00033, finWidth = 0.054, iDi = 0.02058, iFoulingF = 0.000176, iKwall = 16.7, iLTube = 10.9728, iNumPipes = 56, iNumRows = 4, iNumSerial = 4, iNumVelocityHeads = 0, iRoughness = 2.000000000000001e-05, iStaggered = true, iThickness = 0.00241, iTubePitch(displayUnit = "m") = 0.0635, oFoulingF = 0, useBYnusselt = true, useFins = true)  annotation(
       Placement(visible = true, transformation(origin = {-20, 8}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
   FreeFluids.Interfaces.FlowSourceSP SourceA(redeclare package Medium = Modelica.Media.Air.DryAirNasa, P (displayUnit = "Pa")= 100325, T = 308.15) annotation(
@@ -159,6 +167,49 @@ annotation(
   annotation(
       Diagram(coordinateSystem(extent = {{-100, 100}, {80, -60}})),
       Documentation(info = "<html><head></head><body>Example 12.1 from Process Heat Transfer Principles and Applications (R.W.Serth)</body></html>"));
-  end GasCooledTest;
+  end GasCoolerTest;
+  
+  model ShellTubesTest
+  FreeFluids.HeatExchangers.ShellAndTubesHEXfc_fc HEX(redeclare package MediumI=FreeFluids.LMedia.Fluids.Water, redeclare package MediumO=FreeFluids.LMedia.Fluids.Water, BaCutRatio = 0.25, cBaSh(displayUnit = "mm") = 0.005059999999999999, cBuSh = 0.034,dShI = 0.58, equalBaffleDistance = true, iDi = 0.016, iFoulingF = 0, iKwall = 42.3, iLTube = 5, iNumPipes = 374, iNumSerial = 1, iNumVelocityHeads = 0, iThickness = 0.0015, numBa = 9, oFoulingF = 0.000176, pitchRatio = 1.25, shellNozzlesDi = 0.1, triangularPitch = false)  annotation(
+      Placement(visible = true, transformation(origin = {8.88178e-16, -2.66454e-15}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
+    FreeFluids.Interfaces.FlowSourceSP SourceI(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, P (displayUnit = "Pa")= 399999.9999999999, T = 293.15) annotation(
+      Placement(visible = true, transformation(origin = {-80, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  FreeFluids.Interfaces.FlowSourceSP SourceS(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, P (displayUnit = "bar") = 399999.9999999999, T = 305.15) annotation(
+      Placement(visible = true, transformation(origin = {0, -64}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  FreeFluids.Interfaces.FlowSink SinkI(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, G (displayUnit = "kg/s") = 150) annotation(
+      Placement(visible = true, transformation(origin = {82, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  FreeFluids.Interfaces.FlowSink SinkS(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, G (displayUnit = "kg/s") = 50) annotation(
+      Placement(visible = true, transformation(origin = {0, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));equation
+    connect(SourceI.PortB, HEX.Iin) annotation(
+      Line(points = {{-70, 0}, {-32, 0}}, color = {0, 127, 255}));
+    connect(HEX.Iout, SinkI.PortA) annotation(
+      Line(points = {{32, 0}, {72, 0}}, color = {0, 127, 255}));
+  connect(HEX.Oin, SourceS.PortB) annotation(
+      Line(points = {{0, -32}, {0, -54}}, color = {0, 127, 255}));
+  connect(HEX.Oout, SinkS.PortA) annotation(
+      Line(points = {{0, 32}, {0, 60}}, color = {0, 127, 255}));
+  end ShellTubesTest;
+
+  model ShellTubesTest2
+  FreeFluids.HeatExchangers.ShellAndTubesHEXfc_fc HEX(redeclare package MediumI=CrudeOil, redeclare package MediumO=Kerosene, BaCutRatio = 0.2, cBaSh(displayUnit = "mm") = 0.005059999999999999, cBuSh = 0.0339, cTuBa = 0.00079,dShI = 0.48895, equalBaffleDistance = true, iDi = 0.0211836, iFoulingF = 0.0005283, iKwall = 50, iLTube = 4.2672, iNumPipes = 31, iNumSerial = 4, iNumVelocityHeads = 0, iThickness = 0.00211, inletBaffleDistance = 0.09779, numBa = 42, numSS = 1, oFoulingF = 0.000352, outletBaffleDistance = 0.09779, pitchRatio = 1.25, shellNozzlesDi = 0.07790000000000001, triangularPitch = false)  annotation(
+      Placement(visible = true, transformation(origin = {8.88178e-16, -2.66454e-15}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
+    FreeFluids.Interfaces.FlowSourceSP SourceI(redeclare package Medium = CrudeOil, P (displayUnit = "Pa")= 399999.9999999999, T = 310.927778) annotation(
+      Placement(visible = true, transformation(origin = {-80, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  FreeFluids.Interfaces.FlowSourceSP SourceS(redeclare package Medium = Kerosene, P (displayUnit = "Pa") = 399999.9999999999, T = 472.03889) annotation(
+      Placement(visible = true, transformation(origin = {0, -64}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  FreeFluids.Interfaces.FlowSink SinkI(redeclare package Medium = CrudeOil, G (displayUnit = "kg/h") = 18.89968222222222) annotation(
+      Placement(visible = true, transformation(origin = {82, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  FreeFluids.Interfaces.FlowSink SinkS(redeclare package Medium = Kerosene, G (displayUnit = "kg/h") = 5.669904722222222) annotation(
+      Placement(visible = true, transformation(origin = {0, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));equation
+    connect(SourceI.PortB, HEX.Iin) annotation(
+      Line(points = {{-70, 0}, {-32, 0}}, color = {0, 127, 255}));
+    connect(HEX.Iout, SinkI.PortA) annotation(
+      Line(points = {{32, 0}, {72, 0}}, color = {0, 127, 255}));
+  connect(HEX.Oin, SourceS.PortB) annotation(
+      Line(points = {{0, -32}, {0, -54}}, color = {0, 127, 255}));
+  connect(HEX.Oout, SinkS.PortA) annotation(
+      Line(points = {{0, 32}, {0, 60}}, color = {0, 127, 255}));
+  annotation(
+      Documentation(info = "<html><head></head><body>Example 5.1 and 6.1 from Heat Transfer Principles and Applications 1st edition, R.W.Serth</body></html>"));end ShellTubesTest2;
   
 end Examples;

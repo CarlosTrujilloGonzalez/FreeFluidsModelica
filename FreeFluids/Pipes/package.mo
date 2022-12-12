@@ -710,7 +710,7 @@ package Pipes "Pipes.mo by Carlos Trujillo
     Modelica.Units.SI.CoefficientOfHeatTransfer H(min = 1, start = 1000) "average heat transfer coefficient of unique or main mechanism";
     FreeFluids.Interfaces.HeatPortB PortH annotation(
       Placement(visible = true, transformation(origin = {1.9984e-15, -48}, extent = {{-20, -20}, {20, 20}}, rotation = 0), iconTransformation(origin = {1.9984e-15, -42}, extent = {{-18, -18}, {18, 18}}, rotation = 0)));
-
+  
   equation
     if fullHTperimeter == true then
       SactiveHT = SiActive;
