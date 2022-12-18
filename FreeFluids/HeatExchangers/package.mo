@@ -31,12 +31,11 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Flow"));
     parameter Boolean isLaminarFlow = false "flow regime to apply. Only if useFixedDiffP is false" annotation(
       Dialog(tab = "Flow"));
-  
     parameter Modelica.Units.SI.CoefficientOfHeatTransfer u "global heat transfer coefficient" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Boolean fixSurface=true "if true, please fix the surface. If false, fix the power" annotation(
+    parameter Boolean fixSurface = true "if true, please fix the surface. If false, fix the power" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Modelica.Units.SI.Area s=0 "fixed heat exchange surface" annotation(
+    parameter Modelica.Units.SI.Area s = 0 "fixed heat exchange surface" annotation(
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.Power w "fixed heat transfer power. Positive if fluid inputs heat" annotation(
       Dialog(tab = "Heat transfer"));
@@ -50,11 +49,11 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.Temperature extTout(displayUnit = "degC") = 318.15 "fixed external media outlet temperature" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Boolean counterCurrentFlow=true "if false, concurrent flow is considered" annotation(
-      Dialog(tab = "Heat transfer")); 
+    parameter Boolean counterCurrentFlow = true "if false, concurrent flow is considered" annotation(
+      Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.TemperatureDifference LMTD;
     Modelica.Units.SI.Area S;
-    Modelica.Units.SI.MassFlowRate Gext(displayUnit="kg/h") "external media mass flow rate";
+    Modelica.Units.SI.MassFlowRate Gext(displayUnit = "kg/h") "external media mass flow rate";
     Modelica.Units.SI.Temperature TextOut(displayUnit = "degC");
     Modelica.Units.SI.ThermalConductance ThConductance "W/K";
     Modelica.Units.SI.Power W "heat transfer. Positive if fluid inputs heat";
@@ -67,48 +66,48 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
     StateB = Medium.setState_phX(PortB.P, PortB.H, PortB.X);
     Ta = Medium.temperature(StateA);
     Tb = Medium.temperature(StateB);
-  //Flow
+//Flow
     if useFixedDiffP == true then
       Pdiff = dP;
     else
       if isLaminarFlow == true then
-        Pdiff = dP * PortA.G / refG;
+        Pdiff = dP*PortA.G/refG;
       else
-        Pdiff = dP * PortA.G ^ 1.77 / refG ^ 1.77 "approximation with correction for the Reynolds in turbulent flow";
+        Pdiff = dP*PortA.G^1.77/refG^1.77 "approximation with correction for the Reynolds in turbulent flow";
       end if;
     end if;
-  //Heat transfer
+//Heat transfer
     if fixExternalFlow == true then
       Gext = extG;
     else
       TextOut = extTout;
     end if;
-    if counterCurrentFlow==true then 
-      if noEvent((extTin - Tb) * (TextOut - Ta) <= 0) then
+    if counterCurrentFlow == true then
+      if noEvent((extTin - Tb)*(TextOut - Ta) <= 0) then
         LMTD = 0;
       elseif noEvent(extTin - Tb == TextOut - Ta) then
         LMTD = extTin - Tb;
       else
-        LMTD = (extTin - Tb - TextOut + Ta) / log((extTin - Tb) / (TextOut - Ta));
+        LMTD = (extTin - Tb - TextOut + Ta)/log((extTin - Tb)/(TextOut - Ta));
       end if;
     else
-      if noEvent((extTin - Ta) * (TextOut - Tb) <= 0) then
+      if noEvent((extTin - Ta)*(TextOut - Tb) <= 0) then
         LMTD = 0;
       elseif noEvent(extTin - Ta == TextOut - Tb) then
         LMTD = extTin - Ta;
       else
-        LMTD = (extTin - Ta - TextOut + Tb) / log((extTin - Ta) / (TextOut - Tb));
-      end if;    
+        LMTD = (extTin - Ta - TextOut + Tb)/log((extTin - Ta)/(TextOut - Tb));
+      end if;
     end if;
-    if fixSurface==true then
-      S=s;
+    if fixSurface == true then
+      S = s;
     else
-      W=w;
+      W = w;
     end if;
-    ThConductance=S*u;
-    W=ThConductance*LMTD;
-    W = (extTin - TextOut) * extCp * Gext;
-    W = PortA.G * (PortB.H - PortA.H);
+    ThConductance = S*u;
+    W = ThConductance*LMTD;
+    W = (extTin - TextOut)*extCp*Gext;
+    W = PortA.G*(PortB.H - PortA.H);
     annotation(
       Dialog(tab = "Heat transfer"),
       defaultComponentName = "hex",
@@ -117,12 +116,12 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
   end HEXsimple;
 
   model HEXgeneric1Ph "Exchanger model without heat transfer coefficient calculation, for 1 phase flow in tubes"
-    extends FreeFluids.Pipes.PipeFlow1Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.detailed);
+    extends FreeFluids.Pipes.PipeFlow1Ph(final useTubeLength = true, final lTube = tubeLength*numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = false, thermalType = FreeFluids.Types.ThermalType.detailed);
     parameter FreeFluids.Types.ExchangerType exchangerType = FreeFluids.Types.ExchangerType.undefined "if undefined, raw LMTD will be used, otherwise mixed LMTD/NTU method" annotation(
       Dialog(tab = "Heat transfer"));
     parameter Boolean counterCurrent = true "for undefined type of exchanger select if flow is counter-current, otherwise will be considered co-current" annotation(
       Dialog(tab = "Heat transfer"));
-    final parameter FreeFluids.Types.TemaShell shellType = FreeFluids.Types.TemaShell.E  annotation(
+    final parameter FreeFluids.Types.TemaShell shellType = FreeFluids.Types.TemaShell.E annotation(
       Dialog(tab = "Physical data"));
     parameter Modelica.Units.SI.Length tubeLength annotation(
       Dialog(tab = "Physical data"));
@@ -144,7 +143,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.CoefficientOfHeatTransfer u(start = 100) "fixed overall heat transfer coefficient referenced to external surface" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Real extSratio = (di + 2 * thickness) / di "ratio of external surface to internal bare tube surface" annotation(
+    parameter Real extSratio = (di + 2*thickness)/di "ratio of external surface to internal bare tube surface" annotation(
       Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.Area Sext;
     Modelica.Units.SI.MassFlowRate Gext "external media mass flow rate";
@@ -161,52 +160,52 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
     else
       TextOut = extTout;
     end if;
-    Sext = SiActive * extSratio;
-    ThConductance = u * Sext;
-    W = (extTin - TextOut) * extCp * Gext;
+    Sext = SiActive*extSratio;
+    ThConductance = u*Sext;
+    W = (extTin - TextOut)*extCp*Gext;
     if exchangerType == FreeFluids.Types.ExchangerType.undefined then
       Pntu = 0;
       Rntu = 0;
       NTU = 0;
       Flmtd = 0;
-      if counterCurrent==true then
-        if noEvent((extTin - Tb) * (TextOut - Ta) <= 0) then
+      if counterCurrent == true then
+        if noEvent((extTin - Tb)*(TextOut - Ta) <= 0) then
           LMTD = 0;
         elseif noEvent(extTin - Tb == TextOut - Ta) then
           LMTD = extTin - Tb;
         else
-          LMTD = (extTin - Tb - TextOut + Ta) / log((extTin - Tb) / (TextOut - Ta));
+          LMTD = (extTin - Tb - TextOut + Ta)/log((extTin - Tb)/(TextOut - Ta));
         end if;
       else
-        if noEvent((extTin - Ta) * (TextOut - Tb) <= 0) then
+        if noEvent((extTin - Ta)*(TextOut - Tb) <= 0) then
           LMTD = 0;
         elseif noEvent(extTin - Ta == TextOut - Tb) then
           LMTD = extTin - Ta;
         else
-          LMTD = (extTin - Ta - TextOut + Tb) / log((extTin - Ta) / (TextOut - Tb));
+          LMTD = (extTin - Ta - TextOut + Tb)/log((extTin - Ta)/(TextOut - Tb));
         end if;
       end if;
       if thermalType == FreeFluids.Types.ThermalType.detailed then
-        W = ThConductance * LMTD;
+        W = ThConductance*LMTD;
       end if;
     else
-      Pntu=W/(PortA.G*Medium.specificHeatCapacityCp(StateAvg)*(extTin-Ta));
+      Pntu = W/(PortA.G*Medium.specificHeatCapacityCp(StateAvg)*(extTin - Ta));
       Rntu = (TextOut - extTin)/(Ta - Tb);
-      NTU=ThConductance/(PortA.G*Medium.specificHeatCapacityCp(StateAvg));
+      NTU = ThConductance/(PortA.G*Medium.specificHeatCapacityCp(StateAvg));
       if exchangerType == FreeFluids.Types.ExchangerType.shellAndTubes then
-        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, 1, numPasses, Rntu, NTU),1);
+        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, 1, numPasses, Rntu, NTU), 1);
       else
-        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(numPasses, numRows, Rntu, NTU),1);
+        Flmtd = homotopy(FreeFluids.HeatExchangers.Functions.CrossLMTDfactor(numPasses, numRows, Rntu, NTU), 1);
       end if;
-      if noEvent((extTin - Tb) * (TextOut - Ta) <= 0) then
+      if noEvent((extTin - Tb)*(TextOut - Ta) <= 0) then
         LMTD = 0;
       elseif noEvent(extTin - Tb == TextOut - Ta) then
         LMTD = extTin - Tb;
       else
-        LMTD = (extTin - Tb - TextOut + Ta) / log((extTin - Tb) / (TextOut - Ta));
+        LMTD = (extTin - Tb - TextOut + Ta)/log((extTin - Tb)/(TextOut - Ta));
       end if;
       if thermalType == FreeFluids.Types.ThermalType.detailed then
-        W = ThConductance * Flmtd*LMTD;
+        W = ThConductance*Flmtd*LMTD;
       end if;
     end if;
     annotation(
@@ -216,7 +215,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
   end HEXgeneric1Ph;
 
   model HEXgeneric2Ph "Exchanger model without heat transfer coefficient calculation, for two phases flow in tubes"
-    extends FreeFluids.Pipes.PipeFlow2Ph(final useTubeLength = true, final lTube = tubeLength * numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = true, final twoPhaseFlow = true, final rhoL=0, final muL=0, final rhoG=0, final muG=0, final x=0, thermalType = FreeFluids.Types.ThermalType.detailed);
+    extends FreeFluids.Pipes.PipeFlow2Ph(final useTubeLength = true, final lTube = tubeLength*numPasses, final fixNumTubes = true, final numTubes = div(numTubesTotal, numPasses), final pipeComplexity = 0, final kv = 0, final aperture = 1, final fullBore = true, final thicknessInsul = 0, final isCompressibleFlow = true, final twoPhaseFlow = true, final rhoL = 0, final muL = 0, final rhoG = 0, final muG = 0, final x = 0, thermalType = FreeFluids.Types.ThermalType.detailed);
     parameter Modelica.Units.SI.Length tubeLength annotation(
       Dialog(tab = "Physical data"));
     parameter Integer numTubesTotal annotation(
@@ -237,7 +236,7 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
       Dialog(tab = "Heat transfer"));
     parameter Modelica.Units.SI.CoefficientOfHeatTransfer u(start = 100) "fixed overall heat transfer coefficient referenced to external surface" annotation(
       Dialog(tab = "Heat transfer"));
-    parameter Real extSratio = (di + 2 * thickness) / di "ratio of external surface to internal bare tube surface" annotation(
+    parameter Real extSratio = (di + 2*thickness)/di "ratio of external surface to internal bare tube surface" annotation(
       Dialog(tab = "Heat transfer"));
     Modelica.Units.SI.Area Sext;
     Modelica.Units.SI.MassFlowRate Gext "external media mass flow rate";
@@ -250,45 +249,74 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
     else
       TextOut = extTout;
     end if;
-    Sext = SiActive * extSratio;
-    ThConductance = u * Sext;
-    W = (extTin - TextOut) * extCp * Gext;
-    if noEvent((extTin - Tb) * (TextOut - Ta) <= 0) then
+    Sext = SiActive*extSratio;
+    ThConductance = u*Sext;
+    W = (extTin - TextOut)*extCp*Gext;
+    if noEvent((extTin - Tb)*(TextOut - Ta) <= 0) then
       LMTD = 0;
     elseif noEvent(extTin - Tb == TextOut - Ta) then
       LMTD = extTin - Tb;
     else
-      LMTD = (extTin - Tb - TextOut + Ta) / log((extTin - Tb) / (TextOut - Ta));
+      LMTD = (extTin - Tb - TextOut + Ta)/log((extTin - Tb)/(TextOut - Ta));
     end if;
     if thermalType == FreeFluids.Types.ThermalType.detailed then
-      W = ThConductance * LMTD;
+      W = ThConductance*LMTD;
     end if;
-  
     annotation(
       defaultComponentName = "HEX",
       Icon(graphics = {Line(origin = {-20, -18}, points = {{-60, -60}, {54, 54}}, color = {249, 2, 2}, thickness = 0.5), Polygon(origin = {39.12, 41.12}, fillColor = {251, 0, 0}, fillPattern = FillPattern.Solid, points = {{4.87921, -15.1208}, {-15.1208, 4.87921}, {14.8792, 14.8792}, {4.87921, -15.1208}})}, coordinateSystem(initialScale = 0.1)),
       Documentation(info = "<html><head></head><body>The model is for a tube heat exchanger, that can have several passes and extended surface, in an undefined external flowing media. We need to specify the global U, as it is impossible its calculation. We define also the inner media, and the external media Cp, inlet temperature, and outlet temperature or mass flow rate.<div>As an alternative it is also possible to use a fixed exchanged power, or a fixed temperature for the tubes external surface.</div><div>As two phases are coexisting along the exchanger a straight LMTD method is used.</div><div><br></div></body></html>"));
   end HEXgeneric2Ph;
 
-  
   model DoublePipeHEXfc
-    extends BaseClasses.DoublePipeHEX;
-    extends BaseClasses.HEXtubesForcedConvection;annotation(
+    extends BaseClasses.DoublePipeHEX(final iNumVelocityHeads=0);
+    extends BaseClasses.HEXtubesForcedConvection(final iNumVelocityHeads=0);
+    annotation(
       Documentation(info = "<html><head></head><body>Double pipe exchanger with foced convection heat transfer for both fluids.</body></html>"));
   end DoublePipeHEXfc;
 
+  model DoublePipeHEXc
+    extends BaseClasses.DoublePipeHEX(final iNumVelocityHeads=0);
+    extends BaseClasses.HEXtubesCondensing(final iNumVelocityHeads=0);
+    annotation(
+      Documentation(info = "<html><head></head><body>Double pipe exchanger with condensation in the inner fluid, and forced convection in the outer.</body></html>"));
+  end DoublePipeHEXc;
+
   model GasCooledHEXfc
-    extends BaseClasses.GasCooledHEX;
-    extends BaseClasses.HEXtubesForcedConvection(final oElevDiff=0);annotation(
+    extends BaseClasses.GasCooledHEX(final iNumUturns=0, final oElevDiff = 0);
+    extends BaseClasses.HEXtubesForcedConvection(final iNumUturns=0, final oElevDiff = 0);
+    annotation(
       Documentation(info = "<html><head></head><body>Gas exchanger with forced convection heat transfer for both fluids.</body></html>"));
   end GasCooledHEXfc;
-  
+
+  model GasCooledHEXc
+    extends BaseClasses.HEXtubesCondensing;
+    extends BaseClasses.GasCooledHEX;
+    annotation(
+      Documentation(info = "<html><head></head><body>Gas exchanger with condensing fluid in the tubes.</body></html>"));
+  end GasCooledHEXc;
+
   model ShellAndTubesHEXfc_fc
-    extends BaseClasses.HEXtubesForcedConvection;
-    extends BaseClasses.ShellAndTubesHEXfc(final counterCurrent=true);
-  annotation(
-      Documentation(info = "<html><head></head><body>Gas exchanger with forced convection heat transfer for both fluids.</body></html>"));
+    extends BaseClasses.HEXtubesForcedConvection(final iNumUturns=0, iNumVelocityHeads=2*iNumSerial);
+    extends BaseClasses.ShellAndTubesHEXfc(final counterCurrent = true, final iNumUturns=0, iNumVelocityHeads=2*iNumSerial);
+  equation
+    if (iNumSerial == 1 and counterCurrent == true) then
+      ILMTDcorr = 1.0;
+    else
+      ILMTDcorr = homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, numShells, iNumSerial, Rntu, NTU), 1);
+    end if;
+    annotation(
+      Documentation(info = "<html><head></head><body>Shell and tubes exchanger with forced convection heat transfer for both fluids.</body></html>"));
   end ShellAndTubesHEXfc_fc;
+
+  model ShellAndTubesHEXc_fc
+    extends BaseClasses.HEXtubesCondensing(final counterCurrent = true, final iNumUturns=0);
+    extends BaseClasses.ShellAndTubesHEXfc(final counterCurrent = true, final iNumUturns=0);
+  equation
+    ILMTDcorr = 1.0;
+    annotation(
+      Documentation(info = "<html><head></head><body>Shell and tubes exchanger with condensation inside the tubes, and forced convection heat transfer in the shell.</body></html>"));
+  end ShellAndTubesHEXc_fc;
 
   //***DETAILED EXCHANGER MODELS***
   //-------------------------------
@@ -367,7 +395,4 @@ package HeatExchangers "HeatExchangers.mo by Carlos Trujillo
 
   annotation(
     Documentation(info = "<html><head></head><body>In the package there are three types of models:&nbsp;<div>· A very simple HEXsimple model, where the only equipment related characteristics needed are the global heat transfer coefficient and the exchanger area (or exchanged power).</div><div>· Intermediate models, for one or two phases flow, when there is not enough exchanger details for the calculation of the global heat transfer coefficient. These models assume that one of the streams is inside tubes, and its properties are calculated from a defined medium.</div><div>· Detailed models with enough details for the calculation of the global heat exchange coefficient. The calculation of the physical properties for both fluids is done using the defined mediums.</div></body></html>"));
-
-
-
 end HeatExchangers;

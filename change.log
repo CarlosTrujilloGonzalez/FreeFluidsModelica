@@ -1,5 +1,9 @@
+Version 2.9.0
+- Added models for heat exchange with condensation inside the tubes.
+- Small changes in pressure drop calculations for heat exchangers.
+
 Version 2.8.0
-- Added model for forced convection, shell and tubes, heat exchanger. According to Bell-Delware methodology.
+- Added model for forced convection, shell and tubes, heat exchanger. According to Bell-Delaware methodology.
 - Small improvements in other heat transfer models.
 - Some bugs correction.
 
