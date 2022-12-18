@@ -16,6 +16,8 @@ package BaseClasses
       Dialog(tab = "Flow data"));
     parameter Modelica.Units.SI.Distance oElevDiff=0 "outer flow differential elevation: out elev. - in elev." annotation(
       Dialog(tab = "Flow data"));
+    parameter Real iNumVelocityHeads=2*iNumSerial "inner flow number of velocity heads to consider in pressure loss" annotation(
+      Dialog(tab = "Flow data")); 
     parameter Boolean iIsCircular=true "if false, the inner pipe is not circular" annotation(
       Dialog(tab = "Inner pipe data"));
     parameter Modelica.Units.SI.Distance iDi(displayUnit = "mm") = 0.0 "inner pipe internal diameter, if circular" annotation(
@@ -42,9 +44,7 @@ package BaseClasses
       Dialog(tab = "Inner pipe data"));
     parameter Integer iNumSerial=2 "number of serial inner passes  (Each hairpin has two serial passes)" annotation(
       Dialog(tab = "Inner pipe data"));
-    parameter Integer iNumUturns=1 "number of U turns in each exchanger" annotation(
-      Dialog(tab = "Inner pipe data"));
-    parameter Real iNumVelocityHeads=1.5 "inner pipe number of velocity heads to consider in pressure loss" annotation(
+    parameter Integer iNumUturns=iNumSerial-1 "number of U turns in each exchanger" annotation(
       Dialog(tab = "Flow data"));
     parameter Modelica.Units.SI.ThermalInsulance oFoulingF = 0.0002 "outer flow fouling factor.Typical: 0.00018 for thermal oil, or treated cooling water" annotation(
       Dialog(tab = "Heat transfer"));
@@ -81,7 +81,7 @@ package BaseClasses
     Modelica.Units.SI.Temperature ITwall "inner pipe wall temperature";
     Modelica.Units.SI.DynamicViscosity IMuWall(min = 1e-6, start = 1e-3, max = 1e6) "inner pipe wall dynamic viscosity";
     Real IPlossCorr "internal pipe pressure loss correction factor";
-    Modelica.Units.SI.AbsolutePressure IPloss "internal pipe pressure loss by friction";
+    Modelica.Units.SI.AbsolutePressure IPloss "internal pipe pressure loss by friction, without taking into account the nozzles";  
     Real IHTcorr "internal pipe heat transfer correction factor";
     Modelica.Units.SI.NusseltNumber INu "inner pipe Nusselt number";
     Modelica.Units.SI.CoefficientOfHeatTransfer IH(min = 1, start = 1000) "inner pipe average heat transfer coefficient"; 
@@ -92,25 +92,26 @@ package BaseClasses
     Modelica.Units.SI.Temperature OTin "outer flow inlet temperature";
     Modelica.Units.SI.Temperature OTout "outer flow outlet temperature";
     Modelica.Units.SI.Temperature OT "outer flow average temperature";  
+    Modelica.Units.SI.Length IEquivLength "internal pipe equivalent length for pressure drop";
     Real OPlossCorr "outer flow pressure loss correction factor";
     Modelica.Units.SI.AbsolutePressure OPloss "outer flow pressure loss by friction";
     Modelica.Units.SI.Area OiArea "total outer flow internal area for heat transfer";
     Fraction OiEfficiency "outer flow internal area efficiency";
     Modelica.Units.SI.NusseltNumber ONu "outer flow nusselt number for internal heat transfer";
     Modelica.Units.SI.CoefficientOfHeatTransfer OHi(min = 1, start = 1000) "outer flow average heat transfer coefficient to inner pipe";
-  
     Modelica.Units.SI.ThermalResistance TRii "total resitance for the transfer between inner fluid and inner wall";
     Modelica.Units.SI.ThermalResistance TRio "total resitance for the transfer between outer fluid and inner wall";
     Modelica.Units.SI.ThermalResistance TRi "total resitance for the transfer between inner and outer fluids";
     Modelica.Units.SI.CoefficientOfHeatTransfer Ui "global heat transfer coefficient referenced to total inner flow area"; 
     Modelica.Units.SI.TemperatureDifference ILMTD "LMTD between inner and outer fluids";
-  
-    Modelica.Units.SI.Power IW "heat exchanged between inner and outer fluids. Positive if heat enters the inner fluid" ;
-    
-    Modelica.Units.SI.Length IEquivLength "internal pipe equivalent length for pressure drop";
     Fraction ILMTDcorr(min=0.5) "internal LMTD correction factor";
     Real Rntu(min=0.0);
     Real NTU(min=0.0);
+    Modelica.Units.SI.Power IW "heat exchanged between inner and outer fluids. Positive if heat enters the inner fluid" ;
+  
+    Modelica.Units.SI.Area IiArea1 "total inner pipes internal heat transfer area used in first stage transfer";
+    Modelica.Units.SI.ThermalResistance TRi1 "total resitance for the transfer between inner and outer fluids in the first stage";
+  
   annotation(
       Documentation(info = "<html><head></head><body>Contains just the definitions of the inner pipe elements needed for the development of the outer flow models. With no equations, in order to allow multiple inheritance of the model without giving too many equations.</body></html>")); 
   end HEXtubesDefinition;
@@ -133,7 +134,7 @@ package BaseClasses
       IoSection:=iSection+(iPerimeter+4*iThickness)*iThickness;
     end if;
     ItotalNumPipes:=iNumParallel*iNumSerial*iNumPipes;
-    IEquivLength:=iNumSerial*iLTube;
+    IEquivLength:=iNumSerial*iLTube+50*iNumUturns*IDh;
     IiArea:=ItotalNumPipes*iLTube*IiPerimeter; 
   equation
     Iout.X=Iin.X;
@@ -176,13 +177,19 @@ package BaseClasses
     end if;
     TRii=1/(IH*IiArea)+iFoulingF/IiArea;
     TRio=oFoulingF/(OiArea*OiEfficiency)+1/(OHi*OiArea*OiEfficiency);
-    TRi=1/(IH*IiArea)+iFoulingF/IiArea+log((IDh+2*iThickness)/IDh)/(iKwall*2*pi*ItotalNumPipes*iLTube)+oFoulingF/(OiArea*OiEfficiency)+1/(OHi*OiArea*OiEfficiency);
-    IW=-ILMTD*ILMTDcorr/TRi;
+    TRi=TRii+log((IDh+2*iThickness)/IDh)/(iKwall*2*pi*ItotalNumPipes*iLTube)+TRio;
+    //IW=-ILMTD*ILMTDcorr/TRi;
     Iout.H=Iin.H+IW/Iin.G "kinetic and gravitational energy are not taken into account";
     Oout.H=Oin.H-IW/Oin.G "kinetic and gravitational energy are not taken into account";
     Ui=1/(TRi*IiArea);
+    Rntu = (OTout - OTin) / (ITin - ITout);
+    NTU=(ITout-ITin)/(TRi*IW);
+  
+    IW=-ILMTD*ILMTDcorr/TRi1;  
+    TRi1=TRi*IiArea/IiArea1;   
   annotation(
-      Documentation(info = "<html><head></head><body>Here come the equations missing in the HEXtubesDefinition model. The model has the elements and equations common to forced convection and gas condensation.<div>It is not clear how to calculate the average wall temperature used to introduce corrections in the calculated heat transfer coefficient. I see three possibilities:</div><div>· The average temperature of both streams at both ends.</div><div>· Split the temperature difference (between the two streams average temperatures) according to the respective heat trasfer resistance of each flow. It seems better, as it is clear that the wall temperature will be closer to the stream with less heat transfer resistance.</div><div>· Calculate a wall temperature that will produce the same heat transfer considering the LMTD between this temperature and one of the streams. This is a more complex calculation, and I have not checked that the obtained temperature is the same for both streams.</div><div>For now, split the temperature according to the resistance seems the best option.</div></body></html>"));end HEXtubes;
+      Documentation(info = "<html><head></head><body>Here come the equations missing in the HEXtubesDefinition model. The model has the elements and equations common to forced convection and gas condensation.<div>It is not clear how to calculate the average wall temperature used to introduce corrections in the calculated heat transfer coefficient. I see three possibilities:</div><div>· The average temperature of both streams at both ends.</div><div>· Split the temperature difference (between the two streams average temperatures) according to the respective heat trasfer resistance of each flow. It seems better, as it is clear that the wall temperature will be closer to the stream with less heat transfer resistance.</div><div>· Calculate a wall temperature that will produce the same heat transfer considering the LMTD between this temperature and one of the streams. This is a more complex calculation, and I have not checked that the obtained temperature is the same for both streams.</div><div>For now, split the temperature according to the resistance seems the best option.</div></body></html>"));
+  end HEXtubes;
 
   partial model HEXtubesForcedConvection
     extends HEXtubes;
@@ -247,7 +254,7 @@ package BaseClasses
     else
       IPlossCorr=(IT/ITwall)^0.3 "friction correction factor for gases. Kalkaç: turbulent 0.3, laminar -0.9. D.G.Kroger turbulent:0.x laminar -0.9";
     end if;
-    IPloss = homotopy(0.5 * IV ^ 2 * IRho * IPlossCorr * (IF * IEquivLength / IDh + iNumVelocityHeads), 0.5 * IV ^ 2 * IRho * (IF * IEquivLength / IDh + iNumVelocityHeads));
+    IPloss = homotopy(0.5 * IV ^ 2 * IRho * (IPlossCorr * IF * IEquivLength / IDh+iNumVelocityHeads), 0.5 * IV ^ 2 * IRho * (IF * IEquivLength / IDh));
     Iout.P-Iin.P = (-sign(Iin.G) * IPloss) + (Iin.Elevation - Iout.Elevation + 1e-5) * g_n * IRho "momentum change is not taken into account.1 e-5 is to avoid division by 0";
     
      if useHTcorr == true then
@@ -294,11 +301,94 @@ package BaseClasses
       INu = (abs(IfSmooth / 8 * 10000 * IPr / (1 + 12.7 * (IfSmooth / 8) ^ 0.5 * (IPr ^ (2 / 3) - 1)) * (1 + (IDh / iLTube) ^ (2 / 3))) * (IRe - 2100) / 7900 + abs((3.66 ^ 3 + 0.7 ^ 3 + (1.65 * (2100 * IPr * IDh / iLTube) ^ (1 / 3) - 0.7) ^ 3) ^ (1 / 3)) * (10000 - IRe) / 7900) * IHTcorr "VDI G1 4.2";
     end if;
     IH=INu*IK/IDh;
-    
-    Rntu = (OTout - OTin) / (ITin - ITout);
-    NTU=(ITout-ITin)/(TRi*IW);    
+    IiArea1=IiArea;
+       
   annotation(
-      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient, and the pressure loss, of tubes side of an exchanger.<div>Twistted tape inserts can be used optionally.</div></body></html>"));end HEXtubesForcedConvection;
+      Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient, and the pressure loss, of the tubes side of an exchanger, working in forced convection.<div>Twistted tape inserts can be used optionally.</div></body></html>"));end HEXtubesForcedConvection;
+
+   partial model HEXtubesCondensing
+  extends HEXtubes;
+    parameter Boolean isVertical=true "if true the condenser is in vertical position, otherwise in horizontal";
+    MediumI.ThermodynamicState IStateFilm "average state for condensation film physical properties calculation";
+    Modelica.Units.SI.Density IRhoFilm(displayUnit = "kg/m3", start = 1000.0) "liquid density at film temperature";
+    MediumI.Density IRhoG(displayUnit = "kg/m3") "saturated gas density";
+    MediumI.DynamicViscosity IMuG "dynamic viscosity of saturated gas";
+    Modelica.Units.SI.SpecificEnergy IHvc "gas cooling plus condensation heat(J/kg). Inlet can be sligthly superheated";
+    MediumI.MassFraction IXin "vapor quality at inlet as fraction in mass";
+    MediumI.MassFraction IXout(start = 0.0) "vapor quality at outlet as fraction in mass";
+    MediumI.Temperature ITfilm "liquid film average absolute temperature";
+    Modelica.Units.SI.SpecificHeatCapacity ICpFilm(start = 2000.0) "liquid specific heat capacity at film temperature";
+    Modelica.Units.SI.ThermalConductivity IKfilm(start = 0.1) "liquid thermal conductivity at film temperature";
+    Modelica.Units.SI.PrandtlNumber IPrFilm "liquid Prandt number at film temperature";
+    MediumI.DynamicViscosity IMuFilm(min = 1e-6, start = 1e-3, max = 1e6) "liquid viscosity at film temperature";
+    Modelica.Units.SI.ReynoldsNumber IReL(min = 0.01, start = 20000) "Reynolds number of the liquid phase at the end of condensation";
+    Modelica.Units.SI.ReynoldsNumber IReVDI(min = 0.1, start = 200) "At end of condensation. Uses mass flow per unit perimeter length =condensate outlet Reynolds/4";
+    MediumI.MassFraction IXm(start=0.5) "mean vapor quality";
+    Real INuL, INuT, INuCg "Nusselt(special) number laminar, turbulent, combined, for gravity governed";
+    Modelica.Units.SI.CoefficientOfHeatTransfer IHg "gravity governed heat transfer coefficient";
+    Modelica.Units.SI.CoefficientOfHeatTransfer IHs "gas shear governed heat transfer coefficient";
+    MediumI.ThermodynamicState IStateGas "saturated gas state";
+    Modelica.Units.SI.ReynoldsNumber IReG(min = 0.1, start = 20000) "Reynolds number at condensation if all was gas";
+    Real IFl(start = 0.01) "Darcy's friction factor if all liquid";
+    Real IFg(start = 0.01) "Darcy's friction factor if all gas";
+    Modelica.Units.SI.Pressure IPlossL(start = 0.01, displayUnit = "bar") "friction head loss if all was liquid";
+    Modelica.Units.SI.Pressure IPlossG(start = 0.01, displayUnit = "bar") "friction head loss if all was gas";
+  equation
+    IT=ITin;
+    IXin = MediumI.vapourQuality(IStateIn);
+    ITfilm = (ITin + ITwall) / 2;
+    IStateFilm = MediumI.setState_pTX(Iin.P, ITfilm, Iin.X) "state film is at inlet pressure and film temperature";
+    IRhoFilm = abs(MediumI.density(IStateFilm));
+    IMuFilm = MediumI.dynamicViscosity(IStateFilm);
+    ICpFilm = MediumI.specificHeatCapacityCp(IStateFilm);
+    IKfilm = MediumI.thermalConductivity(IStateFilm);
+    IPrFilm = ICpFilm * IMuFilm / IKfilm;
+    IStateGas = MediumI.setDewState(MediumI.setSat_p(Iin.P));
+    IRhoG = abs(MediumI.density(IStateGas));
+    IMuG = MediumI.dynamicViscosity(IStateGas);
+    IHvc = MediumI.specificEnthalpy(IStateIn) - MediumI.specificEnthalpy(IStateFilm) "Liquid outlet is at film temperature";
+    IReL = IDh * abs(Iin.G) * min(1, 1 - IXout) / (iNumParallel*iNumPipes*IiSection * IMuFilm) + 0.01  "Reynolds of the liquid phase at outlet";
+    IXm = (IXin + max(0, IXout)) / 2;
+    //IReVDI = abs(Iin.G) * min(1, 1 - IXout) / (NumActiveTubes * PathPerimeter * IMuFilm) "should be equivalent to IReL / 4";
+    IReVDI = IReL/4;
+    IHTcorr=1;
+    if isVertical==true then
+      INuL = 0.925 * ((1 - IRhoG / IRhoFilm) / IReVDI) ^ (1/3);
+      INuT = 0.02 * IReVDI ^ (7 / 24) * IPrFilm ^ (1/3) / (1 + 20.52 * IReVDI ^ (-3 / 8) * IPrFilm ^ (-1 / 6));
+      INuCg = ((IReVDI ^ 0.04 * INuL) ^ 1.2 + INuT ^ 1.2) ^ (1 / 1.2) * (IMuFilm / IMuWall) ^ 0.25 "mean Nusselt for vertical tubes without vapor flow. VDI Atlas 3.1";
+      IHg = INuCg * IKfilm * (IRhoFilm ^ 2 * 9.81 / IMuFilm ^ 2) ^ (1/3);
+  //Alternative for laminar HgL=1.47*IKfilm*(IRhoFilm*(IRhoFilm-IRhoG)*9.81/(IMuFilm^2*IReL))^(1/3);
+    else
+      INuL = 0;
+      INuT = 0;
+      INuCg = 0;
+      IHg = 0.761 * IKfilm * (IRhoFilm * (IRhoFilm - IRhoG) * 9.81 * iLTube * iNumPipes*iNumParallel / (Iin.G * (1 - IXout) * IMuFilm)) ^ (1/3) "horizontal tubes. Take into account partial length use of the tube is missing";
+    end if;
+  //For IXout=0, Hs=abs(IKfilm / IMuFilm * 0.065 * (IRhoFilm * IPrFilm * 0.078*(IMuG/Di/Vm)^0.25 * Vm ^2/2/IRhoG)^0.5), with Vm = abs(0.58 * Iin.G / NumActiveTubes / PathSection)
+   
+     IHs = 0.021 * IKfilm / IDh * IReL ^ 0.8 * IPrFilm ^ 0.43 * (1 + IXm * (IRhoFilm / IRhoG - 1)) ^ 0.5 "Boyko equation valid between IReL=1500-15000";
+     //IHs = 0.023 * IKfilm / IDh * IReL ^ 0.8 * IPrFilm ^ 0.4 * abs((1 - IXm)^0.8 + 3.8*IXm^0.76*(1-IXm)^0.04/(Iin.P/MediumI.fluidConstants[1].criticalPressure)^0.38) "Shah equation valid between IReL=350-63000. Perhaps better than Boyko's one, but needs the critical pressure";
+    IH = max(IHg, IHs);
+    INu=IH*IDh/IKfilm;
+    
+    //-ILMTD*ILMTDcorr/TRi=-abs(Iin.G)* IHvc * (IXin - IXout) ;
+    IXout=max(IXin-ILMTD*ILMTDcorr/(TRi*abs(Iin.G)* IHvc),0);
+    IW = -abs(Iin.G)* IHvc * (IXin - IXout) ;
+  
+   //Condensation friction loss
+    IReG = IDh * abs(Iin.G) / (iNumParallel*iNumPipes*IiSection * IMuG);
+    IFl = 8 * ((8 / IReL) ^ 12 + ((37530 / IReL) ^ 16 + (-2.457 * log((7 / IReL) ^ 0.9 + 0.27 * iRoughness / IDh)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
+    IFg = 8 * ((8 / IReG) ^ 12 + ((37530 / IReG) ^ 16 + (-2.457 * log((7 / IReG) ^ 0.9 + 0.27 * iRoughness / IDh)) ^ 16) ^ (-1.5)) ^ (1 / 12) "Churchill equation for Darcy's friction factor";
+    //IFl = 4 * 0.078 / IReL ^ 0.25;
+    //IFg = 4 * 0.078 / IReG ^ 0.25;
+    IPlossCorr=1.0;
+    IPlossL = 0.5 * IFl * (Iin.G / (iNumParallel*iNumPipes*IiSection)) ^ 2 / (IRhoFilm * IDh) * IEquivLength;
+    IPlossG = 0.5 * IFg * (Iin.G / (iNumParallel*iNumPipes*IiSection)) ^ 2 / (IRhoG * IDh) * IEquivLength;
+    IPloss = (IPlossL + 2 * (IPlossG - IPlossL) * IXm) * (1 - IXm) ^ (1/3) + IPlossG * IXm ^ 3 "Muller-Steinhagen and Heck";
+    Iout.P-Iin.P = (-sign(Iin.G) * IPloss)  "momentum change is not taken into account.1 e-5 is to avoid division by 0";
+  annotation(
+      Documentation(info = "<html><head></head><body><span style=\"font-family: 'MS Shell Dlg 2'; font-size: 12px;\">This partial model performs the calculation of the heat transfer coefficient, and the pressure loss, of the tubes side of an exchanger, working in condensation.</span></body></html>"));
+  end HEXtubesCondensing;
 
   partial model DoublePipeHEX
   "double pipe heat exchanger with internal and external forced convection transfer"
@@ -625,7 +715,7 @@ package BaseClasses
       Dialog(tab = "Inner pipe data"));
     parameter Integer numShells = 1 "total number of serial shells" annotation(
       Dialog(tab = "Shell data"));
-    parameter Types.TemaShell shellType=Types.TemaShell.E "shell type" annotation(
+    parameter Types.TemaShell shellType=Types.TemaShell.E "shell type. Only TEMA E is supported" annotation(
       Dialog(tab = "Shell data"));
     parameter SI.Diameter dShI(displayUnit = "mm") = 0 "internal shell diameter" annotation(
       Dialog(tab = "Shell data"));
@@ -960,12 +1050,7 @@ package BaseClasses
     OPlossCorr=1;
     Oout.P-Oin.P = (-sign(Oin.G) * OPloss) + (Oin.Elevation - Oout.Elevation + 1e-5) * g_n * ORho "momentum change is not taken into account. 1 e-5 is to avoid division by 0";
     ONu=0;
-    if (iNumSerial==1 and counterCurrent==true) then
-      ILMTDcorr=1.0;
-    else
-      ILMTDcorr=homotopy(FreeFluids.HeatExchangers.Functions.ShellLMTDfactor(shellType, numShells, iNumSerial, Rntu, NTU),1);
-    end if;
-    //ILMTDcorr=1;
+  
   annotation(
       Documentation(info = "<html><head></head><body>This partial model performs the calculation of the heat transfer coefficient and the pressure drop of a TEMA E shell, according to the Bell-Delaware methodology.<div>The LMTD correction factor is also calculated.</div></body></html>"));end ShellAndTubesHEXfc;
   annotation(

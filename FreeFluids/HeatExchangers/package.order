@@ -2,8 +2,11 @@ HEXsimple
 HEXgeneric1Ph
 HEXgeneric2Ph
 DoublePipeHEXfc
+DoublePipeHEXc
 GasCooledHEXfc
+GasCooledHEXc
 ShellAndTubesHEXfc_fc
+ShellAndTubesHEXc_fc
 Functions
 BaseClasses
 Examples
