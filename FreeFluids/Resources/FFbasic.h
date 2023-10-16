@@ -5,7 +5,7 @@
  *      Author: Carlos Trujillo
  *
  *This file is part of the "Free Fluids" application
- *Copyright (C) 2008-2019  Carlos Trujillo Gonzalez
+ *Copyright (C) 2008-2023  Carlos Trujillo Gonzalez
 
  *This program is free software; you can redistribute it and/or
  *modify it under the terms of the GNU General Public License version 3

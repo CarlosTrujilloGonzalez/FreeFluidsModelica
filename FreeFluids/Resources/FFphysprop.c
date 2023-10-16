@@ -5,7 +5,7 @@
  *      Author: Carlos Trujillo
  *
  *This file is part of the "Free Fluids" application
- *Copyright (C) 2008-2019  Carlos Trujillo Gonzalez
+ *Copyright (C) 2008-2023  Carlos Trujillo Gonzalez
 
  *This program is free software; you can redistribute it and/or
  *modify it under the terms of the GNU General Public License version 3
@@ -30,9 +30,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include "FFbasic.h"
-//#include "FFphysprop.h"
-#include "FFeosPure.c"
-
+#include "FFphysprop.h"
+#include "FFeosPure.h"
+//#include "FFeosPure.c"
 //Calculates the result of the given equation
 void CALLCONV FF_CorrelationResult(int eq,double coef[],int nPoints,double x[],double y[]){//x contains the in variable, and y the out variable
     int i,j;
@@ -560,7 +560,7 @@ void CALLCONV FF_CorrelationResultM(int eq,double coef[],double x,double *y){//x
 //Calculates physical property, with input and output in SI units(kgr, not moles), using the given correlation, that may or not be in SI units
 //Same as previous, but now without an array of values
 EXP_IMP void CALLCONV FF_PhysPropCorrM(int cor,double coef[],double MW,double x,double *y){
-    //printf("%i %f %f %f %f %f %f %f\n",*cor,MW,coef[0],coef[1],coef[2],coef[3],coef[4],coef[5]);
+    //printf("%i %f %f %f %f %f %f %f %f\n",cor,MW,coef[0],coef[1],coef[2],coef[3],coef[4],coef[5],x);
     int eq;
     //First we convert the input variable if necessary
     if ((cor==22)||(cor==63)||(cor==240)) x=x-273.15;
@@ -1936,7 +1936,7 @@ void CALLCONV FF_GasThCondTVcorChung(double T,double V,FF_BaseProp *data,double 
     *thCond=*ldThCond*(1/G2+B[5]*y)+3.586e-3*pow(data->Tc*1000/data->MW,0.5)*B[6]*y*y*pow(Tr,0.5)*G2/pow(data->Vc*1e6,0.6667);
     if(*thCond<*ldThCond) *thCond=*ldThCond;
 
-    //printf("Ta:%f omega:%f muR:%f Fc:%f ldVisc:%f y:%f G1:%f G2:%f eta2:%f eta1:%f\n",Ta,omega,muR,Fc,*ldVisc,y,G1,G2,eta2,eta1);
+    //printf("Tr:%f muR:%f y:%f G1:%f G2:%f\n",Tr,muR,y,G1,G2);
     //for(i=0;i<10;i++) printf("E[%i]:%f\n",i,E[i]);
 }
 
@@ -1991,7 +1991,7 @@ void CALLCONV FF_MixLpGasThCondTpMason(FF_MixData *mix,double T,double y[],doubl
 }
 
 
-//Temperature,volume dependent, phase independent viscosity. Only for selected substances.
+//Temperature,volume dependent, phase independent viscosity.
 void CALLCONV FF_ViscosityTDens(int subsRef, double T, double rhoMolar,double eta[3]){
     int i,j;
     double MW;
@@ -2166,6 +2166,7 @@ void CALLCONV FF_ViscosityTDens(int subsRef, double T, double rhoMolar,double et
 
 //Viscosity of a pure substance
 void CALLCONV FF_Viscosity(FF_SubstanceData *subs,FF_SubstanceData *ref,double T,double dens, double P,double gf,double *visc){
+    int ver=0;
     double f,h,eta[3],lambda[3];
     double rhoMolar=dens*1e3/subs->baseProp.MW;
     if((gf>0)&&(gf<1)) *visc=0;
@@ -2175,9 +2176,10 @@ void CALLCONV FF_Viscosity(FF_SubstanceData *subs,FF_SubstanceData *ref,double T
             FF_ViscosityTDens(subs->id,T,molarDens,eta);
             *visc=eta[0]+eta[1]+eta[2];
         }
-        else if((subs->gViscCorr.form==112)&&(ref->id==subs->gViscCorr.coef[5])){
+        else if((subs->gViscCorr.form==112)&&(ref->id==subs->gViscCorr.coef[5])){//if we have a NIST correction
             FF_ConformalStateSW(subs,ref,T,rhoMolar,&f,&h);
-            FF_CorrespondingStatesTransport(subs,ref,T,dens,f,h,eta,lambda);
+            FF_CorrespondingStatesTransport(subs,ref,T,rhoMolar,f,h,eta,lambda);
+            if (ver==1) printf("eta0:%f eta1:%f eta2:%f \n",eta[0],eta[1],eta[2]);
             *visc=eta[0]+eta[1]+eta[2];
         }
         else{
@@ -2328,6 +2330,7 @@ void CALLCONV FF_ThCondViscTDens(FF_SubstanceData *data, double T, double rhoMol
 
 //Conformal state calculation using SW EOS. Returns the reducing ratios f and h (h refered to molar units)
 void CALLCONV  FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref, double T, double rhoMolar, double *f, double *h){
+    int ver=0;
     int i;
     double V,error,errorOld;
     short fail=0;
@@ -2344,7 +2347,7 @@ void CALLCONV  FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref
         Arr0=ArrDer[0];
         error=pow(Arr-ArrDer[0],2)+pow(Z-Z0,2);
         errorOld=error;
-        //printf("Conformal SW Initial T:%f rhoMolar:%f tau:%f delta:%f Arr:%f, Z:%f Arr0:%f Z0:%f error:%e ArrDer[3]:%f\n",T,rhoMolar,tau0,delta0,Arr,Z,Arr0,Z0,error,ArrDer[3]);
+        if (ver==1) printf("Conformal SW Initial T:%f rhoMolar:%f tau:%f delta:%f Arr:%f, Z:%f Arr0:%f Z0:%f error:%e ArrDer[3]:%f\n",T,rhoMolar,tau0,delta0,Arr,Z,Arr0,Z0,error,ArrDer[3]);
         i=0;
         while ((error>1.0e-11)&&(i<50)){
             Z0t=delta0*ArrDer[5];
@@ -2362,14 +2365,14 @@ void CALLCONV  FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref
                 Z0=1+delta0*ArrDer[1];
                 Arr0=ArrDer[0];
                 error=pow(Arr-ArrDer[0],2)+pow(Z-Z0,2);
-                //printf("scale:%f tau0:%f delta0:%f error:%e\n",scale,tau0, delta0, error);
+                if (ver==1) printf("scale:%f tau0:%f delta0:%f error:%e\n",scale,tau0, delta0, error);
                 if(errno>0){
-                    //printf("errno:%i error:%e scale:%f\n",errno,error,scale);
+                    if (ver==1) printf("errno:%i error:%e scale:%f\n",errno,error,scale);
                     continue;
                 }
                 if(error<errorOld) break;
             }
-            //printf("tau0:%f delta0:%f T0:%f rhoMolar0:%f Arr0:%f Z0:%f error:%e ArrDer[3]:%f\n",tau0,delta0,ref->swData.tRef/tau0,delta0*ref->swData.rhoRef,Arr0,Z0,error,ArrDer[3]);
+            if (ver==1) printf("tau0:%f delta0:%f T0:%f rhoMolar0:%f Arr0:%f Z0:%f error:%e ArrDer[3]:%f\n",tau0,delta0,ref->swData.tRef/tau0,delta0*ref->swData.rhoRef,Arr0,Z0,error,ArrDer[3]);
             i++;
             if(error>=errorOld){
                 fail=1;
@@ -2384,8 +2387,8 @@ void CALLCONV  FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref
             *f=T*tau0/ref->swData.tRef;
             *h=delta0*ref->swData.rhoRef/ rhoMolar;
         }
-        //printf("found T:%f molar dens.:%f iterations:%i\n",ref->swData.tRef/tau0,delta0*ref->swData.rhoRef,i);
-        //printf("f:%f h:%f\n",*f,*h);
+        if (ver==1) printf("found T:%f molar dens.:%f iterations:%i\n",ref->swData.tRef/tau0,delta0*ref->swData.rhoRef,i);
+        if (ver==1) printf("f:%f h:%f\n",*f,*h);
     }
 }
 
@@ -2548,7 +2551,6 @@ void CALLCONV FF_CorrespondingStatesTransport(FF_SubstanceData *subs, FF_Substan
         dens0c=dens0;
     }
     FF_ViscosityTDens(ref->id,T0,dens0c,etaRef);//viscosity of the reference substance at corrected density
-    //printf("Fn:%f psi:%f dens0c:%f etaRef[1]:%e etaRef[2]:%e\n",Fn,psi,dens0c,etaRef[1],etaRef[2]);
     eta[2]=(etaRef[1]+etaRef[2])*Fn;//NO separate linear in density term is considered
 
     //Dilute gas thermal conductivity calculation
