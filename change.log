@@ -1,6 +1,13 @@
+Version 3.0.2
+- Added Ethylene and Ethylene Oxide to ExternalPure package
+- Modified the ExternalPure Tests and Examples models
+
+Version 3.0.1
+- More fluids added to ExternalPure package.
+
 Version 3.0.0
 - Added new package ExternalPure. It is a two phase medium, according to  Modelica PartialTwoPhaseMedium. It implements multiparameter, PCSAFT and Cubic EOS using external functions.
-In the Resources/Extra folder you will find an executable and a database with wich you can add new mediums.
+In the Resources/Extra folder you will find an executable and a database with which you can add new mediums.
  
 Version 2.9.0
 - Added models for heat exchange with condensation inside the tubes.
