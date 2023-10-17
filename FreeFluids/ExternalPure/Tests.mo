@@ -22,8 +22,8 @@ package Tests
     Real Kappa "isothermal compressibility";
     //Real J "JouleThomson coefficient";
     //Real I "Isothermal throttling coefficient";
-    Real Mu;
-    Real Th;
+    //Real Mu;
+    //Real Th;
     //Medium.SurfaceTension Sigma;
     Real Density_derp_T;
     Real Density_derT_p;
@@ -92,8 +92,8 @@ package Tests
       Kappa := Medium.isothermalCompressibility(StateP);
   //J:=Medium.jouleThomsonCoefficient(StateP);
   //I:=Medium.isothermalThrottlingCoefficient(StateP);
-      Mu := Medium.dynamicViscosity(StateP);
-      Th := Medium.thermalConductivity(StateP);
+      //Mu := Medium.dynamicViscosity(StateP);
+      //Th := Medium.thermalConductivity(StateP);
   //Sigma := Medium.surfaceTension(sat);
       Density_derp_T := Medium.density_derp_T(StateP);
       Density_derT_p := Medium.density_derT_p(StateP);
@@ -152,17 +152,17 @@ package Tests
     der(Ts) = finalT - initialT;
     annotation(
       Documentation(info = "<html><head></head><body>
-         <p>This test maintains a constant pressure, and ramps temperature between the selected values. At each temperature, a thermodynamic state is created from p and T and, from it, different properties are calculated. The state is recovered also from d_T, p_H, and p_S, in order to check if the state is correctly reconstructed. </p><p>Also an intermediate state between bubble and dew is created and some of its properties calculate.</p>
+         <p>This test maintains a constant pressure, and ramps temperature between the selected values. At each temperature, a thermodynamic state is created from p and T and, from it, different properties are calculated. The state is recovered also from d_T, p_H, and p_S, in order to check if the state is correctly reconstructed. </p><p>Also an intermediate state between bubble and dew is created and some of its properties calculate.</p><p>You can activate also the calculation of viscosity and thermal conductivity, but ExternalMedia with CoolProp will fail many times due to lack of implementation of the properties.</p><p>Surface tension calculation can be also activated in the saturated region.</p>
          
          </body></html>"));
   end FluidTest;
 
   model TestA
-    extends FluidTest(Ps = 20.0e5, initialT = 200, finalT = 700);
+    extends FluidTest(Ps = 5.0e5, initialT = 273.16, finalT = 700);
   end TestA;
 
   model TestACubic
-    extends TestA(redeclare replaceable package Medium = FreeFluids.ExternalPure.Fluids.Ethylbenzene(thermoModel = 1, refState = 3, reference_T = 273.15, reference_p = 1.0e5, inputChoice = "pT"), BasePropT(localInputChoice = "pT"), BasePropH(localInputChoice = "ph"), BasePropD(localInputChoice = "dT"), BasePropH2(localInputChoice = "ph"));
+    extends TestA(redeclare replaceable package Medium = FreeFluids.ExternalPure.Fluids.WaterRef(thermoModel = 1, refState = 3, reference_T = 273.15, reference_p = 1.0e5, inputChoice = "pT"), BasePropT(localInputChoice = "pT"), BasePropH(localInputChoice = "ph"), BasePropD(localInputChoice = "dT"), BasePropH2(localInputChoice = "ph"));
   end TestACubic;
 
   model TestAPCSAFT
@@ -178,7 +178,7 @@ package Tests
   end TestATMedia;
 
   model TestACoolProp
-    extends TestA(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "D4", substanceNames = {"D4"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
+    extends TestA(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "Water", substanceNames = {"Water"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
     annotation(
       Documentation(info = "<html><head></head><body>Needs the system library ExternalMedia be loaded.</body></html>"));
   end TestACoolProp;
@@ -201,16 +201,16 @@ package Tests
 
   model TestBTMedia
     extends TestBCubic(redeclare package Medium = FreeFluids.TMedia.Fluids.Octane_n(refState = "NBP", highPressure = true, inputChoice = "pT"));
-    end TestBTMedia;
+  end TestBTMedia;
 
   model TestBCoolProp
-  extends TestB(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "Octane", substanceNames = {"Octane"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
+    extends TestB(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "Octane", substanceNames = {"Octane"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
     annotation(
       Documentation(info = "<html><head></head><body>Needs the system library ExternalMedia be loaded.</body></html>"));
   end TestBCoolProp;
 
   model TestC
-    extends FluidTest(Ps = 5.0e5, initialT = -19+273.15, finalT = 400+273.15);
+    extends FluidTest(Ps = 5.0e5, initialT = -19 + 273.15, finalT = 400 + 273.15);
   end TestC;
 
   model TestCCubic
@@ -226,7 +226,7 @@ package Tests
   end TestCTMedia;
 
   model TestD
-    extends FluidTest(Ps = 5.0e5, initialT = -30+273.15, finalT = 400+273.15);
+    extends FluidTest(Ps = 5.0e5, initialT = -30 + 273.15, finalT = 280 + 273.15);
   end TestD;
 
   model TestDCubic

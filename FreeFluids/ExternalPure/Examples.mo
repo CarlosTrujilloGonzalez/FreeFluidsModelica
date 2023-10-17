@@ -39,17 +39,17 @@ package Examples
 
   model TestingVp
     package Medium1 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 1, refState = 2);
-    package Medium2 = FreeFluids.ExternalPure.Fluids.Butene_1(thermoModel = 3, refState = 2);
-    //package Medium3 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 3, refState = 2);
-    package Medium3=ExternalMedia.Media.CoolPropMedium(mediumName = "1-Butene", substanceNames = {"1-Butene"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5));
+    package Medium2 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 2, refState = 2);
+    package Medium3 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 3, refState = 2);
+    //package Medium3=ExternalMedia.Media.CoolPropMedium(mediumName = "Pentane", substanceNames = {"Pentane"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5));
     parameter SI.Temperature initialT(displayUnit = "K") = -186+273.15;
     parameter SI.Temperature finalT(displayUnit = "K") = 150+273.15;
     SI.Temperature T(displayUnit = "K", start = initialT) "We will ramp the temperature";
-    //SI.AbsolutePressure P1;
+    SI.AbsolutePressure P1;
     SI.AbsolutePressure P2;
     SI.AbsolutePressure P3;
   algorithm
-    //P1 := Medium1.saturationPressure(T);
+    P1 := Medium1.saturationPressure(T);
     P2 := Medium2.saturationPressure(T);
     P3 := Medium3.saturationPressure(T);
   equation
@@ -79,14 +79,12 @@ package Examples
   end TestingTb;
 
   model TestingHfromTP
-    package Medium1 = FreeFluids.TMedia.Fluids.MethylEthylKetone(refState = "IIR", highPressure = true, inputChoice = "pT");
-    //package Medium2 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 2, refState = 2);
-    //package Medium3 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 3, refState = 2);
+    package Medium1 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 3, refState = 2);
     parameter SI.AbsolutePressure P1 = 1e5;
     parameter SI.AbsolutePressure P2 = 56.9e5;
     parameter SI.AbsolutePressure P3 = 200e5;
     parameter SI.Temperature initialT(displayUnit = "K") = 200.0;
-    parameter SI.Temperature finalT(displayUnit = "K") = 800;
+    parameter SI.Temperature finalT(displayUnit = "K") = 500;
     SI.Temperature T(displayUnit = "K", start = initialT) "We will ramp the temperature";
     SI.SpecificEnthalpy H1;
     SI.SpecificEnthalpy H2;
@@ -101,8 +99,6 @@ package Examples
 
   model TestingSfromTP
     package Medium1 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 2, refState = 2);
-    //package Medium2 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 2, refState = 2);
-    //package Medium3 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 3, refState = 2);
     parameter SI.AbsolutePressure P1 = 0.1e5;
     parameter SI.AbsolutePressure P2 = 56.9e5;
     parameter SI.AbsolutePressure P3 = 200e5;
@@ -121,9 +117,7 @@ package Examples
   end TestingSfromTP;
 
   model TestingHfromTV
-    package Medium1 = FreeFluids.TMedia.Fluids.MethylEthylKetone(refState = "IIR", highPressure = true, inputChoice = "pT");
-    //package Medium2 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 2, refState = 2);
-    //package Medium3 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 3, refState = 2);
+    package Medium1 = FreeFluids.ExternalPure.Fluids.Acetone(thermoModel = 3, refState = 2);
     parameter SI.Density D1 = 1;
     parameter SI.Density D2 = 350;
     parameter SI.Density D3 = 700;
@@ -146,11 +140,11 @@ package Examples
     parameter Medium.Temperature initialT = -30 + 273.15;
     parameter Medium.Temperature finalT = 320 + 273.15;
     Medium.Temperature T(start = initialT);
-    //Medium.AbsolutePressure p;
+    Medium.AbsolutePressure p;
     Real bd, dd;
     Real  bh, bs, dh, ds;
   algorithm
-//p := Medium.saturationPressure(T);
+    p := Medium.saturationPressure(T);
     bd := Medium.bubbleDensity(Medium.setSat_T(T));
     bh := Medium.bubbleEnthalpy(Medium.setSat_T(T));
     bs := Medium.bubbleEntropy(Medium.setSat_T(T));
@@ -160,14 +154,14 @@ package Examples
   equation
     der(T) = finalT - initialT;
     annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.1));
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
   end TestingBubbleDew;
   
   model TestingViscosity
-    package Medium = FreeFluids.ExternalPure.Fluids.CarbonMonoxide(thermoModel=3);
-    parameter Medium.AbsolutePressure P(displayUnit = "bar") = 5e5;
-    parameter Medium.Temperature initialT = 100;
-    parameter Medium.Temperature finalT = 300;
+    package Medium = FreeFluids.ExternalPure.Fluids.EthyleneOxide(thermoModel=3);
+    parameter Medium.AbsolutePressure P(displayUnit = "bar") = 30e5;
+    parameter Medium.Temperature initialT = 200;
+    parameter Medium.Temperature finalT = 500;
     Medium.Temperature T(start = initialT);
     Medium.ThermodynamicState StateP=Medium.setState_pT(P,T);
     Medium.DynamicViscosity Mu;
