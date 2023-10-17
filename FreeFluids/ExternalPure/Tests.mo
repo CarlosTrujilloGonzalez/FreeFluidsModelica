@@ -77,7 +77,7 @@ package Tests
     Medium.BaseProperties BasePropH2;
   algorithm
     for i in 1:1 loop
-//StateP construction and properties from it, in 1 phase
+  //StateP construction and properties from it, in 1 phase
       StateP := Medium.setState_pTX(Ps, Ts);
       MM := Medium.molarMass(StateP);
       H := Medium.specificEnthalpy(StateP);
@@ -90,20 +90,20 @@ package Tests
       SS := Medium.velocityOfSound(StateP);
       Beta := Medium.isobaricExpansionCoefficient(StateP);
       Kappa := Medium.isothermalCompressibility(StateP);
-//J:=Medium.jouleThomsonCoefficient(StateP);
-//I:=Medium.isothermalThrottlingCoefficient(StateP);
+  //J:=Medium.jouleThomsonCoefficient(StateP);
+  //I:=Medium.isothermalThrottlingCoefficient(StateP);
       Mu := Medium.dynamicViscosity(StateP);
       Th := Medium.thermalConductivity(StateP);
-//Sigma := Medium.surfaceTension(sat);
+  //Sigma := Medium.surfaceTension(sat);
       Density_derp_T := Medium.density_derp_T(StateP);
       Density_derT_p := Medium.density_derT_p(StateP);
       Density_derp_h := Medium.density_derp_h(StateP);
       Density_derh_p := Medium.density_derh_p(StateP);
-//Reconstruction of the state from other variables
+  //Reconstruction of the state from other variables
       StateD := Medium.setState_dTX(D, Ts);
       StateH := Medium.setState_phX(Ps, H);
-//StateS := Medium.setState_psX(Ps, S);
-//Saturation properties and states
+  //StateS := Medium.setState_psX(Ps, S);
+  //Saturation properties and states
       sat := Medium.setSat_T(Ts);
       Vp := Medium.saturationPressure_sat(sat);
       Tb := Medium.saturationTemperature(Ps);
@@ -114,7 +114,7 @@ package Tests
       KappaBub := Medium.isothermalCompressibility(StateBub);
       BetaDew := Medium.isobaricExpansionCoefficient(StateDew);
       KappaDew := Medium.isothermalCompressibility(StateDew);
-//properties from the sat record
+  //properties from the sat record
       BubD := Medium.bubbleDensity(sat);
       BubH := Medium.bubbleEnthalpy(sat);
       BubS := Medium.bubbleEntropy(sat);
@@ -125,9 +125,9 @@ package Tests
       DewS := Medium.dewEntropy(sat);
       DewDerD_p := Medium.dDewDensity_dPressure(sat);
       DewDerH_p := Medium.dDewEnthalpy_dPressure(sat);
-//DewMu := Medium.dynamicViscosity(StateDew);
+  //DewMu := Medium.dynamicViscosity(StateDew);
       Hv := DewH - BubH;
-//construction of a two phases state from p,h
+  //construction of a two phases state from p,h
       State2H := Medium.setState_phX(Vp, 0.3*BubH + 0.7*DewH, fill(0, 0));
       T2 := Medium.temperature(State2H);
       D2 := Medium.density(State2H);
@@ -136,11 +136,11 @@ package Tests
       Cp2 := Medium.specificHeatCapacityCp(State2H);
       Density_derp_h2 := Medium.density_derp_h(State2H);
       Density_derh_p2 := Medium.density_derh_p(State2H);
-//reconstruction of the state from other variables
+  //reconstruction of the state from other variables
       State2D := Medium.setState_dTX(D2, T2);
     end for;
   equation
-//Construction of BaseProperties
+  //Construction of BaseProperties
     BasePropT.p = Ps;
     BasePropT.T = Ts;
     BasePropH.p = Ps;
@@ -158,11 +158,11 @@ package Tests
   end FluidTest;
 
   model TestA
-    extends FluidTest(Ps = 5.0e5, initialT = 274, finalT = 700);
+    extends FluidTest(Ps = 20.0e5, initialT = 200, finalT = 700);
   end TestA;
 
   model TestACubic
-    extends TestA(redeclare replaceable package Medium = FreeFluids.ExternalPure.Fluids.WaterRef(thermoModel = 1, refState = 4, reference_T = 273.15, reference_p = 1.0e5, inputChoice = "pT"), BasePropT(localInputChoice = "pT"), BasePropH(localInputChoice = "ph"), BasePropD(localInputChoice = "dT"), BasePropH2(localInputChoice = "ph"));
+    extends TestA(redeclare replaceable package Medium = FreeFluids.ExternalPure.Fluids.Ethylbenzene(thermoModel = 1, refState = 3, reference_T = 273.15, reference_p = 1.0e5, inputChoice = "pT"), BasePropT(localInputChoice = "pT"), BasePropH(localInputChoice = "ph"), BasePropD(localInputChoice = "dT"), BasePropH2(localInputChoice = "ph"));
   end TestACubic;
 
   model TestAPCSAFT
@@ -178,7 +178,7 @@ package Tests
   end TestATMedia;
 
   model TestACoolProp
-    extends TestA(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "Water", substanceNames = {"Water"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
+    extends TestA(redeclare package Medium = ExternalMedia.Media.CoolPropMedium(mediumName = "D4", substanceNames = {"D4"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5)), BasePropT(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.pT), BasePropH(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph), BasePropD(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.dT), BasePropH2(basePropertiesInputChoice = ExternalMedia.Common.InputChoice.ph));
     annotation(
       Documentation(info = "<html><head></head><body>Needs the system library ExternalMedia be loaded.</body></html>"));
   end TestACoolProp;
@@ -226,7 +226,7 @@ package Tests
   end TestCTMedia;
 
   model TestD
-    extends FluidTest(Ps = 5.0e5, initialT = -30+273.15, finalT = 250+273.15);
+    extends FluidTest(Ps = 5.0e5, initialT = -30+273.15, finalT = 400+273.15);
   end TestD;
 
   model TestDCubic

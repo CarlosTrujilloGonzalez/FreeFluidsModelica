@@ -4,9 +4,21 @@ package Fluids
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Acetone", fluidK(casRegistryNumber = "67-64-1", description = "Multiparameter:Lemmon&Span 2006. PCSAFT: Solms 2004. PRMC: Kleiman 2002. Cp0: Wilhoit", molarMass = 0.058079, criticalTemperature = 5.081000e+02, criticalPressure = 4.700000e+06), refName = "Propane", onePhase = false, thermoModel = 3, refState = 2);
   end Acetone;
 
+  package Air
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Air",
+ fluidK(casRegistryNumber = "132259-10-0", description = "SW: Lemmon 200, PR M.C. C.Trujillo 2023, Cp0: Perry", molarMass = 2.896546e-02, criticalTemperature = 1.326312e+02, criticalPressure = 3.785020e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Air;
+
   package Ammonia
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Ammonia", fluidK(casRegistryNumber = "7664-41-7", description = "Multiparameter: Tillner-Roth. PCSAFT: Mejbri 2005, Cubic: PRMC C.Trujillo 2019. Cp0: Willhoit", molarMass = 1.703026e-02, criticalTemperature = 4.054000e+02, criticalPressure = 1.133300e+07), final onePhase = false, thermoModel = 3, refState = 2);
   end Ammonia;
+
+  package Argon
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Argon",
+ fluidK(casRegistryNumber = "7440-37-1", description = "SW: Tegeler 1999, PCSAFT: Gross and Sadowski 2001, cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper", molarMass = 3.995000e-02, criticalTemperature = 1.506870e+02, criticalPressure = 4.863000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Argon;
 
   package Benzene
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Benzene",
@@ -22,6 +34,30 @@ package Fluids
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Butanol_n", fluidK(casRegistryNumber = "71-36-3", description = "Multiparameter: none. PCSAFT: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: DIPPR107", molarMass = 7.414000e-02, criticalTemperature = 5.630000e+02, criticalPressure = 4.414000e+06), final onePhase = false, thermoModel = 2, refState = 2);
   end Butanol_n;
 
+  package Butene_1
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Butene_1",
+ fluidK(casRegistryNumber = "106-98-9", description = "SW: Lemmon 2005, PCSAFT: Gross and Sadowski 2001, PR M.C. C.Trujillo 2023, Cp0: Cooper", molarMass = 5.610800e-02, criticalTemperature = 4.192900e+02, criticalPressure = 4.005100e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Butene_1;
+
+  package Butene_cis_2
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Butene_cis_2",
+ fluidK(casRegistryNumber = "590-18-1", description = "SW: Lemmon 2005, Cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 5.610800e-02, criticalTemperature = 4.357500e+02, criticalPressure = 4.225500e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Butene_cis_2;
+
+  package CarbonMonoxide
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "CarbonMonoxide",
+ fluidK(casRegistryNumber = "630-08-0", description = "SW: Lemmon and Span 2006, PCSAFT: Gross and Sadowski 2001, PR M.C. C.Trujillo 2023, Cp0: Cooper", molarMass = 2.801800e-02, criticalTemperature = 1.328600e+02, criticalPressure = 3.494000e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="N2", ancillaries=3);
+  end CarbonMonoxide;
+
+  package CarbonylSulfide
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "CarbonylSulfide",
+ fluidK(casRegistryNumber = "463-58-1", description = "SW: Lemmon and Span 2006, Cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 6.007510e-02, criticalTemperature = 3.787700e+02, criticalPressure = 6.370000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end CarbonylSulfide;
+
   package CO2
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "CO2", fluidK(casRegistryNumber = "124-38-9", description = "Multiparameter: Span and Wagner 1996. PCSAFT and PRMC: C.Trujillo from GERG2004. Cp0:Wilhoit", molarMass = 4.400980e-02, criticalTemperature = 3.041282e+02, criticalPressure = 7.377730e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end CO2;
@@ -30,9 +66,63 @@ package Fluids
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "CO2b", fluidK(casRegistryNumber = "124-38-9", description = "SW: GERG2004. PCSAFT and Cubic: C.Trujillo from GERG2004. Cp0:Jaeschke", molarMass = 4.400980e-02, criticalTemperature = 3.041282e+02, criticalPressure = 7.377300e+06), final onePhase = false, thermoModel = 1, refState = 2);
   end CO2b;
 
+  package Cyclohexane
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Cyclohexane",
+ fluidK(casRegistryNumber = "110-82-7", description = "SW:Zhou 2018, SAFT: Gross and Sadowski 2001, Cubic: PR M.C. C.Trujillo 2018, Cp0: Cooper", molarMass = 8.418000e-02, criticalTemperature = 5.536000e+02, criticalPressure = 4.082400e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Cyclohexane;
+
+  package Cyclopentane
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Cyclopentane",
+ fluidK(casRegistryNumber = "287-92-3", description = "SW: Gedanitz 2015, PCSAFT: Gross and Sadowski 2001, Cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper", molarMass = 7.013400e-02, criticalTemperature = 5.117200e+02, criticalPressure = 4.571200e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Cyclopentane;
+
+  package D4
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "D4",
+ fluidK(casRegistryNumber = "556-67-2", description = "SW: Thol 2015. Cubic: PR M.C. C.Trujillo 2018, Cp0:Cooper, Transport: Nist coefficients", molarMass = 2.966160e-01, criticalTemperature = 5.865000e+02, criticalPressure = 1.347215e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="N2", ancillaries=3);
+  end D4;
+
+  package D5
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "D5",
+ fluidK(casRegistryNumber = "541-02-6", description = "SW: Thol 2019, Cubic: PR M.C. C.Trujillo 2023, Cp0: DIPPR 100, Transport: Nist coefficients", molarMass = 3.707700e-01, criticalTemperature = 6.183000e+02, criticalPressure = 1.077700e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="N2", ancillaries=3);
+  end D5;
+
+  package D6
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "D6",
+ fluidK(casRegistryNumber = "540-97-6", description = "SW: Colonna 2008, Cubic: PR M.C. C.Trujillo 2023, Cp0: DIPPR 107, Transport: Nist coefficients", molarMass = 4.450200e-01, criticalTemperature = 6.457800e+02, criticalPressure = 9.610000e+05),
+ final onePhase=false, thermoModel=1, refState=2, refName="N2", ancillaries=3);
+  end D6;
+  
   package Dichlorodifluormethane
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Dichlorodifluormethane", fluidK(casRegistryNumber = "75-71-8", description = "Multiparameter:Marx et alt. PCSAFT:C.Trujillo 2020, Cubic:PRMC. Cp0:Cooper", molarMass = 1.209130e-01, criticalTemperature = 3.851200e+02, criticalPressure = 4.136100e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end Dichlorodifluormethane;
+
+  package Dichloroethane_1_2
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Dichloroethane_1_2",
+ fluidK(casRegistryNumber = "107-06-2", description = "SW: Thol 2015, SAFT non assoc C.Trujillo 2023, Cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 9.895900e-02, criticalTemperature = 5.616000e+02, criticalPressure = 5.227585e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+  end Dichloroethane_1_2;
+
+  package DiethylEther
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "DiethylEther",
+ fluidK(casRegistryNumber = "60-29-7", description = "SW: Thol 2014, PCSAFT Gross and Sadowski 2001, Cubic: PR M.C. C.Trujillo 2023, Cp0:Wilhoit, Transport: Nist coefficients", molarMass = 7.412000e-02, criticalTemperature = 4.667000e+02, criticalPressure = 3.649017e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+  end DiethylEther;
+
+  package DimethylCarbonate
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "DimethylCarbonate",
+ fluidK(casRegistryNumber = "616-38-6", description = "SW: Zhou 2011, Cubic: PR M.C. C.Trujillo 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 9.008400e-02, criticalTemperature = 5.570000e+02, criticalPressure = 4.908800e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+  end DimethylCarbonate;
+
+  package DimethylEther
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "DimethylEther",
+ fluidK(casRegistryNumber = "115-10-6", description = "SW: Wu 2011, PCSAFT: Gross and Sadowski 2001, Cubic: PR M.C. C.Trujillo 2018, Cp0: Cooper, Transport: Nist coefficients", molarMass = 4.607000e-02, criticalTemperature = 4.003780e+02, criticalPressure = 5.336800e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+  end DimethylEther;
 
   package EG
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EG", fluidK(casRegistryNumber = "107-21-1", description = "Multiparameter: none. PPCSAFT_GV: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: Wilhoit", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06), final onePhase = false, thermoModel = 2, refState = 2);
@@ -43,12 +133,18 @@ package Fluids
   end Eicosane_n;
 
   package Ethane
-    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Ethane", fluidK(casRegistryNumber = "74-84-0", description = "Multiparameter: Buecker-Wagner 2006. PCSAAFT: Gross-Sadowski 2001. Cubic:SRKMC Chemsep. Cp0: Cooper", molarMass = 3.006904e-02, criticalTemperature = 3.053220e+02, criticalPressure = 4.872200e+06), final onePhase = false, thermoModel = 3, refState = 2);
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Ethane", fluidK(casRegistryNumber = "74-84-0", description = "Multiparameter: Buecker-Wagner 2006. PCSAFT: Gross-Sadowski 2001. Cubic:SRKMC Chemsep. Cp0: Cooper", molarMass = 3.006904e-02, criticalTemperature = 3.053220e+02, criticalPressure = 4.872200e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end Ethane;
 
   package Ethanol
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Ethanol", fluidK(casRegistryNumber = "64-17-5", description = "Multiparameter: Schroeder 2014. PPCSAFT-GV: C.Trujillo 2018. PRMC: C.Trujillo 2018. Cp0: Wilhoit", molarMass = 4.606844e-02, criticalTemperature = 5.147100e+02, criticalPressure = 6.268000e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end Ethanol;
+
+  package Ethylbenzene
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Ethylbenzene",
+ fluidK(casRegistryNumber = "100-41-4", description = "SW: Zhou 2012, Cubic PR M.C. CTrujillo 2023, Cp0:Cooper, Visc.: Nist coefficients.", molarMass = 1.061600e-01, criticalTemperature = 6.171200e+02, criticalPressure = 3.622400e+06),
+ final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+  end Ethylbenzene;
 
   package Heptane_n
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Heptane_n", fluidK(casRegistryNumber = "142-82-5", description = "Multiparameter: Span and Wagner 2003. PCSAFT: Gross 2001. Cubic: PRMC. Cp0: Jaeschke", molarMass = 1.002020e-01, criticalTemperature = 5.401300e+02, criticalPressure = 2.736000e+06), final onePhase = false, thermoModel = 3, refState = 2);
@@ -80,13 +176,13 @@ package Fluids
 
   package MethylEthylKetone
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylEthylKetone",
- fluidK(casRegistryNumber = "78-93-3", description = "PCSAFT 2B: C.Trujillo 2023, Cubic SRKMC: Chemsep, Cp0:Wilhoit, Ancillaries: for PCSAF 2B", molarMass = 7.212000e-02, criticalTemperature = 5.356000e+02, criticalPressure = 4.154325e+06),
+ fluidK(casRegistryNumber = "78-93-3", description = "SW: none, PCSAFT 2B: C.Trujillo 2023, Cubic SRKMC: Chemsep, Cp0:Wilhoit, Ancillaries: for PCSAF 2B", molarMass = 7.212000e-02, criticalTemperature = 5.356000e+02, criticalPressure = 4.154325e+06),
  final onePhase=false, thermoModel=2, refState=2, ancillaries=2);
   end MethylEthylKetone;
 
   package MethylMethacrylate
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylMethacrylate",
- fluidK(casRegistryNumber = "80-62-6", description = "PCSAFT 2B, PR M.C. and Cp0 C.Trujillo 2023, Ancillaries: for PCSAF 2B", molarMass = 1.001300e-01, criticalTemperature = 5.660000e+02, criticalPressure = 3.680000e+06),
+ fluidK(casRegistryNumber = "80-62-6", description = "SW: none, PCSAFT 2B, PR M.C. and Cp0 C.Trujillo 2023, Ancillaries: for PCSAF 2B", molarMass = 1.001300e-01, criticalTemperature = 5.660000e+02, criticalPressure = 3.680000e+06),
  final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
   end MethylMethacrylate;
 
@@ -124,7 +220,7 @@ package Fluids
 
   package Styrene
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Styrene",
- fluidK(casRegistryNumber = "100-42-5", description = "PCSAFT: C.Trujillo 2023. Cubic: PRMC C.Trujillo 2023. Cp0: C.Trujillo 2020", molarMass = 1.041600e-01, criticalTemperature = 6.470000e+02, criticalPressure = 3.990000e+06),
+ fluidK(casRegistryNumber = "100-42-5", description = "SW: none, PCSAFT: C.Trujillo 2023. Cubic: PRMC C.Trujillo 2023. Cp0: C.Trujillo 2020", molarMass = 1.041600e-01, criticalTemperature = 6.470000e+02, criticalPressure = 3.990000e+06),
  final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
   end Styrene;
 

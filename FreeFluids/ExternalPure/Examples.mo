@@ -21,7 +21,7 @@ package Examples
   end TestingPressure;
 
   model TestingDensity
-    package Medium = FreeFluids.ExternalPure.Fluids.WaterRef(thermoModel = 2, refState = 4);
+    package Medium = FreeFluids.ExternalPure.Fluids.Air(thermoModel = 3, refState = 3);
     parameter Medium.Temperature T(displayUnit = "K") = 640.15;
      parameter Medium.AbsolutePressure initialP = 5e5;
     parameter Medium.AbsolutePressure finalP = 5e5;
@@ -39,16 +39,17 @@ package Examples
 
   model TestingVp
     package Medium1 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 1, refState = 2);
-    package Medium2 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 2, refState = 2);
-    package Medium3 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 3, refState = 2);
-    parameter SI.Temperature initialT(displayUnit = "K") = -50+273.15;
-    parameter SI.Temperature finalT(displayUnit = "K") = 430+273.15;
+    package Medium2 = FreeFluids.ExternalPure.Fluids.Butene_1(thermoModel = 3, refState = 2);
+    //package Medium3 = FreeFluids.ExternalPure.Fluids.Pentane_n(thermoModel = 3, refState = 2);
+    package Medium3=ExternalMedia.Media.CoolPropMedium(mediumName = "1-Butene", substanceNames = {"1-Butene"}, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.pT, inputChoice = ExternalMedia.Common.InputChoice.hs, SpecificEnthalpy(start = 2e5));
+    parameter SI.Temperature initialT(displayUnit = "K") = -186+273.15;
+    parameter SI.Temperature finalT(displayUnit = "K") = 150+273.15;
     SI.Temperature T(displayUnit = "K", start = initialT) "We will ramp the temperature";
-    SI.AbsolutePressure P1;
+    //SI.AbsolutePressure P1;
     SI.AbsolutePressure P2;
     SI.AbsolutePressure P3;
   algorithm
-    P1 := Medium1.saturationPressure(T);
+    //P1 := Medium1.saturationPressure(T);
     P2 := Medium2.saturationPressure(T);
     P3 := Medium3.saturationPressure(T);
   equation
@@ -163,10 +164,10 @@ package Examples
   end TestingBubbleDew;
   
   model TestingViscosity
-    package Medium = FreeFluids.TMedia.Fluids.MethylEthylKetone(refState = "IIR", highPressure = true, inputChoice = "pT");
+    package Medium = FreeFluids.ExternalPure.Fluids.CarbonMonoxide(thermoModel=3);
     parameter Medium.AbsolutePressure P(displayUnit = "bar") = 5e5;
-    parameter Medium.Temperature initialT = -50+273.15;
-    parameter Medium.Temperature finalT = 200+273.15;
+    parameter Medium.Temperature initialT = 100;
+    parameter Medium.Temperature finalT = 300;
     Medium.Temperature T(start = initialT);
     Medium.ThermodynamicState StateP=Medium.setState_pT(P,T);
     Medium.DynamicViscosity Mu;
