@@ -155,8 +155,14 @@ package Fluids
   package EthyleneOxide
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EthyleneOxide",
  fluidK(casRegistryNumber = "75-21-8", description = "SW: thol 2015, PPCSAFT G.V. C.Trujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 4.405260e-02, criticalTemperature = 4.689200e+02, criticalPressure = 7.304686e+06),
- final onePhase=false, thermoModel=1, refState=2, refName="Propane", ancillaries=3);
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end EthyleneOxide;
+
+  package Helium
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Helium",
+ fluidK(casRegistryNumber = "7440-59-7", description = "SW: Ortiz-Vega 2010, Cubic: PR78, Cp0:Cooper", molarMass = 4.002602e-03, criticalTemperature = 5.195300e+00, criticalPressure = 2.276000e+05),
+ final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
+  end Helium;
 
   package Heptane_n
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Heptane_n", fluidK(casRegistryNumber = "142-82-5", description = "Multiparameter: Span and Wagner 2003. PCSAFT: Gross 2001. Cubic: PRMC. Cp0: Jaeschke", molarMass = 1.002020e-01, criticalTemperature = 5.401300e+02, criticalPressure = 2.736000e+06), final onePhase = false, thermoModel = 3, refState = 2, ancillaries=3);
@@ -166,9 +172,39 @@ package Fluids
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Hexane_n", fluidK(casRegistryNumber = "110-54-3", description = "Multiparameter: Spand and Wagner 2003. PCSAFT: Gross and Sadowski. Cubic: PRMC. Cp0:Jaeschke", molarMass = 8.617536e-02, criticalTemperature = 5.078200e+02, criticalPressure = 3.034000e+06), final onePhase = false, thermoModel = 3, refState = 2, ancillaries=3);
   end Hexane_n;
 
+  package Hydrogen
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Hydrogen",
+ fluidK(casRegistryNumber = "1333-74-0", description = "SW: Leachman 2009, PCSAFT: IVC-SEP DTU, Cubic: PR, Cp0: Cooper", molarMass = 2.016000e-03, criticalTemperature = 3.314500e+01, criticalPressure = 1.296400e+06),
+ final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
+  end Hydrogen;  
+
+  package HydrogenChloride
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "HydrogenChloride",
+ fluidK(casRegistryNumber = "7647-01-0", description = "SW: Thol 2018, PPCSAFT G.V.: C.Trujillo 2023, Cubic PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 3.646000e-02, criticalTemperature = 3.245500e+02, criticalPressure = 8.288161e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end HydrogenChloride;
+
+  package HydrogenSulfide
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "HydrogenSulfide",
+ fluidK(casRegistryNumber = "7783-06-4", description = "SW: Lemmon and Span 2006, PCSAFT non assoc: IVC_SEP DTU, Cubic PR M.C. 2018, Cp0: Cooper, Transport: Nist Coefficients", molarMass = 3.408088e-02, criticalTemperature = 3.731000e+02, criticalPressure = 9.000000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end HydrogenSulfide;
+
   package Isobutane
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Isobutane", fluidK(casRegistryNumber = "75-28-5", description = "Multiparameter: Buecker-Wagner 2006. PCSAFT: Gross-Sadowski 2001. Cubic: PRMC. Cp0: Cooper", molarMass = 5.812220e-02, criticalTemperature = 4.078170e+02, criticalPressure = 3.629000e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end Isobutane;
+  
+  package Isobutene
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Isobutene",
+ fluidK(casRegistryNumber = "115-11-7", description = "SW: Lemmon 2005, PCSAFT non assoc. C.Trujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients against propane", molarMass = 5.610800e-02, criticalTemperature = 4.180900e+02, criticalPressure = 4.009800e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end Isobutene;
+
+  package Isohexane
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Isohexane",
+ fluidK(casRegistryNumber = "107-83-5", description = "SW: Lemmon 2006, PCSAFT non assoc. Gross and Sadowski 2001, Cubic: PR M.C. 2023, Cp0: Cooper, Transport Nist coefficients against propane", molarMass = 8.617660e-02, criticalTemperature = 4.977000e+02, criticalPressure = 3.040000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end Isohexane;
 
   package Methane
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Methane", fluidK(casRegistryNumber = "74-82-8", description = "Multiparameter: Seltzmann-Wagner 1991. PCSAF: Gross-Sadowski 2001. Cubic: SRKMC from Chemsep. Cp0: Cooper", molarMass = 1.604280e-02, criticalTemperature = 1.905640e+02, criticalPressure = 4.599200e+06), final onePhase = false, thermoModel = 3, refState = 2);
