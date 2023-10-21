@@ -158,12 +158,6 @@ package Fluids
  final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end EthyleneOxide;
 
-  package Helium
-    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Helium",
- fluidK(casRegistryNumber = "7440-59-7", description = "SW: Ortiz-Vega 2010, Cubic: PR78, Cp0:Cooper", molarMass = 4.002602e-03, criticalTemperature = 5.195300e+00, criticalPressure = 2.276000e+05),
- final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
-  end Helium;
-
   package Heptane_n
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Heptane_n", fluidK(casRegistryNumber = "142-82-5", description = "Multiparameter: Span and Wagner 2003. PCSAFT: Gross 2001. Cubic: PRMC. Cp0: Jaeschke", molarMass = 1.002020e-01, criticalTemperature = 5.401300e+02, criticalPressure = 2.736000e+06), final onePhase = false, thermoModel = 3, refState = 2, ancillaries=3);
   end Heptane_n;
@@ -206,6 +200,35 @@ package Fluids
  final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end Isohexane;
 
+  package Isopentane
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Isopentane",
+ fluidK(casRegistryNumber = "78-78-4", description = "SW: Lemmon and Span 2006, PCSAFT: Gross and Sadowski 2001, Cubic: PR M.C. 2023, Cp0: Cooper, Viscosity: Nist coefficients against propane", molarMass = 7.215000e-02, criticalTemperature = 4.603500e+02, criticalPressure = 3.378000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end Isopentane;
+
+  package Krypton
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Krypton",
+ fluidK(casRegistryNumber = "7439-90-9", description = "SW: Lemmon 2006, PCSAFT: Economou 2007, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients against N2", molarMass = 8.379800e-02, criticalTemperature = 2.094800e+02, criticalPressure = 5.525000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="N2", ancillaries=3);
+  end Krypton;
+
+  package MD2M
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MD2M",
+ fluidK(casRegistryNumber = "141-62-8", description = "SW: Thol 2017, Cubic: PR M.C. 2023, Cp0: DIPPR107, Transport: Nist coefficients against nitrogen", molarMass = 3.106850e-01, criticalTemperature = 5.994000e+02, criticalPressure = 1.144024e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="N2", ancillaries=3);
+  end MD2M;
+
+  package MD4M
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MD4M",
+ fluidK(casRegistryNumber = "107-52-8", description = "SW: Thol 2019, PCSAFT: none, Cubic:PR M.C., Cp0: DIPPR 100, Transport: Nist coefficients against nitrogen", molarMass = 4.589930e-01, criticalTemperature = 6.532000e+02, criticalPressure = 8.285588e+05),
+ final onePhase=false, thermoModel=3, refState=2, refName="N2", ancillaries=3);
+  end MD4M;
+
+  package MDM
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MDM",fluidK(casRegistryNumber = "107-51-7", description = "SW: Thol 2017, PCSAFT: none, Cubic, PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients against nitrogen", molarMass = 2.365310e-01, criticalTemperature = 5.640900e+02, criticalPressure = 1.410045e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="N2", ancillaries=3);
+  end MDM;
+
   package Methane
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Methane", fluidK(casRegistryNumber = "74-82-8", description = "Multiparameter: Seltzmann-Wagner 1991. PCSAF: Gross-Sadowski 2001. Cubic: SRKMC from Chemsep. Cp0: Cooper", molarMass = 1.604280e-02, criticalTemperature = 1.905640e+02, criticalPressure = 4.599200e+06), final onePhase = false, thermoModel = 3, refState = 2);
   end Methane;
@@ -228,11 +251,35 @@ package Fluids
  final onePhase=false, thermoModel=2, refState=2, ancillaries=2);
   end MethylEthylKetone;
 
+  package MethylLinoleate
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylLinoleate",
+ fluidK(casRegistryNumber = "112-63-0", description = "SW: Huber 2009, PCSAFT: none, Cubic: PR M.C. 2023, Cp0: Cooper, Viscosity: Nist coefficients against propane", molarMass = 2.944720e-01, criticalTemperature = 7.990000e+02, criticalPressure = 1.341000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end MethylLinoleate;
+
+  package MethylLinolenate
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylLinolenate",
+ fluidK(casRegistryNumber = "301-00-8", description = "SW: Huber 2009, no PCSAFT or cubic, Cp0: Cooper, Viscosity: Nist coefficients against propane", molarMass = 2.924562e-01, criticalTemperature = 7.720000e+02, criticalPressure = 1.369000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end MethylLinolenate;
+
   package MethylMethacrylate
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylMethacrylate",
  fluidK(casRegistryNumber = "80-62-6", description = "SW: none, PCSAFT 2B, PR M.C. and Cp0 C.Trujillo 2023, Ancillaries: for PCSAF 2B", molarMass = 1.001300e-01, criticalTemperature = 5.660000e+02, criticalPressure = 3.680000e+06),
  final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
   end MethylMethacrylate;
+
+  package MethylOleate
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylOleate",
+ fluidK(casRegistryNumber = "112-62-9", description = "SW: Huber 2009, PCSAFT non assoc. C.Trujillo 2019, Cp0: Cooper, Viscosity Nist coefficients reference propane", molarMass = 2.964879e-01, criticalTemperature = 7.820000e+02, criticalPressure = 1.246000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end MethylOleate;
+
+  package MethylPalmitate
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "MethylPalmitate",
+ fluidK(casRegistryNumber = "112-39-0", description = "SW: Huber 2009, PCSAFT non assoc. C.Trujillo 2023, Cp0: Cooper, Viscosity: Nist coefficients reference propane", molarMass = 2.704507e-01, criticalTemperature = 7.550000e+02, criticalPressure = 1.350000e+06),
+ final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
+  end MethylPalmitate;
 
   package N2
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "N2", fluidK(casRegistryNumber = "7727-37-9", description = "Multiparameter: Span 2001, PCSAFT: Gross 2001. PRMC: Barragan 2002. Cp0: DIPPR107", molarMass = 2.801348e-02, criticalTemperature = 1.261920e+02, criticalPressure = 3.395800e+06), final onePhase = false, thermoModel = 3, refState = 2);
