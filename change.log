@@ -1,4 +1,8 @@
-Version 3.03
+Version 3.0.4
+- Added nine new substances to ExternalPure\Fluids
+- Corrected some bugs in the package Vessels\Examples
+
+Version 3.0.3
 - Added Hydrogen, Hydrogen Chloride, Hydrogen Sulfide, Isobutene and Isohexane.
 
 Version 3.0.2

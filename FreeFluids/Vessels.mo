@@ -1953,7 +1953,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselSimple Vessel(height = 5, initialLiquidVolume = 1, initialT = 298.15, inletL = 0.8, lgConductance = 2, overflowL = 1.5, section = 2, ventOutL = 2, vesselVolume = 10)  annotation(
         Placement(visible = true, transformation(origin = {44, -8}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 99999.99999999999, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 99999.99999999999, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-56, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
       FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900 / 60, numParallelUnits = 1, q1 = 0.0016667, q2 = 0.0025, r1 = 0.705, r2 = 0.73) annotation(
         Placement(visible = true, transformation(origin = {-16, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
@@ -1980,7 +1980,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 99999.99999999999, initialT = 298.15, inletL = 0.8, lgConductance = 5, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar"), T = 323.15, externalP = true) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar"), T = 323.15, externalP = true) annotation(
         Placement(visible = true, transformation(origin = {-24, 8}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
   FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -2022,7 +2022,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 99999.99999999999, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {84, 0}, extent = {{-34, -34}, {34, 34}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 150000, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 150000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-20, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
   FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {14, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -2040,7 +2040,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 110000, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
-      FreeFluids.Interfaces.FlowSourceSP2 Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 180000, T = 323.15) annotation(
+      FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 180000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-18, -6}, extent = {{-6, -6}, {6, 6}}, rotation = 180)));
     FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));

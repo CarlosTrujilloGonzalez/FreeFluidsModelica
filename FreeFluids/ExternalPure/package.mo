@@ -273,27 +273,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         import Modelica.Media.Common.smoothStep;
 
       algorithm
-        state := ThermodynamicState(
-        p = smoothStep(x, state_a.p, state_b.p, x_small),
-        h = smoothStep(x, state_a.h, state_b.h, x_small), 
-        s = smoothStep(x, state_a.s, state_b.s, x_small), 
-        T = smoothStep(x, state_a.T, state_b.T, x_small), 
-        d = smoothStep(x, state_a.d, state_b.d, x_small), 
-        ld = smoothStep(x, state_a.ld, state_b.ld, x_small), 
-        gd = smoothStep(x, state_a.gd, state_b.gd, x_small), 
-        lh = smoothStep(x, state_a.lh, state_b.lh, x_small), 
-        gh = smoothStep(x, state_a.gh, state_b.gh, x_small), 
-        ls = smoothStep(x, state_a.ls, state_b.ls, x_small), 
-        gs = smoothStep(x, state_a.gs, state_b.gs, x_small),
-        lCv = smoothStep(x, state_a.lCv, state_b.lCv, x_small),
-        gCv = smoothStep(x, state_a.gCv, state_b.gCv, x_small),
-        lCp = smoothStep(x, state_a.lCp, state_b.lCp, x_small),
-        gCp = smoothStep(x, state_a.gCp, state_b.gCp, x_small),
-        lDvp = smoothStep(x, state_a.lDvp, state_b.lDvp, x_small),
-        gDvp = smoothStep(x, state_a.gDvp, state_b.gDvp, x_small),
-        lDvT = smoothStep(x, state_a.lDvT, state_b.lDvT, x_small),
-        gDvT = smoothStep(x, state_a.gDvT, state_b.gDvT, x_small),
-        gf = smoothStep(x, state_a.gf, state_b.gf, x_small), phase = 0);
+        state := ThermodynamicState(p = smoothStep(x, state_a.p, state_b.p, x_small), h = smoothStep(x, state_a.h, state_b.h, x_small), s = smoothStep(x, state_a.s, state_b.s, x_small), T = smoothStep(x, state_a.T, state_b.T, x_small), d = smoothStep(x, state_a.d, state_b.d, x_small), ld = smoothStep(x, state_a.ld, state_b.ld, x_small), gd = smoothStep(x, state_a.gd, state_b.gd, x_small), lh = smoothStep(x, state_a.lh, state_b.lh, x_small), gh = smoothStep(x, state_a.gh, state_b.gh, x_small), ls = smoothStep(x, state_a.ls, state_b.ls, x_small), gs = smoothStep(x, state_a.gs, state_b.gs, x_small), lCv = smoothStep(x, state_a.lCv, state_b.lCv, x_small), gCv = smoothStep(x, state_a.gCv, state_b.gCv, x_small), lCp = smoothStep(x, state_a.lCp, state_b.lCp, x_small), gCp = smoothStep(x, state_a.gCp, state_b.gCp, x_small), lDvp = smoothStep(x, state_a.lDvp, state_b.lDvp, x_small), gDvp = smoothStep(x, state_a.gDvp, state_b.gDvp, x_small), lDvT = smoothStep(x, state_a.lDvT, state_b.lDvT, x_small), gDvT = smoothStep(x, state_a.gDvT, state_b.gDvT, x_small), gf = smoothStep(x, state_a.gf, state_b.gf, x_small), phase = 0);
       annotation(
         Inline = true);
     end setSmoothState;
@@ -426,19 +406,19 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         cp := if state.gf == 0 then state.lCp else if state.gf == 1 then state.gCp else Modelica.Constants.inf;
     end specificHeatCapacityCp;
 
-    redeclare         function extends specificHeatCapacityCv "Return specific heat capacity at constant volume"
-            extends Modelica.Icons.Function;
-    
-          protected
-            Real lDsT, gDsT, dP_dT, ldV_dT, gdV_dT "total derivatives of s, p and v along the saturation line, regarding T";
-            Real DgfT_v "partial derivative of gas fraction regarding T at constant v";
-    
-          algorithm
-            if state.gf == 0 then
-              cv := state.lCv;
-            elseif state.gf == 1 then
-              cv := state.gCv;
-            else
+    redeclare function extends specificHeatCapacityCv "Return specific heat capacity at constant volume"
+        extends Modelica.Icons.Function;
+
+      protected
+        Real lDsT, gDsT, dP_dT, ldV_dT, gdV_dT "total derivatives of s, p and v along the saturation line, regarding T";
+        Real DgfT_v "partial derivative of gas fraction regarding T at constant v";
+
+      algorithm
+        if state.gf == 0 then
+          cv := state.lCv;
+        elseif state.gf == 1 then
+          cv := state.gCv;
+        else
 //dP_dT := (state.gs - state.ls) / (1 / state.gd - 1 / state.ld);
 //lDsT := state.lCp / state.T - state.lDvT * dP_dT;
 //gDsT := state.gCp / state.T - state.gDvT * dP_dT;
@@ -447,10 +427,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
 //DgfT_v :=(state.gf * gdV_dT + (1 - state.gf) * ldV_dT) / (1 / state.ld - 1 / state.gd);
 //cv := state.T * lDsT + state.T * DgfT_v * (state.gs - state.ls) + state.gf * state.T * (gDsT - lDsT);
 //cv:=state.lCv+DgfT_v*((state.gh-state.p/state.gd)-(state.lh-state.p/state.ld))+state.gf*(state.gCv-state.lCv);
-              cv := state.lCv*(1 - state.gf) + state.gCv*state.gf;
-    
-            end if;
-        end specificHeatCapacityCv;
+          cv := state.lCv*(1 - state.gf) + state.gCv*state.gf;
+        end if;
+    end specificHeatCapacityCv;
 
     redeclare function extends isentropicExponent "Return isentropic exponent"
         extends Modelica.Icons.Function;
@@ -464,20 +443,23 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
 
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
+
       algorithm
         a := if state.gf == 0.0 then (-state.lCp/(state.lDvp*state.lCv))^0.5/state.ld else if state.gf == 1.0 then (-state.gCp/(state.gDvp*state.gCv))^0.5/state.gd else 0.0;
     end velocityOfSound;
 
     redeclare function extends isobaricExpansionCoefficient "Returns the isobaric expansion coefficient beta"
         extends Modelica.Icons.Function;
+
       algorithm
         beta := if state.gf == 0 then state.lDvT*state.ld else if state.gf == 1 then state.gDvT*state.gd else Modelica.Constants.small;
     end isobaricExpansionCoefficient;
 
     redeclare function extends isothermalCompressibility "Returns overall the isothermal compressibility factor"
         extends Modelica.Icons.Function;
+
       algorithm
-          kappa := if state.gf ==0 then -state.lDvp*state.ld else if state.gf ==1 then -state.gDvp*state.gd else Modelica.Constants.inf;
+        kappa := if state.gf == 0 then -state.lDvp*state.ld else if state.gf == 1 then -state.gDvp*state.gd else Modelica.Constants.inf;
     end isothermalCompressibility;
 
     function jouleThomsonCoefficient
@@ -504,6 +486,8 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
 
     redeclare function extends dynamicViscosity "Return dynamic viscosity from a ThermodynamicState record"
         extends Modelica.Icons.Function;
+
+
         external "C" FF_ViscosityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, refName, state.T, state.d, state.p, state.gf, eta) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
@@ -511,6 +495,8 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
 
     redeclare function extends thermalConductivity "Return thermal conductivity"
         extends Modelica.Icons.Function;
+
+
         external "C" FF_thermalConductivityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, state.T, state.p, state.gf, lambda) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
@@ -566,6 +552,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
 
     redeclare function extends bubbleDensity "Return bubble point density"
         extends Modelica.Icons.Function;
+
       protected
         Real dg;
 
@@ -770,11 +757,6 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
     end dewEntropy;
   end ExternalMedium;
 
-
-
-
-
-
   annotation(
     Documentation(info = "<html><head></head><body>
     <p><b>Introduction</b></p><p>The medium is designed for pure or pseudo-pure substances in liquid, gas, or two phases. The thermodynamic calculations are performed using different equations of state(EOS), implemented in C language, that are called using external functions. The C code and the substances data are in the Resources folder.</p>
@@ -787,7 +769,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
     <p>The referenceState Integer constant  must be made equal to 1 for using ASHRAE reference state, to 2 for using IIR, to 3 for using NBP, to 4 for using user reference_T and reference_p. Any other number will produce an unreferenced calculation for enthalpy and entropy.</p>
     <p>If you are going to use the BaseProperties model, you must make the inputChoice constant String equal to 'ph', 'pT' or 'dT', as needed. When instantiating the model, you can still change the selection just for the object, specifying the value for the localInputChoice constant.</p>
     <p><b>How it compares with the ExternalMedia library</b></p>
-    <p>ExternalPure is not a reference library as can be RefProp or CoolProp. It has a lot of multiparameter EOS, but some times are not the newest ones. The calculation of derivatives is in many times numerical and not symbolical. And only pure or pseudo pure substances are covered, although I think that this is also the case for ExternalMedia. Nevertheless the results are still of high quality and enough for the normal practical work.</p><p>It has also some clear advantages over ExternalMedia:</p><p>- The speed is higher.</p><p>- The calculation of transport properties is much more flexible.</p><p>- The addition of new substances by the user is much easier.</p><p><br></p>
+    <p>ExternalPure is not a reference library as can be RefProp or CoolProp. It has a lot of multiparameter EOS, but some times are not the newest ones. The calculation of derivatives is in many times numerical and not symbolical. And only pure or pseudo pure substances are covered, although I think that this is also the case for ExternalMedia. Nevertheless the results are still of high quality and enough for the normal practical work.</p><p>It has also some advantages over ExternalMedia:</p><p>- The speed is higher if for any reason TTSE can't be used (if TTSE can be used ExternalMedia/CoolProp is faster)</p><p>- The calculation of transport properties is much more flexible.</p><p>- The addition of new substances by the user is much easier.</p><p><br></p>
     <p><br></p>
     
     </body></html>"));
