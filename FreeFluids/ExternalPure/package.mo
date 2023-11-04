@@ -16,12 +16,12 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA."
-  //***** PACKAGE ExternalTPMedium*****
-  //***********************************
+  //***** PACKAGE ExternalMedium*****
+  //*********************************
 
   package ExternalMedium
     extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, reference_p = 101325.0, fluidConstants = {fluidK});
-
+  
     redeclare record FluidConstants
       extends Modelica.Media.Interfaces.Types.Basic.FluidConstants;
       extends Modelica.Icons.Record;
@@ -30,7 +30,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
       Real criticalPressure = 0.0 "critical pressure in Pa";
       //criticalPressure must be added for compatibility with ThermoPower
     end FluidConstants;
-
+  
+  
+  
     constant String refName = "Propane" "name of the reference fluid for ECS calculations. Defaults to propane";
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant FluidConstants fluidK "just for minimum data out of the SubstanceData external object";
@@ -39,9 +41,14 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
     constant String inputChoice = "ph" "Allows to choose the input variables to use for the construction of a BaseProperties object. alternatives: ph,pT,dT";
     constant Integer thermoModel = 1 "1 for cubic EOS; 2 for SAFT; 3 Saltzmann and Wagner. All transport properties will be computed by correlations";
     constant Integer ancillaries = 0 "if 0 no ancillary function will be used, if 1 they will be use for cubic EOS, if 2 for SAFT, and if 3 for SW. It indicates for which EOS are the functions fitted";
+    
+    constant Real T_min=150.0;
+    constant Real TCri=fluidK.criticalTemperature;
+    constant Real pCri=fluidK.criticalPressure;
+    
     //Definition of ThermodynamicState, BaseProperties and SubstanceData
     //------------------------------------------------------------------
-
+  
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         //Real nMols "number of moles in a kg";
@@ -67,11 +74,11 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Real gDvp "gas phase derivative of 1/density regarding pressure";
         Real gDvT "gas phase derivative of 1/density regarding temperature";
     end ThermodynamicState;
-
+  
     redeclare model extends BaseProperties(h(stateSelect = if preferredMediumStates and localInputChoice == "ph" then StateSelect.prefer else StateSelect.default), p(stateSelect = if preferredMediumStates and (localInputChoice == "ph" or localInputChoice == "pT") then StateSelect.prefer else StateSelect.default), T(stateSelect = if preferredMediumStates and (localInputChoice == "pT" or localInputChoice == "dT") then StateSelect.prefer else StateSelect.default), d(stateSelect = if preferredMediumStates and localInputChoice == "dT" then StateSelect.prefer else StateSelect.default))
         constant String localInputChoice = inputChoice;
         Integer phase(min = 0, max = 2, start = 1, fixed = false);
-
+  
       algorithm
         MM := fluidK.molarMass "in kg/mol";
         R_s := Modelica.Constants.R/MM;
@@ -94,35 +101,35 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         u := h - p/d;
         sat := setSat_p(p);
     end BaseProperties;
-
+  
     //Basic functions
     //---------------
-
+  
     redeclare function extends saturationPressure "Return saturation pressure from T"
         extends Modelica.Icons.Function;
-
-
+  
+  
         external "C" FF_saturationPressureM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, ancillaries, T, p) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end saturationPressure;
-
+  
     redeclare function extends saturationTemperature "Return saturation temperature from P"
         extends Modelica.Icons.Function;
-
-
+  
+  
         external "C" FF_saturationTemperatureM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, ancillaries, p, T) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end saturationTemperature;
-
+  
     redeclare function extends saturationTemperature_derp "Return derivative of saturation temperature w.r.t. pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         dTp := if p < fluidConstants[1].criticalPressure then (saturationTemperature(p) - saturationTemperature(0.999*p))/(0.001*p) else 0;
     end saturationTemperature_derp;
-
+  
     function eosCriticalConstants
       output Temperature Tc;
       output AbsolutePressure Pc;
@@ -131,7 +138,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end eosCriticalConstants;
-
+  
     function pressureEOS_dT "Return pressure given temperature and density, by EOS"
       input Density d;
       input Temperature T;
@@ -141,7 +148,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end pressureEOS_dT;
-
+  
     function densities_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
       input AbsolutePressure p;
       input Temperature T;
@@ -154,7 +161,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end densities_pT;
-
+  
     function dhsFrom_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
       input AbsolutePressure p;
       input Temperature T;
@@ -171,7 +178,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end dhsFrom_pT;
-
+  
     function solveEOS "Calls the external function that calculates some basic thermodynamic properties of the phases, used later for the definition of the ThermodynamicState and the calculation of  all thermodynamic properties"
       input String opt;
       input Temperature x;
@@ -182,73 +189,73 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS;
-
+  
     //Establish general states
     //------------------------
-
+  
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi. The function from T and P is unable to compute any gas fraction different from 0 or 1"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.phase := 1;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("p", T, p);
         if state.ld < 1.0 then
-//state.gf := 1.0;
+  //state.gf := 1.0;
           state.d := state.gd;
           state.h := state.gh;
           state.s := state.gs;
         else
-//state.gf := 0.0;
+  //state.gf := 0.0;
           state.d := state.ld;
           state.h := state.lh;
           state.s := state.ls;
         end if;
     end setState_pTX;
-
+  
     redeclare function extends setState_dTX "Return thermodynamic state as function of density, T and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.d := d;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("d", T, d);
-//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else state.gd * (state.ld - d) / (d * (state.ld - state.gd));
+  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else state.gd * (state.ld - d) / (d * (state.ld - state.gd));
         state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
         state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
     end setState_dTX;
-
+  
     //here is necessary to arrive to calculate the thermoprops, so better to do every thing inside C
-
+  
     redeclare function extends setState_phX "Return thermodynamic state as function of pressure, enthalpy and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.h := h;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("h", p, h);
-//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.h - state.lh) / (state.gh - state.lh);
+  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.h - state.lh) / (state.gh - state.lh);
         state.d := if state.gf == 1.0 then state.gd else if state.gf == 0.0 then state.ld else state.ld*state.gd/(state.gf*state.ld + (1.0 - state.gf)*state.gd);
         state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
     end setState_phX;
-
+  
     redeclare function extends setState_psX "Return thermodynamic state as function of pressure, entropy and composition X or Xi"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.s := s;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("s", p, s);
-//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.s - state.ls) / (state.gs - state.ls);
+  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.s - state.ls) / (state.gs - state.ls);
         state.d := if state.gf > 0.999999 then state.gd else if state.gf < 0.000001 then state.ld else state.ld*state.gd/(state.gf*state.ld + (1.0 - state.gf)*state.gd);
         state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
     end setState_psX;
-
+  
     //Establish special states
     //------------------------
-
+  
     redeclare function extends setDewState "The input is a SaturationProperties record called sat. Returns the ThermodynamicState record at the dew point"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.phase := 2;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("w", sat.Tsat, sat.psat);
@@ -256,10 +263,10 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         state.h := state.gh;
         state.s := state.gs;
     end setDewState;
-
+  
     redeclare function extends setBubbleState "The input is a SaturationProperties record called sat. Returns the ThermodynamicState record at the bubble point"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         state.phase := 2;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("e", sat.Tsat, sat.psat);
@@ -267,44 +274,64 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         state.h := state.lh;
         state.s := state.ls;
     end setBubbleState;
-
+  
     redeclare function extends setSmoothState "Return thermodynamic state so that it smoothly approximates: if x > 0 then state_a else state_b"
         extends Modelica.Icons.Function;
         import Modelica.Media.Common.smoothStep;
-
+  
       algorithm
-        state := ThermodynamicState(p = smoothStep(x, state_a.p, state_b.p, x_small), h = smoothStep(x, state_a.h, state_b.h, x_small), s = smoothStep(x, state_a.s, state_b.s, x_small), T = smoothStep(x, state_a.T, state_b.T, x_small), d = smoothStep(x, state_a.d, state_b.d, x_small), ld = smoothStep(x, state_a.ld, state_b.ld, x_small), gd = smoothStep(x, state_a.gd, state_b.gd, x_small), lh = smoothStep(x, state_a.lh, state_b.lh, x_small), gh = smoothStep(x, state_a.gh, state_b.gh, x_small), ls = smoothStep(x, state_a.ls, state_b.ls, x_small), gs = smoothStep(x, state_a.gs, state_b.gs, x_small), lCv = smoothStep(x, state_a.lCv, state_b.lCv, x_small), gCv = smoothStep(x, state_a.gCv, state_b.gCv, x_small), lCp = smoothStep(x, state_a.lCp, state_b.lCp, x_small), gCp = smoothStep(x, state_a.gCp, state_b.gCp, x_small), lDvp = smoothStep(x, state_a.lDvp, state_b.lDvp, x_small), gDvp = smoothStep(x, state_a.gDvp, state_b.gDvp, x_small), lDvT = smoothStep(x, state_a.lDvT, state_b.lDvT, x_small), gDvT = smoothStep(x, state_a.gDvT, state_b.gDvT, x_small), gf = smoothStep(x, state_a.gf, state_b.gf, x_small), phase = 0);
+        state := ThermodynamicState(
+        p = smoothStep(x, state_a.p, state_b.p, x_small),
+        h = smoothStep(x, state_a.h, state_b.h, x_small), 
+        s = smoothStep(x, state_a.s, state_b.s, x_small), 
+        T = smoothStep(x, state_a.T, state_b.T, x_small), 
+        d = smoothStep(x, state_a.d, state_b.d, x_small), 
+        ld = smoothStep(x, state_a.ld, state_b.ld, x_small), 
+        gd = smoothStep(x, state_a.gd, state_b.gd, x_small), 
+        lh = smoothStep(x, state_a.lh, state_b.lh, x_small), 
+        gh = smoothStep(x, state_a.gh, state_b.gh, x_small), 
+        ls = smoothStep(x, state_a.ls, state_b.ls, x_small), 
+        gs = smoothStep(x, state_a.gs, state_b.gs, x_small),
+        lCv = smoothStep(x, state_a.lCv, state_b.lCv, x_small),
+        gCv = smoothStep(x, state_a.gCv, state_b.gCv, x_small),
+        lCp = smoothStep(x, state_a.lCp, state_b.lCp, x_small),
+        gCp = smoothStep(x, state_a.gCp, state_b.gCp, x_small),
+        lDvp = smoothStep(x, state_a.lDvp, state_b.lDvp, x_small),
+        gDvp = smoothStep(x, state_a.gDvp, state_b.gDvp, x_small),
+        lDvT = smoothStep(x, state_a.lDvT, state_b.lDvT, x_small),
+        gDvT = smoothStep(x, state_a.gDvT, state_b.gDvT, x_small),
+        gf = smoothStep(x, state_a.gf, state_b.gf, x_small), phase = 0);
       annotation(
         Inline = true);
     end setSmoothState;
-
+  
     //Getting properties using the ThermodynamicState record
     //------------------------------------------------------------------------------------------------------------
-
+  
     redeclare function extends pressure "Return pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         p := state.p;
     end pressure;
-
+  
     redeclare function extends temperature "Return temperature"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         T := state.T;
     end temperature;
-
+  
     redeclare function extends density "Return density"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         d := state.d;
     end density;
-
+  
     redeclare function extends density_derp_T "Return density derivative w.r.t. pressure at const temperature"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         if state.gf == 0 then
           ddpT := state.ld*isothermalCompressibility(state);
@@ -314,10 +341,10 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           ddpT := 0;
         end if;
     end density_derp_T;
-
+  
     redeclare function extends density_derT_p "Return density derivative w.r.t. temperature at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         if state.gf == 0 then
           ddTp := -state.ld*isobaricExpansionCoefficient(state);
@@ -327,14 +354,14 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           ddTp := 0;
         end if;
     end density_derT_p;
-
+  
     redeclare function extends density_derp_h "Return density derivative w.r.t. pressure at const specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real lDvp, gDvp, DTp, lDhp, gDhp "total derivatives of v, T, and h along the saturation line, regarding p";
         Real Dgfp_h "partial derivative of gas fraction regarding p at constant h";
-
+  
       algorithm
         if state.gf == 0 then
           ddph := -state.ld*state.ld*(state.lDvp + (state.T*state.lDvT*state.lDvT - state.lDvT/state.ld)/state.lCp);
@@ -350,10 +377,10 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           ddph := -state.d*state.d*(lDvp + Dgfp_h*(1/state.gd - 1/state.ld) + state.gf*(gDvp - lDvp));
         end if;
     end density_derp_h;
-
+  
     redeclare function extends density_derh_p "Return density derivative w.r.t. specific enthalpy at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         if (state.gf == 0) then
           ddhp := -state.ld*state.ld*state.lDvT/state.lCp;
@@ -363,105 +390,103 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           ddhp := -state.d*state.d*(1/state.gd - 1/state.ld)/(state.gh - state.lh);
         end if;
     end density_derh_p;
-
+  
     redeclare function extends specificEnthalpy "Return specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         h := state.h;
     end specificEnthalpy;
-
+  
     redeclare function extends specificInternalEnergy "Return specific internal energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         u := state.h - state.p/state.d;
     end specificInternalEnergy;
-
+  
     redeclare function extends specificEntropy "Return specific entropy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         s := state.s;
     end specificEntropy;
-
+  
     redeclare function extends specificGibbsEnergy "Return specific Gibbs energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         g := state.h - state.T*state.s;
     end specificGibbsEnergy;
-
+  
     redeclare function extends specificHelmholtzEnergy "Return specific Helmholtz energy"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         f := state.h - state.p/state.d - state.T*state.s;
     end specificHelmholtzEnergy;
-
+  
     redeclare function extends specificHeatCapacityCp "Return specific heat capacity at constant pressure"
         extends Modelica.Icons.Function;
-
+  
       algorithm
         cp := if state.gf == 0 then state.lCp else if state.gf == 1 then state.gCp else Modelica.Constants.inf;
     end specificHeatCapacityCp;
-
-    redeclare function extends specificHeatCapacityCv "Return specific heat capacity at constant volume"
-        extends Modelica.Icons.Function;
-
-      protected
-        Real lDsT, gDsT, dP_dT, ldV_dT, gdV_dT "total derivatives of s, p and v along the saturation line, regarding T";
-        Real DgfT_v "partial derivative of gas fraction regarding T at constant v";
-
-      algorithm
-        if state.gf == 0 then
-          cv := state.lCv;
-        elseif state.gf == 1 then
-          cv := state.gCv;
-        else
-//dP_dT := (state.gs - state.ls) / (1 / state.gd - 1 / state.ld);
-//lDsT := state.lCp / state.T - state.lDvT * dP_dT;
-//gDsT := state.gCp / state.T - state.gDvT * dP_dT;
-//ldV_dT := state.lDvT + state.lDvp * dP_dT;
-//gdV_dT := state.gDvT + state.gDvp * dP_dT;
-//DgfT_v :=(state.gf * gdV_dT + (1 - state.gf) * ldV_dT) / (1 / state.ld - 1 / state.gd);
-//cv := state.T * lDsT + state.T * DgfT_v * (state.gs - state.ls) + state.gf * state.T * (gDsT - lDsT);
-//cv:=state.lCv+DgfT_v*((state.gh-state.p/state.gd)-(state.lh-state.p/state.ld))+state.gf*(state.gCv-state.lCv);
-          cv := state.lCv*(1 - state.gf) + state.gCv*state.gf;
-        end if;
-    end specificHeatCapacityCv;
-
+  
+    redeclare         function extends specificHeatCapacityCv "Return specific heat capacity at constant volume"
+            extends Modelica.Icons.Function;
+    
+          protected
+            Real lDsT, gDsT, dP_dT, ldV_dT, gdV_dT "total derivatives of s, p and v along the saturation line, regarding T";
+            Real DgfT_v "partial derivative of gas fraction regarding T at constant v";
+    
+          algorithm
+            if state.gf == 0 then
+              cv := state.lCv;
+            elseif state.gf == 1 then
+              cv := state.gCv;
+            else
+  //dP_dT := (state.gs - state.ls) / (1 / state.gd - 1 / state.ld);
+  //lDsT := state.lCp / state.T - state.lDvT * dP_dT;
+  //gDsT := state.gCp / state.T - state.gDvT * dP_dT;
+  //ldV_dT := state.lDvT + state.lDvp * dP_dT;
+  //gdV_dT := state.gDvT + state.gDvp * dP_dT;
+  //DgfT_v :=(state.gf * gdV_dT + (1 - state.gf) * ldV_dT) / (1 / state.ld - 1 / state.gd);
+  //cv := state.T * lDsT + state.T * DgfT_v * (state.gs - state.ls) + state.gf * state.T * (gDsT - lDsT);
+  //cv:=state.lCv+DgfT_v*((state.gh-state.p/state.gd)-(state.lh-state.p/state.ld))+state.gf*(state.gCv-state.lCv);
+              cv := state.lCv*(1 - state.gf) + state.gCv*state.gf;
+    
+            end if;
+        end specificHeatCapacityCv;
+  
     redeclare function extends isentropicExponent "Return isentropic exponent"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real Vinv, cv, cp;
-
+  
       algorithm
         gamma := if state.gf == 0 then state.lCp/state.lCv else if state.gf == 1 then state.gCp/state.gCv else 0.0;
     end isentropicExponent;
-
+  
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
-
       algorithm
         a := if state.gf == 0.0 then (-state.lCp/(state.lDvp*state.lCv))^0.5/state.ld else if state.gf == 1.0 then (-state.gCp/(state.gDvp*state.gCv))^0.5/state.gd else 0.0;
     end velocityOfSound;
-
+  
     redeclare function extends isobaricExpansionCoefficient "Returns the isobaric expansion coefficient beta"
         extends Modelica.Icons.Function;
-
       algorithm
         beta := if state.gf == 0 then state.lDvT*state.ld else if state.gf == 1 then state.gDvT*state.gd else Modelica.Constants.small;
     end isobaricExpansionCoefficient;
-
+  
     redeclare function extends isothermalCompressibility "Returns overall the isothermal compressibility factor"
         extends Modelica.Icons.Function;
-
       algorithm
-        kappa := if state.gf == 0 then -state.lDvp*state.ld else if state.gf == 1 then -state.gDvp*state.gd else Modelica.Constants.inf;
+          kappa := if state.gf ==0 then -state.lDvp*state.ld else if state.gf ==1 then -state.gDvp*state.gd else Modelica.Constants.inf;
     end isothermalCompressibility;
-
+  
     function jouleThomsonCoefficient
       input ThermodynamicState state;
       output Real J;
@@ -472,7 +497,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         J := Modelica.Constants.inf;
       end if;
     end jouleThomsonCoefficient;
-
+  
     function isothermalThrottlingCoefficient "OK. The ExternalMedia function is not found !!"
       input ThermodynamicState state;
       output Real I;
@@ -483,25 +508,21 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         I := Modelica.Constants.inf;
       end if;
     end isothermalThrottlingCoefficient;
-
+  
     redeclare function extends dynamicViscosity "Return dynamic viscosity from a ThermodynamicState record"
         extends Modelica.Icons.Function;
-
-
         external "C" FF_ViscosityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, refName, state.T, state.d, state.p, state.gf, eta) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end dynamicViscosity;
-
+  
     redeclare function extends thermalConductivity "Return thermal conductivity"
         extends Modelica.Icons.Function;
-
-
         external "C" FF_thermalConductivityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, state.T, state.p, state.gf, lambda) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end thermalConductivity;
-
+  
     function liquidDynamicViscosity "Return liquid dynamic viscosity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
       output DynamicViscosity eta "Dynamic viscosity";
@@ -510,7 +531,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end liquidDynamicViscosity;
-
+  
     function gasDynamicViscosity "Return gas dynamic viscosity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
       output DynamicViscosity eta "Dynamic viscosity";
@@ -519,7 +540,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end gasDynamicViscosity;
-
+  
     function liquidThermalConductivity "Return liquid thermal conductivity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
       output ThermalConductivity lambda "Thermal conductivity";
@@ -528,7 +549,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end liquidThermalConductivity;
-
+  
     function gasThermalConductivity "Return gas thermal conductivity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
       output ThermalConductivity lambda "Thermal conductivity";
@@ -537,32 +558,31 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end gasThermalConductivity;
-
+  
     redeclare function extends surfaceTension "Return surface tension"
         extends Modelica.Icons.Function;
-
-
+  
+  
         external "C" FF_surfaceTensionM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.Tsat, sigma) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end surfaceTension;
-
+  
     //Functions at the Dew and Bubble points, from a SaturationProperties record linking SetSat functions are the originals
     //---------------------------------------------------------------------------------------------------------------------
-
+  
     redeclare function extends bubbleDensity "Return bubble point density"
         extends Modelica.Icons.Function;
-
       protected
         Real dg;
-
+  
       algorithm
         (dl, dg) := densities_pT(sat.psat, sat.Tsat, "e");
     end bubbleDensity;
-
+  
     redeclare function extends dBubbleDensity_dPressure "Return bubble point density derivative"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real Tc, Pc;
         Real dl, dg, pl, dll, dgl;
@@ -571,7 +591,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         //Along the saturation line
         ThermodynamicState stateB, stateD;
         //bubble and dewstate
-
+  
       algorithm
         (Tc, Pc) := eosCriticalConstants();
         if (sat.Tsat >= Tc) then
@@ -583,7 +603,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             ddldp := -stateB.lDvp*stateB.ld^2 - stateB.lDvT*stateB.ld^2*dT_dp;
           else
-//numeric derivarive
+  //numeric derivarive
             (dl, dg) := densities_pT(sat.psat, sat.Tsat, "l");
             pl := saturationPressure(sat.Tsat - 0.3);
             (dll, dgl) := densities_pT(pl, sat.Tsat - 0.3, "l");
@@ -594,20 +614,20 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           end if;
         end if;
     end dBubbleDensity_dPressure;
-
+  
     redeclare function extends dewDensity "Return dew point density"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real dl;
-
+  
       algorithm
         (dl, dv) := densities_pT(sat.psat, sat.Tsat, "w");
     end dewDensity;
-
+  
     redeclare function extends dDewDensity_dPressure "Return dew point density derivative"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real Tc, Pc;
         Real dl, dg, pl, dll, dgl;
@@ -616,7 +636,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         //derivative of temperature regarding pressure along the saturation line
         ThermodynamicState stateB, stateD;
         //bubble and dewstate
-
+  
       algorithm
         (Tc, Pc) := eosCriticalConstants();
         if (sat.Tsat >= Tc) then
@@ -628,7 +648,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             ddvdp := -stateD.gDvp*stateD.gd^2 - stateD.gDvT*stateD.gd^2*dT_dp;
           else
-//numeric derivative
+  //numeric derivative
             (dl, dg) := densities_pT(sat.psat, sat.Tsat, "g");
             pl := saturationPressure(sat.Tsat - 1);
             (dll, dgl) := densities_pT(pl, sat.Tsat - 0.5, "g");
@@ -636,23 +656,23 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           end if;
         end if;
     end dDewDensity_dPressure;
-
+  
     redeclare function extends bubbleEnthalpy "Return bubble point specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real ld, ls, gd, gh, gs;
-
+  
       algorithm
-//external "C" FF_bubbleEnthalpyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, hl) annotation(
-//IncludeDirectory = "modelica://FreeFluids/Resources",
-//Include = "#include \"FFmodelicaMedium.c\"");
+  //external "C" FF_bubbleEnthalpyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, hl) annotation(
+  //IncludeDirectory = "modelica://FreeFluids/Resources",
+  //Include = "#include \"FFmodelicaMedium.c\"");
         (ld, hl, ls, gd, gh, gs) := dhsFrom_pT(sat.psat, sat.Tsat, "e");
     end bubbleEnthalpy;
-
+  
     redeclare function extends dBubbleEnthalpy_dPressure "Return bubble point specific enthalpy derivative"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real Tc, Pc;
         Real pl;
@@ -660,14 +680,14 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         //Along the saturation line
         ThermodynamicState stateB, stateD;
         //bubble and dewstate
-
+  
       algorithm
         (Tc, Pc) := eosCriticalConstants();
         if (sat.Tsat >= Tc) then
           dhldp := 0;
         else
           if (0 == 0) then
-//symbolic calculation
+  //symbolic calculation
             stateB := setBubbleState(sat);
             stateD := setDewState(sat);
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
@@ -681,20 +701,20 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           end if;
         end if;
     end dBubbleEnthalpy_dPressure;
-
+  
     redeclare function extends dewEnthalpy "Return dew point specific enthalpy"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real ld, lh, ls, gd, gs;
-
+  
       algorithm
         (ld, lh, ls, gd, hv, gs) := dhsFrom_pT(sat.psat, sat.Tsat, "w");
     end dewEnthalpy;
-
+  
     redeclare function extends dDewEnthalpy_dPressure "Return bubble point specific enthalpy derivative"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real Tc, Pc;
         Real pl;
@@ -702,7 +722,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         //Along the saturation line
         ThermodynamicState stateB, stateD;
         //bubble and dewstate
-
+  
       algorithm
         (Tc, Pc) := eosCriticalConstants();
         if (sat.Tsat >= Tc) then
@@ -714,48 +734,141 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             dhvdp := -stateD.T*stateD.gDvT + 1/stateD.d + stateD.gCp*dT_dp;
           else
-//numeric calculation
+  //numeric calculation
             pl := saturationPressure(sat.Tsat - 0.5);
             dhvdp := (dewEnthalpy(sat) - dewEnthalpy(setSat_T(sat.Tsat - 0.5)))/(sat.psat - pl);
           end if;
         end if;
-//algorithm
-//  dhvdp := if sat.Tsat < fluidConstants[1].criticalTemperature then (dewEnthalpy(setSat_T(sat.Tsat - 0.02)) - dewEnthalpy(sat)) / (saturationPressure(sat.Tsat - 0.02) - sat.psat) else 0;
+  //algorithm
+  //  dhvdp := if sat.Tsat < fluidConstants[1].criticalTemperature then (dewEnthalpy(setSat_T(sat.Tsat - 0.02)) - dewEnthalpy(sat)) / (saturationPressure(sat.Tsat - 0.02) - sat.psat) else 0;
     end dDewEnthalpy_dPressure;
-
+  
     function vaporizationEnthalpy
       input SaturationProperties sat;
       output SpecificEnthalpy Hv;
     algorithm
       Hv := dewEnthalpy(sat) - bubbleEnthalpy(sat);
     end vaporizationEnthalpy;
-
+  
     redeclare function extends bubbleEntropy "Return bubble point specific entropy"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real ld, lh, gd, gh, gs;
-
+  
       algorithm
-//external "C" FF_bubbleEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sl) annotation(
-//IncludeDirectory = "modelica://FreeFluids/Resources",
-//Include = "#include \"FFmodelicaMedium.c\"");
+  //external "C" FF_bubbleEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sl) annotation(
+  //IncludeDirectory = "modelica://FreeFluids/Resources",
+  //Include = "#include \"FFmodelicaMedium.c\"");
         (ld, lh, sl, gd, gh, gs) := dhsFrom_pT(sat.psat, sat.Tsat, "e");
     end bubbleEntropy;
-
+  
     redeclare function extends dewEntropy "Return dew point specific entropy"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real ld, lh, ls, gd, gh;
-
+  
       algorithm
-//external "C" FF_dewEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sv) annotation(
-//IncludeDirectory = "modelica://FreeFluids/Resources",
-//Include = "#include \"FFmodelicaMedium.c\"");
+  //external "C" FF_dewEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sv) annotation(
+  //IncludeDirectory = "modelica://FreeFluids/Resources",
+  //Include = "#include \"FFmodelicaMedium.c\"");
         (ld, lh, ls, gd, gh, sv) := dhsFrom_pT(sat.psat, sat.Tsat, "w");
     end dewEntropy;
+  
+  
+  //Functions needed for compatibility with Buildings.Media.Refrigerants
+    function dPressureVap_dSpecificVolume_Tv "Derivative of pressure with regards to specific volume, at constant T"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Real dpdv(final unit="Pa.kg/m3") "Derivative of pressure with regards to specific volume";
+    protected
+      ThermodynamicState state;
+    algorithm
+      state:=setState_dTX(1/v,T);
+      dpdv:= if(state.gf==0) then 1/state.lDvp elseif(state.gf==1) then 1/state.gDvp else 0;
+    end dPressureVap_dSpecificVolume_Tv;
+  
+    function dPressureVap_dTemperature_Tv "Derivative of pressure with regards to temperature, at constant v"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Real dpdT(final unit="Pa/K") "Derivative of pressure with regards to temperature";
+    protected
+      ThermodynamicState state;
+    algorithm
+      state:=setState_dTX(1/v,T);
+      dpdT:= if(state.gf==0) then -state.lDvT/state.lDvp elseif(state.gf==1) then -state.gDvT/state.gDvp else 0;
+    end dPressureVap_dTemperature_Tv;
+    
+    function enthalpySatLiq_T "Function that calculates the enthalpy of saturated liquid based on temperature"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      output Modelica.Units.SI.SpecificEnthalpy h;
+    algorithm
+      h:=bubbleEnthalpy(setSat_T(T));
+    end enthalpySatLiq_T;
+    
+    function enthalpySatVap_T "Function that calculates the specific enthalpy of saturated vapor based on temperature"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      output Modelica.Units.SI.SpecificEnthalpy h;
+    algorithm
+      h:=dewEnthalpy(setSat_T(T));
+    end enthalpySatVap_T;
+    
+    function isentropicExponentVap_Tv "Function that calculates the isentropic exponent of vapor based on temperature and specific volume"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Modelica.Units.SI.IsentropicExponent k;
+    algorithm
+      k:=isentropicExponent(setState_dTX(1/v,T));
+    end isentropicExponentVap_Tv;
+  
+    function pressureSatVap_T "Function that calculates the pressure of saturated vapor based on temperature"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      output Modelica.Units.SI.AbsolutePressure p "Pressure of saturated refrigerant vapor";
+        external "C" FF_saturationPressureM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, ancillaries, T, p) annotation(
+          IncludeDirectory = "modelica://FreeFluids/Resources",
+          Include = "#include \"FFmodelicaMedium.c\"");
+    end pressureSatVap_T;
+  
+    function pressureVap_Tv "Function that calculates the pressure vapor based on temperature and specific volume"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Modelica.Units.SI.AbsolutePressure p "Pressure of refrigerant vapor";
+    algorithm
+      p:=pressure(setState_dTX(1/v,T));
+    end pressureVap_Tv;
+  
+    function specificIsobaricHeatCapacityVap_Tv "Function that calculates the specific isobaric heat capacity of vapor based on temperature and specific volume"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Modelica.Units.SI.SpecificHeatCapacity cp "Specific isobaric heat capacity";
+    algorithm
+      cp:=specificHeatCapacityCp(setState_dTX(1/v,T));
+    end specificIsobaricHeatCapacityVap_Tv;
+  
+    function specificIsochoricHeatCapacityVap_Tv "Function that calculates the specific isochoric heat capacity of vapor
+    based on temperature and specific volume"
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+      output Modelica.Units.SI.SpecificHeatCapacity cv "Specific isochoric heat capacity";
+    algorithm
+      cv:=specificHeatCapacityCv(setState_dTX(1/v,T));
+    end specificIsochoricHeatCapacityVap_Tv;
+    
+    function specificVolumeVap_pT
+      "Function that calculates the specific volume of the vapor based on pressure and temperature"
+      input Modelica.Units.SI.AbsolutePressure p "Pressure of refrigerant vapor";
+      input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
+      output Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
+    algorithm
+      v:=1/density(setState_pTX(p,T));
+    end specificVolumeVap_pT;  
   end ExternalMedium;
+
+
+
+
+
 
   annotation(
     Documentation(info = "<html><head></head><body>

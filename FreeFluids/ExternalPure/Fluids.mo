@@ -344,7 +344,7 @@ package Fluids
   end PhthalicAnhydride;
 
   package Propane
-    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propane", fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: Lemmon 2009. PCSAFT: Gross-Sadowski 2001. Cubic: SRKMC Chemsep. Cp0:Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06), final onePhase = false, thermoModel = 3, refState = 2);
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propane", fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: Lemmon 2009. PCSAFT: Gross-Sadowski 2001. Cubic: SRKMC Chemsep. Cp0:Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06), final onePhase = false, T_min=85.6, thermoModel = 3, refState = 2);
   end Propane;
 
   package R134A
@@ -352,7 +352,7 @@ package Fluids
   end R134A;
 
   package R410A
-    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "R410A", fluidK(casRegistryNumber = "R410A.PPF", description = "Multiparameter: Lemmon 2003. PCSAFT: non assoc. C.T.2019. Cubic: none. Cp0: Cooper", molarMass = 7.258540e-02, criticalTemperature = 3.444940e+02, criticalPressure = 4.901200e+06), final onePhase = false, thermoModel = 3, refState = 2, ancillaries=3);
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "R410A", fluidK(casRegistryNumber = "R410A.PPF", description = "Multiparameter: Lemmon 2003. PCSAFT: non assoc. C.T.2019. Cubic: none. Cp0: Cooper", molarMass = 7.258540e-02, criticalTemperature = 3.444940e+02, criticalPressure = 4.901200e+06), final onePhase = false, T_min=200.0, thermoModel = 3, refState = 2, ancillaries=3);
   end R410A;
 
   package Styrene
