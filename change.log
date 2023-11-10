@@ -1,3 +1,6 @@
+Version 3.1.1
+- Added ten new substances to ExternalPure\Fluids.
+
 Version 3.1.0
 - The ExternalPure.ExternalMedium package has been modified in order to implement the additional functions needed by the Buildings library for mediums used in compressor models.
 - A subpackage, with Buildings library tests, has been added to the ExternalPure package.
