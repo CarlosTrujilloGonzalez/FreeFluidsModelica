@@ -1944,7 +1944,7 @@ void CALLCONV FF_GasThCondTVcorChung(double T,double V,FF_BaseProp *data,double 
 void CALLCONV FF_GasThCondTV(double T,double V,FF_SubstanceData *data,double *gasThCond){
     double Cp0,ldGasThCond=0;
     *gasThCond=0;
-    if(data->gThCCorr.form>0){
+    if(!(data->gThCCorr.form==122)&&(data->gThCCorr.form>0)){//if the correlationis for NIST coef., we can not use it directly
         FF_PhysPropCorrM(data->gThCCorr.form,data->gThCCorr.coef,data->baseProp.MW,T,&ldGasThCond);
     }
     else{
@@ -2324,9 +2324,56 @@ void CALLCONV FF_ThCondViscTDens(FF_SubstanceData *data, double T, double rhoMol
         else lambda[2]=0;
         //printf("Cp:%f Cv:%f dRho_dP:%f zeta(A):%f qD:%e mu(microPa·s):%f\n",th.Cp, th.Cv, dRho_dP, zeta*1e10,qD,mu*1e9);
     }
-
-
 }
+
+//Thermal conductivity of a pure substance
+void CALLCONV FF_ThCond(FF_SubstanceData *subs,FF_SubstanceData *ref,double T,double dens, double P,double gf,double *thCond){
+    int ver=0;
+    double f,h,eta[3],lambda[3];
+    double rhoMolar=dens*1e3/subs->baseProp.MW;
+    if((gf>0)&&(gf<1)) *thCond=0;
+    else if(subs->model==FF_SWtype){
+        if((subs->id==760)||(subs->id==8268)||(subs->id==18)||(subs->id==1253)){//only if the EOS is SW we can consider that we are receiving a correct density
+            double molarDens=dens*1e3/subs->baseProp.MW;
+            FF_ThCondViscTDens(subs,T,molarDens,lambda,eta);
+            *thCond=lambda[0]+lambda[1]+lambda[2];
+        }
+        else if((subs->gThCCorr.form==122)&&(ref->id==subs->gThCCorr.coef[5])){//if we have a NIST correction
+            FF_ConformalStateSW(subs,ref,T,rhoMolar,&f,&h);
+            FF_CorrespondingStatesTransport(subs,ref,T,rhoMolar,f,h,eta,lambda);
+            if (ver==1) printf("lambda0:%f lambda1:%f lambda2:%f \n",lambda[0],lambda[1],lambda[2]);
+            *thCond=lambda[0]+lambda[1]+lambda[2];
+        }
+        else{
+            if(gf==0.0){
+                if(subs->lThCCorr.form>0) FF_LiqThCondT(T,subs,thCond);
+                else{
+                    FF_ConformalStateSW(subs,ref,T,rhoMolar,&f,&h);
+                    FF_CorrespondingStatesTransport(subs,ref,T,rhoMolar,f,h,eta,lambda);
+                    *thCond=lambda[0]+lambda[1]+lambda[2];
+                }
+            }
+            else FF_GasThCondTV(T,1/rhoMolar,subs,thCond);
+        }
+    }
+    else{//cubic and SAFT types
+        if(gf==0.0){
+            if(subs->lThCCorr.form>0) FF_LiqThCondT(T,subs,thCond);
+            else{
+                //double refP,answerL[3],answerG[3];
+                //char state;
+                FF_ConformalStateSRK(subs,ref,T,&f,&h);
+                //refP=P*h/f;//as density can be quite inacurate if coming from cubic, better to use pressure
+                //FF_VfromTPswS(T,refP,ref,'l',answerL,answerG,&state);//find reference density
+                //rhoMolar=1/(answerL[0]*h);//substance molar density to use
+                FF_CorrespondingStatesTransport(subs,ref,T,rhoMolar,f,h,eta,lambda);
+                *thCond=lambda[0]+lambda[1]+lambda[2];
+            }
+        }
+        else FF_GasThCondTV(T,1/rhoMolar,subs,thCond);
+    }
+}
+
 
 //Conformal state calculation using SW EOS. Returns the reducing ratios f and h (h refered to molar units)
 void CALLCONV  FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref, double T, double rhoMolar, double *f, double *h){

@@ -2960,7 +2960,8 @@ void CALLCONV FF_TVsFromPXNewton(char var, FF_SubstanceData *data, int aid, doub
     else if(data->model==FF_SAFTtype){
         Tc=data->saftData.Tc;
         Pc=data->saftData.Pc;
-        Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
+        if (data->saftData.Vc>0) Vc=data->saftData.Vc;
+        else Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
     }
     else {
         Tc=data->cubicData.Tc;
@@ -3149,7 +3150,8 @@ void CALLCONV FF_TVfromPX(char var, FF_SubstanceData *data, double p, double x, 
     else if(data->model==FF_SAFTtype){
         Tc=data->saftData.Tc;
         Pc=data->saftData.Pc;
-        Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
+        if (data->saftData.Vc>0) Vc=data->saftData.Vc;
+        else Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
     }
     else {
         Tc=data->cubicData.Tc;

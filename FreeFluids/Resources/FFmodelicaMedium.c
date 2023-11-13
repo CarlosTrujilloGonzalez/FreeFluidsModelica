@@ -34,7 +34,8 @@
 //#include "ModelicaUtilities.h"
 #include "FFeosPure.c"
 #include "FFphysprop.c"
-//#include "FFeosMix.h"
+#include "FFeosMix.c"
+#include "FFactivity.c"
 
 //#define WINDOWS
 #if (defined(_WIN32) || defined(__WIN32__) || defined(WINDOWS))
@@ -181,12 +182,14 @@ void FF_densities_pTM(const char *name, const char *resDir, int thermoModel, int
   else if(data->model==FF_SAFTtype){
       Tc=data->saftData.Tc;
       Pc=data->saftData.Pc;
-      Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
+      if (data->saftData.Vc>0) Vc=data->saftData.Vc;
+      else Vc=R*data->saftData.Zc*data->saftData.Tc/data->saftData.Pc;
   }
   else {
       Tc=data->cubicData.Tc;
       Pc=data->cubicData.Pc;
-      Vc=R*data->cubicData.Zc*data->cubicData.Tc/data->cubicData.Pc;
+      if (data->cubicData.Vc>0) Vc=data->cubicData.Vc;
+      else Vc=R*data->cubicData.Zc*data->cubicData.Tc/data->cubicData.Pc;
   }
   if((var[0]=='e')||(var[0]=='E')){//Bubble state
       if (T>=Tc){
@@ -381,7 +384,7 @@ void FF_ViscosityM(const char *name, const char *resDir, int thermoModel, int re
     FF_Viscosity(data, ref, T, dens, P, gf, visc);
 }
 
-//Dynamic viscosity
+//Dynamic viscosity by correlations or predictive, pressure correction for liquids
 void FF_dynamicViscosityM(const char *name, const char *resDir, int thermoModel, int refState, double refT, double refP, double T, double P, double gf, double *eta){
   FF_SubstanceData *data=FF_createSubstanceData(name,resDir,thermoModel,refState,refT,refP);
   if (gf==0.0){//only liquid phase
@@ -396,7 +399,7 @@ void FF_dynamicViscosityM(const char *name, const char *resDir, int thermoModel,
   }
   else if (gf==1.0){//only gas phase
     double lpGasVisc=0;
-    if ((data->gViscCorr.id>0)&&(T>=data->gViscCorr.limI)&&(T<=data->gViscCorr.limS)) FF_PhysPropCorrM(data->gViscCorr.form,data->gViscCorr.coef,data->baseProp.MW,T,&lpGasVisc);
+    if ((data->gViscCorr.id>0)&&(T>=data->gViscCorr.limI)&&(T<=data->gViscCorr.limS)&&!(data->gViscCorr.form==112)) FF_PhysPropCorrM(data->gViscCorr.form,data->gViscCorr.coef,data->baseProp.MW,T,&lpGasVisc);
     if((data->baseProp.Tc>0)&&(data->baseProp.Pc>0))FF_GasViscTPcpLucas(T,P,&data->baseProp,&lpGasVisc,eta);
     else *eta=lpGasVisc;
     if(*eta==0) printf("unable to compute gas viscosity\n");
@@ -404,9 +407,20 @@ void FF_dynamicViscosityM(const char *name, const char *resDir, int thermoModel,
   else printf("unable to compute two phases viscosity\n");
 }
 
+//thermal conductivity of a pure substance
+void FF_ThCondM(const char *name, const char *resDir, int thermoModel, int refState, double refT, double refP, const char *refName, double T,double dens, double P, double gf, double *thCond){
+    FF_SubstanceData *data=FF_createSubstanceData(name,resDir,thermoModel,refState,refT,refP);//obtain the substance
+    FF_SubstanceData *ref=FF_createSubstanceData(refName,resDir,thermoModel,refState,refT,refP);//obtain the reference substance
+    if (thermoModel==1) data->model=FF_CubicType;//because it could be that the substance has been previously created with another thermoModel
+    else if (thermoModel==2) data->model=FF_SAFTtype;
+    else if (thermoModel==3) data->model=FF_SWtype;
+    else printf("thermoModel out of range\n");
+    FF_ThCond(data, ref, T, dens, P, gf, thCond);
+}
 
 
-//Thermal conductivity
+
+//Thermal conductivity by correlations or predictive, no density correction
 void FF_thermalConductivityM(const char *name, const char *resDir, int thermoModel, int refState, double refT, double refP, double T, double P, double gf, double *lambda){
   FF_SubstanceData *data=FF_createSubstanceData(name,resDir,thermoModel,refState,refT,refP);
   if (gf==0.0){
@@ -439,7 +453,7 @@ void FF_surfaceTensionM(const char *name, const char *resDir, int thermoModel, i
 
 //HERE BEGINS THE MODELICA INTERFACE FOR MIXTURES
 //===============================================
-/*
+
 //Creates a static mixture array that is charged each time it is called
 void *FF_createMixData(const char *name, int numSubs, const char subsNames[15][30], const char *resDir, int thermoModel, int eosType, int mixRule, int activityModel, int refCalc, double refT, double refP) {
     int i,j;
@@ -479,6 +493,6 @@ void *FF_createMixData(const char *name, int numSubs, const char subsNames[15][3
     }
 
     return &mixData[i];
-}*/
+}
 
 

@@ -194,6 +194,9 @@ EXP_IMP void CALLCONV FF_Viscosity(FF_SubstanceData *subs,FF_SubstanceData *ref,
 
 EXP_IMP void CALLCONV FF_ThCondViscTDens(FF_SubstanceData *data, double T, double rhoMolar,double lambda[3],double eta[3]);
 
+//Thermal conductivity of a pure substance
+EXP_IMP void CALLCONV FF_ThCond(FF_SubstanceData *subs,FF_SubstanceData *ref,double T,double dens, double P,double gf,double *thCond);
+
 //Conformal state calculation using SW EOS. Returns the reducing ratios f and h (h refered to molar units)
 EXP_IMP void CALLCONV FF_ConformalStateSW(FF_SubstanceData *subs, FF_SubstanceData *ref, double T, double rhoMolar, double *f, double *h);
 
