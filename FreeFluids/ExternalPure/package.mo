@@ -45,10 +45,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
     constant Real T_min=150.0;
     constant Real TCri=fluidK.criticalTemperature;
     constant Real pCri=fluidK.criticalPressure;
-    
     //Definition of ThermodynamicState, BaseProperties and SubstanceData
     //------------------------------------------------------------------
-  
+
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         //Real nMols "number of moles in a kg";
@@ -102,10 +101,10 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         sat := setSat_p(p);
     end BaseProperties;
   
-    //Basic functions
+//Basic functions
     //---------------
-  
-    redeclare function extends saturationPressure "Return saturation pressure from T"
+
+    redeclare pure function extends saturationPressure "Return saturation pressure from T"
         extends Modelica.Icons.Function;
   
   
@@ -114,7 +113,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           Include = "#include \"FFmodelicaMedium.c\"");
     end saturationPressure;
   
-    redeclare function extends saturationTemperature "Return saturation temperature from P"
+    redeclare pure function extends saturationTemperature "Return saturation temperature from P"
         extends Modelica.Icons.Function;
   
   
@@ -130,7 +129,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         dTp := if p < fluidConstants[1].criticalPressure then (saturationTemperature(p) - saturationTemperature(0.999*p))/(0.001*p) else 0;
     end saturationTemperature_derp;
   
-    function eosCriticalConstants
+    pure function eosCriticalConstants
       output Temperature Tc;
       output AbsolutePressure Pc;
     
@@ -139,7 +138,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end eosCriticalConstants;
   
-    function pressureEOS_dT "Return pressure given temperature and density, by EOS"
+    pure function pressureEOS_dT "Return pressure given temperature and density, by EOS"
       input Density d;
       input Temperature T;
       output AbsolutePressure p;
@@ -149,7 +148,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end pressureEOS_dT;
   
-    function densities_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
+    pure function densities_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
       input AbsolutePressure p;
       input Temperature T;
       input String var;
@@ -162,7 +161,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end densities_pT;
   
-    function dhsFrom_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
+    pure function dhsFrom_pT "Return liquid and gas densities at give temperature and pressure, by EOS, bellow the critical temperature"
       input AbsolutePressure p;
       input Temperature T;
       input String var;
@@ -179,7 +178,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end dhsFrom_pT;
   
-    function solveEOS "Calls the external function that calculates some basic thermodynamic properties of the phases, used later for the definition of the ThermodynamicState and the calculation of  all thermodynamic properties"
+    pure function solveEOS "Calls the external function that calculates some basic thermodynamic properties of the phases, used later for the definition of the ThermodynamicState and the calculation of  all thermodynamic properties"
       input String opt;
       input Temperature x;
       input AbsolutePressure y;
@@ -190,9 +189,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Include = "#include \"FFmodelicaMedium.c\"");
     end solveEOS;
   
-    //Establish general states
+//Establish general states
     //------------------------
-  
+
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X or Xi. The function from T and P is unable to compute any gas fraction different from 0 or 1"
         extends Modelica.Icons.Function;
   
@@ -200,12 +199,12 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         state.phase := 1;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("p", T, p);
         if state.ld < 1.0 then
-  //state.gf := 1.0;
+//state.gf := 1.0;
           state.d := state.gd;
           state.h := state.gh;
           state.s := state.gs;
         else
-  //state.gf := 0.0;
+//state.gf := 0.0;
           state.d := state.ld;
           state.h := state.lh;
           state.s := state.ls;
@@ -218,21 +217,21 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
       algorithm
         state.d := d;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("d", T, d);
-  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else state.gd * (state.ld - d) / (d * (state.ld - state.gd));
+//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else state.gd * (state.ld - d) / (d * (state.ld - state.gd));
         state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
         state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
     end setState_dTX;
   
-    //here is necessary to arrive to calculate the thermoprops, so better to do every thing inside C
-  
+//here is necessary to arrive to calculate the thermoprops, so better to do every thing inside C
+
     redeclare function extends setState_phX "Return thermodynamic state as function of pressure, enthalpy and composition X or Xi"
         extends Modelica.Icons.Function;
   
       algorithm
         state.h := h;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("h", p, h);
-  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.h - state.lh) / (state.gh - state.lh);
+//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.h - state.lh) / (state.gh - state.lh);
         state.d := if state.gf == 1.0 then state.gd else if state.gf == 0.0 then state.ld else state.ld*state.gd/(state.gf*state.ld + (1.0 - state.gf)*state.gd);
         state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
@@ -244,15 +243,15 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
       algorithm
         state.s := s;
         (state.T, state.p, state.gd, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT, state.ld, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT, state.gf) := solveEOS("s", p, s);
-  //state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.s - state.ls) / (state.gs - state.ls);
+//state.gf := if state.ld == 0 then 1.0 else if state.gd == 0 then 0.0 else (state.s - state.ls) / (state.gs - state.ls);
         state.d := if state.gf > 0.999999 then state.gd else if state.gf < 0.000001 then state.ld else state.ld*state.gd/(state.gf*state.ld + (1.0 - state.gf)*state.gd);
         state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
         state.phase := if state.gf == 0 then 1 else if state.gf == 1 then 1 else 2;
     end setState_psX;
   
-    //Establish special states
+//Establish special states
     //------------------------
-  
+
     redeclare function extends setDewState "The input is a SaturationProperties record called sat. Returns the ThermodynamicState record at the dew point"
         extends Modelica.Icons.Function;
   
@@ -305,9 +304,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Inline = true);
     end setSmoothState;
   
-    //Getting properties using the ThermodynamicState record
+//Getting properties using the ThermodynamicState record
     //------------------------------------------------------------------------------------------------------------
-  
+
     redeclare function extends pressure "Return pressure"
         extends Modelica.Icons.Function;
   
@@ -446,14 +445,14 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             elseif state.gf == 1 then
               cv := state.gCv;
             else
-  //dP_dT := (state.gs - state.ls) / (1 / state.gd - 1 / state.ld);
-  //lDsT := state.lCp / state.T - state.lDvT * dP_dT;
-  //gDsT := state.gCp / state.T - state.gDvT * dP_dT;
-  //ldV_dT := state.lDvT + state.lDvp * dP_dT;
-  //gdV_dT := state.gDvT + state.gDvp * dP_dT;
-  //DgfT_v :=(state.gf * gdV_dT + (1 - state.gf) * ldV_dT) / (1 / state.ld - 1 / state.gd);
-  //cv := state.T * lDsT + state.T * DgfT_v * (state.gs - state.ls) + state.gf * state.T * (gDsT - lDsT);
-  //cv:=state.lCv+DgfT_v*((state.gh-state.p/state.gd)-(state.lh-state.p/state.ld))+state.gf*(state.gCv-state.lCv);
+//dP_dT := (state.gs - state.ls) / (1 / state.gd - 1 / state.ld);
+//lDsT := state.lCp / state.T - state.lDvT * dP_dT;
+//gDsT := state.gCp / state.T - state.gDvT * dP_dT;
+//ldV_dT := state.lDvT + state.lDvp * dP_dT;
+//gdV_dT := state.gDvT + state.gDvp * dP_dT;
+//DgfT_v :=(state.gf * gdV_dT + (1 - state.gf) * ldV_dT) / (1 / state.ld - 1 / state.gd);
+//cv := state.T * lDsT + state.T * DgfT_v * (state.gs - state.ls) + state.gf * state.T * (gDsT - lDsT);
+//cv:=state.lCv+DgfT_v*((state.gh-state.p/state.gd)-(state.lh-state.p/state.ld))+state.gf*(state.gCv-state.lCv);
               cv := state.lCv*(1 - state.gf) + state.gCv*state.gf;
     
             end if;
@@ -518,7 +517,8 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
   
     redeclare function extends thermalConductivity "Return thermal conductivity"
         extends Modelica.Icons.Function;
-        external "C" FF_thermalConductivityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, state.T, state.p, state.gf, lambda) annotation(
+        //external "C" FF_thermalConductivityM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, state.T, state.p, state.gf, lambda) annotation(
+        external "C" FF_ThCondM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, refName, state.T, state.d, state.p, state.gf, lambda) annotation(
           IncludeDirectory = "modelica://FreeFluids/Resources",
           Include = "#include \"FFmodelicaMedium.c\"");
     end thermalConductivity;
@@ -568,9 +568,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           Include = "#include \"FFmodelicaMedium.c\"");
     end surfaceTension;
   
-    //Functions at the Dew and Bubble points, from a SaturationProperties record linking SetSat functions are the originals
+//Functions at the Dew and Bubble points, from a SaturationProperties record linking SetSat functions are the originals
     //---------------------------------------------------------------------------------------------------------------------
-  
+
     redeclare function extends bubbleDensity "Return bubble point density"
         extends Modelica.Icons.Function;
       protected
@@ -603,7 +603,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             ddldp := -stateB.lDvp*stateB.ld^2 - stateB.lDvT*stateB.ld^2*dT_dp;
           else
-  //numeric derivarive
+//numeric derivarive
             (dl, dg) := densities_pT(sat.psat, sat.Tsat, "l");
             pl := saturationPressure(sat.Tsat - 0.3);
             (dll, dgl) := densities_pT(pl, sat.Tsat - 0.3, "l");
@@ -648,7 +648,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             ddvdp := -stateD.gDvp*stateD.gd^2 - stateD.gDvT*stateD.gd^2*dT_dp;
           else
-  //numeric derivative
+//numeric derivative
             (dl, dg) := densities_pT(sat.psat, sat.Tsat, "g");
             pl := saturationPressure(sat.Tsat - 1);
             (dll, dgl) := densities_pT(pl, sat.Tsat - 0.5, "g");
@@ -664,9 +664,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Real ld, ls, gd, gh, gs;
   
       algorithm
-  //external "C" FF_bubbleEnthalpyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, hl) annotation(
-  //IncludeDirectory = "modelica://FreeFluids/Resources",
-  //Include = "#include \"FFmodelicaMedium.c\"");
+//external "C" FF_bubbleEnthalpyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, hl) annotation(
+//IncludeDirectory = "modelica://FreeFluids/Resources",
+//Include = "#include \"FFmodelicaMedium.c\"");
         (ld, hl, ls, gd, gh, gs) := dhsFrom_pT(sat.psat, sat.Tsat, "e");
     end bubbleEnthalpy;
   
@@ -687,7 +687,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
           dhldp := 0;
         else
           if (0 == 0) then
-  //symbolic calculation
+//symbolic calculation
             stateB := setBubbleState(sat);
             stateD := setDewState(sat);
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
@@ -734,13 +734,13 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
             dT_dp := (1/stateD.d - 1/stateB.d)/(stateD.s - stateB.s);
             dhvdp := -stateD.T*stateD.gDvT + 1/stateD.d + stateD.gCp*dT_dp;
           else
-  //numeric calculation
+//numeric calculation
             pl := saturationPressure(sat.Tsat - 0.5);
             dhvdp := (dewEnthalpy(sat) - dewEnthalpy(setSat_T(sat.Tsat - 0.5)))/(sat.psat - pl);
           end if;
         end if;
-  //algorithm
-  //  dhvdp := if sat.Tsat < fluidConstants[1].criticalTemperature then (dewEnthalpy(setSat_T(sat.Tsat - 0.02)) - dewEnthalpy(sat)) / (saturationPressure(sat.Tsat - 0.02) - sat.psat) else 0;
+//algorithm
+//  dhvdp := if sat.Tsat < fluidConstants[1].criticalTemperature then (dewEnthalpy(setSat_T(sat.Tsat - 0.02)) - dewEnthalpy(sat)) / (saturationPressure(sat.Tsat - 0.02) - sat.psat) else 0;
     end dDewEnthalpy_dPressure;
   
     function vaporizationEnthalpy
@@ -757,9 +757,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Real ld, lh, gd, gh, gs;
   
       algorithm
-  //external "C" FF_bubbleEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sl) annotation(
-  //IncludeDirectory = "modelica://FreeFluids/Resources",
-  //Include = "#include \"FFmodelicaMedium.c\"");
+//external "C" FF_bubbleEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sl) annotation(
+//IncludeDirectory = "modelica://FreeFluids/Resources",
+//Include = "#include \"FFmodelicaMedium.c\"");
         (ld, lh, sl, gd, gh, gs) := dhsFrom_pT(sat.psat, sat.Tsat, "e");
     end bubbleEntropy;
   
@@ -770,14 +770,13 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         Real ld, lh, ls, gd, gh;
   
       algorithm
-  //external "C" FF_dewEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sv) annotation(
-  //IncludeDirectory = "modelica://FreeFluids/Resources",
-  //Include = "#include \"FFmodelicaMedium.c\"");
+//external "C" FF_dewEntropyM(mediumName, resDir, thermoModel, refState, reference_T, reference_p, sat.psat, sat.Tsat, sv) annotation(
+//IncludeDirectory = "modelica://FreeFluids/Resources",
+//Include = "#include \"FFmodelicaMedium.c\"");
         (ld, lh, ls, gd, gh, sv) := dhsFrom_pT(sat.psat, sat.Tsat, "w");
     end dewEntropy;
   
-  
-  //Functions needed for compatibility with Buildings.Media.Refrigerants
+//Functions needed for compatibility with Buildings.Media.Refrigerants
     function dPressureVap_dSpecificVolume_Tv "Derivative of pressure with regards to specific volume, at constant T"
       input Modelica.Units.SI.Temperature T "Temperature of refrigerant";
       input Modelica.Units.SI.SpecificVolume v "Specific volume of refrigerant";
@@ -875,9 +874,9 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
     <p><b>Introduction</b></p><p>The medium is designed for pure or pseudo-pure substances in liquid, gas, or two phases. The thermodynamic calculations are performed using different equations of state(EOS), implemented in C language, that are called using external functions. The C code and the substances data are in the Resources folder.</p>
     <p>For each substance there is the possibility of choosing between three EOS types: multiparameter, PCSAFT, or cubic. The &nbsp;substance data is contained in a C structure, that is exported from the database using the FreeFluids GUI software.</p>
     <p>The quality of the results is very high when multiparameter (Seltzmann and Wagner, SW) EOS are available. If not, PCSAFT or different flavours of cubic EOS can be used.</p>
-    <p>The transport properties are normally computed from temperature dependent correlations, with pressure correction. Nevertheless, for viscosity, the system will perform phase independent viscosity calculation (from temperature and density) for selected substances, using dedicated calculation or extended correspondent states with NIST correction polynomia, when available. In order to use the phase independent viscosity calculation the thermoModel parameter must be 3 (multiparameter EOS), as it is the only way to be sure that the supplied density is reliable. For thermal conductivity the same type of calculations are already programmed, but have been inactivated till finishing testing.</p>
+    <p>The transport properties are normally computed from temperature dependent correlations, with pressure correction. Nevertheless, for viscosity, the system will perform phase independent viscosity calculation (from temperature and density) for selected substances, using dedicated calculation or extended correspondent states with NIST correction polynomia, when available. In order to use the phase independent viscosity calculation the thermoModel parameter must be 3 (multiparameter EOS), as it is the only way to be sure that the supplied density is reliable. For thermal conductivity the same type of calculations are used.</p>
     <p>The medium implements all the requirements of Modelica.Media.PartialTwoPhaseMedium. It is compatible with the new frontend of OpenModelica.&nbsp;</p><p>&nbsp;The main limitation of the medium, when using SW or PCSAFT EOS, is in the vecinity of the critical point, as no special technique, as for example splines, is used. The medium is much slower than the TMedia one, but is the price for the better precision and wider application.</p>
-    <p><b>The C code</b></p><p>The C code is placed in the Resources folder.</p><p>The FFbasic.h file contains the basic definition of structures and enumerations used in the code.&nbsp;</p><p>The FFmodelicaMedium.c file contains the interface between Modelica and C. The FFeosPure.c and FFphysprop.c files contain the code that will perform the calculations in C.</p><p><b>Transport properties by dedicated calculation or ECS</b></p><p>The calculation of the substance viscosity is managed by the FF_Viscosity function in the FFphysprop.c file. If you have selected to work with the multiparameter EOS (thermoModel=3), that grants a good density calculation, it will check if there is a dedicated calculation from temperature and density (available only for few substances). If not, it will check if the correlation defined for gas viscosity calculation is the 112 (NIST coefficients for viscosity calculation using ECS) and that the data charged for the reference substance correspond to the needed one. If this is OK the ECS calculation will be applied for viscosity, otherwise temperature dependent correlations, with pressure correction, will be used.</p><p>If the EOS is of the cubic or PCSAFT type, correlations will be used if available. If not, the Lucas approximation will be used for gas. For liquid phase, if there is no correlation defined, the calculation will be done using ECS from the reference liquid defined.</p><p>The definition of the reference liquid is done at medium package level, giving value to the const String refName, which default value is 'Propane'.</p><p><b>Medium definition</b></p><p>We need to define the mediums to be used. The already made definitions are inside the Fluids subpackage. Each definition is very short, just with the minimum information necessary. The most important of it is the mediumName, as this name is the name of the file (with extension .sd) placed in the Resources/Fluids folder that will be used for charging the data to the C structure.</p><p></p><p>For each medium you need both a medium definition in Modelica, and a binary file with the data in the Resources/Fluids folder. For adding new media both can be made using the program FreeFluidsGui.exe that has been also placed in the Resources/Extra folder. It will access the data base, allow you to select the substance, with the EOS and correlations to be used, and later export it to a binary file, with the data as C structure, and to a text file. The data file (.sd extension) must be placed into the FreeFluids.ExternalPure.Fluids folder. The medium definition package in Modelica can be placed at your choice, but is recomended to be placed inside the ExternalPure/Fluids package.</p><p>It is important to understand that the Vp, liquid saturated density, and gas saturated density, to use are not the best one, but the ones that match the calculation of the EOS. For example, if you have a PCSAFT EOS you must first construct correlations that match this EOS, and export them along with the EOS as a C binary structure. In the package extension in Modelica you should make the 'ancillaries' Integer constant equal to 0,2 or 3 in order to: no use ancillaries, use with SAFT type EOS, or use with SW type EOS. Transport properties correlations should be the best availables.</p><p>The program allows also the exportation of the correlations in the format used by the TMedia package.</p><p><b>Medium configuration</b></p><p>When extending the medium, the following configuration must be done:</p>
+    <p><b>The C code</b></p><p>The C code is placed in the Resources folder.</p><p>The FFbasic.h file contains the basic definition of structures and enumerations used in the code.&nbsp;</p><p>The FFmodelicaMedium.c file contains the interface between Modelica and C. The FFeosPure.c and FFphysprop.c files contain the code that will perform the calculations in C.</p><p><b>Transport properties by dedicated calculation or ECS</b></p><p>The calculation of the substance viscosity is managed by the FF_Viscosity function in the FFphysprop.c file. If you have selected to work with the multiparameter EOS (thermoModel=3), that grants a good density calculation, it will check if there is a dedicated calculation from temperature and density (available only for few substances). If not, it will check if the correlation defined for gas viscosity calculation is the 112 (NIST coefficients for viscosity calculation using ECS) and that the data charged for the reference substance correspond to the needed one. If this is OK the ECS calculation will be applied for viscosity, otherwise temperature dependent correlations, with pressure correction, will be used.</p><p>If the EOS is of the cubic or PCSAFT type, correlations will be used if available. If not, the Lucas approximation will be used for gas. For liquid phase, if there is no correlation defined, the calculation will be done using ECS from the reference liquid defined.</p><p>For thermal conductivity a similar method is used.</p><p>The definition of the reference liquid is done at medium package level, giving value to the const String refName, which default value is 'Propane'.</p><p><b>Extra properties</b></p><p>Some property functions not defined in the Modelica.Media.Interfaces.PartialTwoPhaseMedium are also implemented. Four of them are for the calculation of liquid and gas dynamic viscosity and thermal conductivity. These functions will make the calculation using mainly correlations, without using dedicated calculation or Nist coefficients.</p><p>Ten more functions are added in order to match the requirements of the medium used in compressors, in the Buildings library.&nbsp;</p><p><b>Medium definition</b></p><p>We need to define the mediums to be used. The already made definitions are inside the Fluids subpackage. Each definition is very short, just with the minimum information necessary. The most important of it is the mediumName, as this name is the name of the file (with extension .sd) placed in the Resources/Fluids folder that will be used for charging the data to the C structure.</p><p></p><p>For each medium you need both a medium definition in Modelica, and a binary file with the data in the Resources/Fluids folder. For adding new media both can be made using the program FreeFluidsGui.exe that has been also placed in the Resources/Extra folder. It will access the data base, allow you to select the substance, with the EOS and correlations to be used, and later export it to a binary file, with the data as C structure, and to a text file. The data file (.sd extension) must be placed into the FreeFluids.ExternalPure.Fluids folder. The medium definition package in Modelica can be placed at your choice, but is recomended to be placed inside the ExternalPure/Fluids package.</p><p>It is important to understand that the Vp, liquid saturated density, and gas saturated density, to use are not the best one, but the ones that match the calculation of the EOS. For example, if you have a PCSAFT EOS you must first construct correlations that match this EOS, and export them along with the EOS as a C binary structure. In the package extension in Modelica you should make the 'ancillaries' Integer constant equal to 0,2 or 3 in order to: no use ancillaries, use with SAFT type EOS, or use with SW type EOS. Transport properties correlations should be the best availables.</p><p>The program allows also the exportation of the correlations in the format used by the TMedia package.</p><p><b>Medium configuration</b></p><p>When extending the medium, the following configuration must be done:</p>
     <p>The thermoModel Integer constant must be made equal to 1 for using the cubic EOS, 2 for the PCSAFT, or 3 for the SW.</p><p>The ancillaries Integer constant must be made equal to 3 for using ancillary functions (for saturated pressure and densities) with SW EOS, in order to obtain faster calculation. If made equal to 2 they will be used with the SAFT EOS. If made equal to 0, the calculations are made using only the EOS. It is slower, but can be necessary if the ancillary functions do not match the EOS with enough precision.&nbsp;</p>
     <p>The referenceState Integer constant  must be made equal to 1 for using ASHRAE reference state, to 2 for using IIR, to 3 for using NBP, to 4 for using user reference_T and reference_p. Any other number will produce an unreferenced calculation for enthalpy and entropy.</p>
     <p>If you are going to use the BaseProperties model, you must make the inputChoice constant String equal to 'ph', 'pT' or 'dT', as needed. When instantiating the model, you can still change the selection just for the object, specifying the value for the localInputChoice constant.</p>
