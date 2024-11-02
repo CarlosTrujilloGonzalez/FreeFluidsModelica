@@ -1,7 +1,7 @@
 within;
 package FreeFluids "FreeFluids.mo by Carlos Trujillo
       This file is part of the Free Fluids application
-      Copyright (C) 2008-2022  Carlos Trujillo Gonzalez
+      Copyright (C) 2008-2024  Carlos Trujillo Gonzalez
         
       This program is free software; you can redistribute it and/or
       modify it under the terms of the GNU General Public License version 3
@@ -25,6 +25,7 @@ package FreeFluids "FreeFluids.mo by Carlos Trujillo
   type Possitive = Real(min = 0.0);
 
   annotation(
-    version="2.7",
-    uses(Modelica(version = "4.0.0")));
+    version="3.2.1",
+    uses(Modelica(version = "4.0.0")),
+  Documentation);
 end FreeFluids;
