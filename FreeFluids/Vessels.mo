@@ -16,42 +16,41 @@ package Vessels "Vessels.mo by Carlos Trujillo
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA."
-
   model VesselFlow
     /*LiquidV
-    liquidL*/
+        liquidL*/
     replaceable package MediumL = FreeFluids.LMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium "liquid medium in the vessel";
     replaceable package MediumG = Modelica.Media.Air.DryAirNasa constrainedby Modelica.Media.Interfaces.PartialMedium "gas medium in the vessel";
-    parameter Modelica.Units.SI.Height inletL=0 "inlet height over lowest internal point of the vessel" annotation(
+    parameter Modelica.Units.SI.Height inletL = 0 "inlet height over lowest internal point of the vessel" annotation(
       Dialog(tab = "Nozzles config"));
-    parameter Modelica.Units.SI.Height outletL=0 "outlet height over lowest internal point of the vessel" annotation(
+    parameter Modelica.Units.SI.Height outletL = 0 "outlet height over lowest internal point of the vessel" annotation(
       Dialog(tab = "Nozzles config"));
-    parameter Modelica.Units.SI.Height overflowL=0 "overflow height over lowest internal point of the vessel" annotation(
+    parameter Modelica.Units.SI.Height overflowL = 0 "overflow height over lowest internal point of the vessel" annotation(
       Dialog(tab = "Nozzles config"));
-    parameter Modelica.Units.SI.Height ventOutL=0 "overflow height over lowest internal point of the vessel" annotation(
+    parameter Modelica.Units.SI.Height ventOutL = 0 "overflow height over lowest internal point of the vessel" annotation(
       Dialog(tab = "Nozzles config"));
-    parameter Modelica.Units.SI.ThermalConductance lgConductance=0 "thermal conductange at the liquid-gas interface" annotation(
+    parameter Modelica.Units.SI.ThermalConductance lgConductance = 0 "thermal conductange at the liquid-gas interface" annotation(
       Dialog(tab = "Operations"));
     parameter SI.Volume vesselVolume = 1.0 "total volume of the vessel" annotation(
       Dialog(tab = "Initialization"));
     parameter SI.Volume initialLiquidVolume = 1.0 "initial volume of liquid in the vessel" annotation(
       Dialog(tab = "Initialization"));
-    final parameter SI.Mass initialLiquidMass = initialLiquidVolume*MediumL.density(MediumL.setState_pTX(initialP,initialT)) "initial vessel liquid mass" annotation(
+    final parameter SI.Mass initialLiquidMass = initialLiquidVolume*MediumL.density(MediumL.setState_pTX(initialP, initialT)) "initial vessel liquid mass" annotation(
       Dialog(tab = "Initialization"));
-    final parameter SI.Mass initialGasMass = (vesselVolume-initialLiquidVolume)*MediumG.density(MediumG.setState_pTX(initialP,initialT)) "initial vessel gas mass" annotation(
+    final parameter SI.Mass initialGasMass = (vesselVolume - initialLiquidVolume)*MediumG.density(MediumG.setState_pTX(initialP, initialT)) "initial vessel gas mass" annotation(
       Dialog(tab = "Initialization"));
-    parameter SI.Temperature initialT=298 "initial temperature of the vessel liquid" annotation(
+    parameter SI.Temperature initialT = 298 "initial temperature of the vessel liquid" annotation(
       Dialog(tab = "Initialization"));
     parameter SI.AbsolutePressure initialP = 101325 "initial vessel pressure in the gas phase" annotation(
       Dialog(tab = "Initialization"));
-    parameter Modelica.Units.SI.Energy initialLiquidEnthalpy = initialLiquidMass*MediumL.specificEnthalpy(MediumL.setState_pTX(initialP,initialT)) annotation(
+    parameter Modelica.Units.SI.Energy initialLiquidEnthalpy = initialLiquidMass*MediumL.specificEnthalpy(MediumL.setState_pTX(initialP, initialT)) annotation(
       Dialog(tab = "Initialization"));
-    parameter Modelica.Units.SI.Energy initialGasEnthalpy = initialGasMass*MediumG.specificEnthalpy(MediumG.setState_pTX(initialP,initialT)) annotation(
+    parameter Modelica.Units.SI.Energy initialGasEnthalpy = initialGasMass*MediumG.specificEnthalpy(MediumG.setState_pTX(initialP, initialT)) annotation(
       Dialog(tab = "Initialization"));
-    parameter Boolean useVentIn=false annotation(
+    parameter Boolean useVentIn = false annotation(
       Dialog(tab = "Nozzles config"));
     Modelica.Units.SI.Volume LiquidV "volume of liquid in the vessel";
-    Modelica.Units.SI.Height LiquidL(min=0) "level of liquid in the vessel";
+    Modelica.Units.SI.Height LiquidL(min = 0) "level of liquid in the vessel";
     Modelica.Units.SI.Volume ViTotal "total internal volume";
     FreeFluids.Interfaces.FluidPortA Inlet annotation(
       Placement(visible = true, transformation(origin = {-100, -70}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-88, -72}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -59,25 +58,24 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Placement(visible = true, transformation(origin = {100, -70}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {88, -72}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     FreeFluids.Interfaces.FluidPortB Overflow annotation(
       Placement(visible = true, transformation(origin = {100, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {87, 81}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
-    FreeFluids.Interfaces.FluidPortA VentIn if useVentIn==true annotation(
+    FreeFluids.Interfaces.FluidPortA VentIn if useVentIn == true annotation(
       Placement(visible = true, transformation(origin = {-30, 84}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-30, 92}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     FreeFluids.Interfaces.FluidPortB VentOut annotation(
       Placement(visible = true, transformation(origin = {30, 84}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {29, 93}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
-    SI.AbsolutePressure P(start=initialP) "vessel pressure at the gas phase";
-    SI.Temperature Tl(start=initialT) "liquid temperature, considered uniform";
-    SI.Temperature Tg(start=initialT) "gas temperature, considered uniform";
+    SI.AbsolutePressure P(start = initialP) "vessel pressure at the gas phase";
+    SI.Temperature Tl(start = initialT) "liquid temperature, considered uniform";
+    SI.Temperature Tg(start = initialT) "gas temperature, considered uniform";
     MediumL.ThermodynamicState StateL "thermodynamic state of the liquid phase";
     MediumG.ThermodynamicState StateG "thermodynamic state of the gas medium";
     MediumL.SpecificEnthalpy Hl "specific enthalpy of the liquid in the tank";
-    Modelica.Units.SI.Energy LiquidEnthalpy(start=initialLiquidEnthalpy) "total enthalpy of the liquid";
+    Modelica.Units.SI.Energy LiquidEnthalpy(start = initialLiquidEnthalpy) "total enthalpy of the liquid";
     MediumL.SpecificEnthalpy Hg "specific enthalpy of the gas in the tank";
-    Modelica.Units.SI.Energy GasEnthalpy(start=initialGasEnthalpy) "total enthalpy of the gas";
+    Modelica.Units.SI.Energy GasEnthalpy(start = initialGasEnthalpy) "total enthalpy of the gas";
     MediumL.Density RhoL "density of the liquid phase";
     MediumG.Density RhoG "density of the gas phase";
     Modelica.Units.SI.Volume GasV "volume of gas phase in the vessel";
-    Modelica.Units.SI.Mass LiquidMass(start=initialLiquidMass) "liquid mass in the vessel";
-    Modelica.Units.SI.Mass GasMass(start=initialGasMass) "gas mass in the vessel";
-  
+    Modelica.Units.SI.Mass LiquidMass(start = initialLiquidMass) "liquid mass in the vessel";
+    Modelica.Units.SI.Mass GasMass(start = initialGasMass) "gas mass in the vessel";
   equation
     Outlet.Elevation = Inlet.Elevation + outletL - inletL;
     Overflow.Elevation = Inlet.Elevation + overflowL - inletL;
@@ -88,38 +86,38 @@ package Vessels "Vessels.mo by Carlos Trujillo
     StateL = MediumL.setState_phX(P, Hl);
     Tl = MediumL.temperature(StateL);
     RhoL = MediumL.density(StateL);
-    LiquidMass=LiquidV*RhoL;
-    LiquidEnthalpy=LiquidMass*Hl;
-    Inlet.P = if LiquidL > inletL then P + (LiquidL - inletL) * RhoL * g_n else P;
-    Outlet.P = if LiquidL > outletL then P + (LiquidL - outletL) * RhoL * g_n else P;
-    Overflow.P = if LiquidL > overflowL then P + (LiquidL - overflowL) * RhoL * g_n else P;
-    GasV=ViTotal-LiquidV;
+    LiquidMass = LiquidV*RhoL;
+    LiquidEnthalpy = LiquidMass*Hl;
+    Inlet.P = if LiquidL > inletL then P + (LiquidL - inletL)*RhoL*g_n else P;
+    Outlet.P = if LiquidL > outletL then P + (LiquidL - outletL)*RhoL*g_n else P;
+    Overflow.P = if LiquidL > overflowL then P + (LiquidL - overflowL)*RhoL*g_n else P;
+    GasV = ViTotal - LiquidV;
     StateG = MediumG.setState_phX(P, Hg);
     Tg = MediumG.temperature(StateG);
     RhoG = MediumG.density(StateG);
-    GasMass=GasV*RhoG;
-    GasEnthalpy=GasMass*Hg;
-    if useVentIn==true then
-      VentIn.P=P;
+    GasMass = GasV*RhoG;
+    GasEnthalpy = GasMass*Hg;
+    if useVentIn == true then
+      VentIn.P = P;
     end if;
-    VentOut.P=P;
+    VentOut.P = P;
     VentOut.Elevation = Inlet.Elevation + ventOutL - inletL;
-    VentOut.H=Hg;
-    VentOut.X=MediumG.X_default;
+    VentOut.H = Hg;
+    VentOut.X = MediumG.X_default;
     der(LiquidMass) = (Inlet.G + Outlet.G + Overflow.G);
-    der(LiquidEnthalpy) = Inlet.G * Inlet.H +Outlet.G*Outlet.H +Overflow.G * Overflow.H + lgConductance*(Tg-Tl);
-    if useVentIn==true then
-      der(GasMass)=VentIn.G+VentOut.G;
-      der(GasEnthalpy)=VentIn.G*VentIn.H+VentOut.G*VentOut.H+lgConductance*(Tl-Tg);
+    der(LiquidEnthalpy) = Inlet.G*Inlet.H + Outlet.G*Outlet.H + Overflow.G*Overflow.H + lgConductance*(Tg - Tl);
+    if useVentIn == true then
+      der(GasMass) = VentIn.G + VentOut.G;
+      der(GasEnthalpy) = VentIn.G*VentIn.H + VentOut.G*VentOut.H + lgConductance*(Tl - Tg);
     else
-      der(GasMass)=VentOut.G;
-      der(GasEnthalpy)=VentOut.G*VentOut.H+lgConductance*(Tl-Tg);
+      der(GasMass) = VentOut.G;
+      der(GasEnthalpy) = VentOut.G*VentOut.H + lgConductance*(Tl - Tg);
     end if;
-  annotation(
+    annotation(
       Icon(graphics = {Text(origin = {-29, 76}, extent = {{-17, 6}, {17, -6}}, textString = "Vent in"), Text(origin = {30, 77}, extent = {{-18, 7}, {18, -7}}, textString = "Vent out"), Text(origin = {-59, -68}, lineColor = {236, 205, 0}, extent = {{-17, 6}, {17, -6}}, textString = "Inlet"), Text(origin = {52, -68}, lineColor = {236, 205, 0}, extent = {{-18, 6}, {18, -6}}, textString = "Outlet"), Text(origin = {80, 65}, extent = {{-20, 9}, {20, -9}}, textString = "Overflow")}),
       Documentation(info = "<html><head></head><body><div>It contains the equations for tracking the liquid and gas mass contained in the vessel and their thermodynamic properties, considering a complete mixing situation.</div>Declares inlet-outlet ports, for both gas and liquid.<div>The mass and enthalpy of the liquid and gas phases are calculated separately. For the mass the restriction that both phases must fill the vessel volume is introduced.</div><div>For enthalpy, the parameter lgConductance governs the enthalpy transfer between the two phases.</div><div>The model is initialized at initialLiquidMass, initialGasMass, initialP and initialT. In fact, initialT is just used in the calculation of initialLiquidEnthalpy, and initialGasEnthalpy.</div><div>InitialLiquidMass and initalGasMass are calculated from initialLiquidVolume and vesselVolume.</div><div>As the vessel volume can be unknown you can run the model with a vessel volume higher than the initialLiquidVolume, read the vessel volume from the result of the simulation, and run again the model with the real vessel volume.</div></body></html>"));
   end VesselFlow;
-  
+
   model VesselSimple
     extends VesselFlow;
     parameter Modelica.Units.SI.Area section = 0 "uniform area of the vessel" annotation(
@@ -127,14 +125,14 @@ package Vessels "Vessels.mo by Carlos Trujillo
     parameter Modelica.Units.SI.Height height = 0 "height of the vessel" annotation(
       Dialog(tab = "Shape"));
   equation
-    ViTotal=section*height;
-    LiquidV=LiquidL*section;    
+    ViTotal = section*height;
+    LiquidV = LiquidL*section;
     annotation(
       Icon(graphics = {Rectangle(origin = {0, -30}, fillColor = {122, 208, 251}, fillPattern = FillPattern.VerticalCylinder, extent = {{-80, 50}, {80, -50}}), Rectangle(origin = {0, 10}, extent = {{-80, 90}, {80, -90}})}),
       Documentation(info = "<html><head></head><body>The VesselFlow model using just a fixed area and height for the vessel.</body></html>"));
   end VesselSimple;
-  
-//Physical description of the vessel
+
+  //Physical description of the vessel
   //----------------------------------
 
   model VesselPhysical
@@ -152,15 +150,15 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Dialog(tab = "Shell data"));
     parameter Types.HeadShape vesselBottom = Types.HeadShape.flat annotation(
       Dialog(tab = "Bottom data"));
-    parameter Fraction bFd=if vesselBottom == Types.HeadShape.Klopper then 1.0 elseif vesselBottom == Types.HeadShape.Korbbogen then 0.8 else 0 "ratio of bottom dish radius to tank diameter for torispheral head" annotation(
+    parameter Fraction bFd = if vesselBottom == Types.HeadShape.Klopper then 1.0 elseif vesselBottom == Types.HeadShape.Korbbogen then 0.8 else 0 "ratio of bottom dish radius to tank diameter for torispheral head" annotation(
       Dialog(tab = "Bottom data"));
-    parameter Fraction bFk=if vesselBottom == Types.HeadShape.Klopper then 0.1 elseif vesselBottom == Types.HeadShape.Korbbogen then 0.154 else 0 "ratio of bottom knuckle radius to tank diameter for torispheral head" annotation(
+    parameter Fraction bFk = if vesselBottom == Types.HeadShape.Klopper then 0.1 elseif vesselBottom == Types.HeadShape.Korbbogen then 0.154 else 0 "ratio of bottom knuckle radius to tank diameter for torispheral head" annotation(
       Dialog(tab = "Bottom data"));
     parameter Types.HeadShape vesselTop = Types.HeadShape.flat annotation(
       Dialog(tab = "Top data"));
-    parameter Fraction tFd=if vesselTop == Types.HeadShape.Klopper then 1.0 elseif vesselTop == Types.HeadShape.Korbbogen then 0.8 else 0 "ratio of bottom dish radius to tank diameter for torispheral head" annotation(
+    parameter Fraction tFd = if vesselTop == Types.HeadShape.Klopper then 1.0 elseif vesselTop == Types.HeadShape.Korbbogen then 0.8 else 0 "ratio of bottom dish radius to tank diameter for torispheral head" annotation(
       Dialog(tab = "Top data"));
-    parameter Fraction tFk=if vesselTop == Types.HeadShape.Klopper then 0.1 elseif vesselTop == Types.HeadShape.Korbbogen then 0.154 else 0 "ratio of bottom knuckle radius to tank diameter for torispheral head" annotation(
+    parameter Fraction tFk = if vesselTop == Types.HeadShape.Klopper then 0.1 elseif vesselTop == Types.HeadShape.Korbbogen then 0.154 else 0 "ratio of bottom knuckle radius to tank diameter for torispheral head" annotation(
       Dialog(tab = "Top data"));
     parameter SI.Distance topHeight = 0 "top height if ellipsoidal/conical/piramid. Measured inside" annotation(
       Dialog(tab = "Top data"));
@@ -190,12 +188,11 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Dialog(tab = "Top data"));
     parameter SI.ThermalConductivity topK = shellK "top wall thermal conductivity. typical value for SS=16.7, HDPE:0.33" annotation(
       Dialog(tab = "Top data"));
-    parameter SI.Distance insulationThickness(displayUnit="mm") = 0 annotation(
+    parameter SI.Distance insulationThickness(displayUnit = "mm") = 0 annotation(
       Dialog(tab = "Insulation"));
     parameter SI.ThermalConductivity insulationK = 0.04 "Insulation thermal conductivity. Typical value for glass fiber=0.04 W/(K·m)" annotation(
       Dialog(tab = "Insulation"));
-  
-    Real Balpha1,Balpha2,Talpha1,Talpha2 "height of the dish and knuckle regions of torispheral heads" ;
+    Real Balpha1, Balpha2, Talpha1, Talpha2 "height of the dish and knuckle regions of torispheral heads";
     Modelica.Units.SI.Diameter Di "internal diameter, if cylinder or sphere";
     Modelica.Units.SI.Diameter Do "external diameter, if cylinder or sphere";
     Modelica.Units.SI.Area ShellSi "shell internal surface";
@@ -224,27 +221,26 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Modelica.Units.SI.Mass MassTotal "total vessel mass, without containt";
   equation
     if vesselBottom == Types.HeadShape.Klopper or vesselBottom == Types.HeadShape.Korbbogen then
-      Balpha1=bFd*(1-(1-((0.5-bFk)/(bFd-bFk))^2)^0.5);
-      Balpha2=bFd-(bFd^2-2*bFd*bFk+bFk-0.25)^0.5;
+      Balpha1 = bFd*(1 - (1 - ((0.5 - bFk)/(bFd - bFk))^2)^0.5);
+      Balpha2 = bFd - (bFd^2 - 2*bFd*bFk + bFk - 0.25)^0.5;
     else
-      Balpha1=0;
-      Balpha2=0;
+      Balpha1 = 0;
+      Balpha2 = 0;
     end if;
     if vesselTop == Types.HeadShape.Klopper or vesselTop == Types.HeadShape.Korbbogen then
-      Talpha1=tFd*(1-(1-((0.5-tFk)/(tFd-tFk))^2)^0.5);
-      Talpha2=tFd-(tFd^2-2*tFd*tFk+tFk-0.25)^0.5;
+      Talpha1 = tFd*(1 - (1 - ((0.5 - tFk)/(tFd - tFk))^2)^0.5);
+      Talpha2 = tFd - (tFd^2 - 2*tFd*tFk + tFk - 0.25)^0.5;
     else
-      Talpha1=0;
-      Talpha2=0;
+      Talpha1 = 0;
+      Talpha2 = 0;
     end if;
-    
     if vesselForm == Types.VesselForm.sphere then
       Di = di;
-      Do = di + 2 * shellThickness;
-      ShellSi = Modelica.Constants.pi * di ^ 2;
-      ShellVi = Modelica.Constants.pi * di ^ 3 / 6;
-      ShellSo = Modelica.Constants.pi * Do ^ 2;
-      ShellVo = Modelica.Constants.pi * Do ^ 3 / 6;
+      Do = di + 2*shellThickness;
+      ShellSi = Modelica.Constants.pi*di^2;
+      ShellVi = Modelica.Constants.pi*di^3/6;
+      ShellSo = Modelica.Constants.pi*Do^2;
+      ShellVo = Modelica.Constants.pi*Do^3/6;
       BottomHi = 0;
       BottomSi = 0;
       BottomVi = 0;
@@ -259,12 +255,12 @@ package Vessels "Vessels.mo by Carlos Trujillo
       TopVo = 0;
     elseif vesselForm == Types.VesselForm.cylinder then
       Di = di;
-      Do = di + 2 * shellThickness;
-      ShellSi = Modelica.Constants.pi * di * shellLength;
-      ShellVi = Modelica.Constants.pi * di ^ 2 * shellLength / 4;
-      ShellSo = Modelica.Constants.pi * Do * shellLength;
-      ShellVo = Modelica.Constants.pi * Do ^ 2 * shellLength / 4;
-  if vesselTop == Types.HeadShape.open then
+      Do = di + 2*shellThickness;
+      ShellSi = Modelica.Constants.pi*di*shellLength;
+      ShellVi = Modelica.Constants.pi*di^2*shellLength/4;
+      ShellSo = Modelica.Constants.pi*Do*shellLength;
+      ShellVo = Modelica.Constants.pi*Do^2*shellLength/4;
+      if vesselTop == Types.HeadShape.open then
         TopHi = 0;
         TopSi = 0;
         TopVi = 0;
@@ -273,116 +269,115 @@ package Vessels "Vessels.mo by Carlos Trujillo
         TopVo = 0;
       elseif vesselTop == Types.HeadShape.flat then
         TopHi = 0;
-        TopSi = Modelica.Constants.pi * di ^ 2 / 4;
+        TopSi = Modelica.Constants.pi*di^2/4;
         TopVi = 0;
         TopHo = topThickness;
-        TopSo = Modelica.Constants.pi * Do ^ 2 / 4 "the intersect volume is considered as of the top";
-        TopVo = Modelica.Constants.pi * Do ^ 2 / 4 * topThickness;
+        TopSo = Modelica.Constants.pi*Do^2/4 "the intersect volume is considered as of the top";
+        TopVo = Modelica.Constants.pi*Do^2/4*topThickness;
       elseif vesselTop == Types.HeadShape.conical then
         TopHi = topHeight;
-        TopSi = Modelica.Constants.pi * di * (di ^ 2 / 4 + topHeight ^ 2) ^ 0.5;
-        TopVi = Modelica.Constants.pi * di ^ 2 * topHeight / 12;
-        TopHo = topHeight + topThickness * (di ^ 2 / 4 + topHeight ^ 2) ^ 0.5 / (di / 2);
-        TopSo = Modelica.Constants.pi * (di + 2 * topThickness) * ((di + 2 * topThickness) ^ 2 / 4 + topHeight ^ 2) ^ 0.5;
-        TopVo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 2 * (topHeight + topThickness) / 12;
+        TopSi = Modelica.Constants.pi*di*(di^2/4 + topHeight^2)^0.5;
+        TopVi = Modelica.Constants.pi*di^2*topHeight/12;
+        TopHo = topHeight + topThickness*(di^2/4 + topHeight^2)^0.5/(di/2);
+        TopSo = Modelica.Constants.pi*(di + 2*topThickness)*((di + 2*topThickness)^2/4 + topHeight^2)^0.5;
+        TopVo = Modelica.Constants.pi*(di + 2*topThickness)^2*(topHeight + topThickness)/12;
 //elseif vesselTop == Types.HeadShape.Klopper or vesselTop == Types.HeadShape.Korbbogenthen then
       elseif vesselTop == Types.HeadShape.Klopper then
-        TopHi = Talpha2 * di;
+        TopHi = Talpha2*di;
 //0.19377 * di;
-        TopSi = 0.947 * di ^ 2;
-        TopVi = 0.098966 * di ^ 3;
-        TopHo = Talpha2 * (di + 2 * topThickness);
+        TopSi = 0.947*di^2;
+        TopVi = 0.098966*di^3;
+        TopHo = Talpha2*(di + 2*topThickness);
 //0.19377 * (di + 2 * topThickness);
-        TopSo = 0.947 * (di + 2 * topThickness) ^ 2;
-        TopVo = 0.098966 * (di + 2 * topThickness) ^ 3;
+        TopSo = 0.947*(di + 2*topThickness)^2;
+        TopVo = 0.098966*(di + 2*topThickness)^3;
       elseif vesselTop == Types.HeadShape.Korbbogen then
-        TopHi = Talpha2 * di;
+        TopHi = Talpha2*di;
 //0.2545 * di;
-        TopSi = 0.986 * di ^ 2;
-        TopVi = 0.1307 * di ^ 3;
-        TopHo = Talpha2 * (di + 2 * topThickness);
+        TopSi = 0.986*di^2;
+        TopVi = 0.1307*di^3;
+        TopHo = Talpha2*(di + 2*topThickness);
 //0.2545 * (di + 2 * topThickness);
-        TopSo = 0.986 * (di + 2 * topThickness) ^ 2;
-        TopVo = 0.1307 * (di + 2 * topThickness) ^ 3;
+        TopSo = 0.986*(di + 2*topThickness)^2;
+        TopVo = 0.1307*(di + 2*topThickness)^3;
       elseif vesselTop == Types.HeadShape.semielliptical then
-        TopHi = 0.25 * di;
-        TopSi = 1.084 * di ^ 2;
-        TopVi = Modelica.Constants.pi * di ^ 3 / 24;
-        TopHo = 0.25 * (di + 2 * topThickness);
-        TopSo = 1.084 * (di + 2 * topThickness) ^ 2;
-        TopVo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 3 / 24;
+        TopHi = 0.25*di;
+        TopSi = 1.084*di^2;
+        TopVi = Modelica.Constants.pi*di^3/24;
+        TopHo = 0.25*(di + 2*topThickness);
+        TopSo = 1.084*(di + 2*topThickness)^2;
+        TopVo = Modelica.Constants.pi*(di + 2*topThickness)^3/24;
       elseif vesselTop == Types.HeadShape.hemispherical then
-        TopHi = 0.5 * di;
-        TopSi = Modelica.Constants.pi * di ^ 2 / 2;
-        TopVi = Modelica.Constants.pi * di ^ 3 / 12;
-        TopHo = 0.5 * (di + 2 * topThickness);
-        TopSo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 2 / 2;
-        TopVo = Modelica.Constants.pi * (di + 2 * topThickness) ^ 3 / 12;
+        TopHi = 0.5*di;
+        TopSi = Modelica.Constants.pi*di^2/2;
+        TopVi = Modelica.Constants.pi*di^3/12;
+        TopHo = 0.5*(di + 2*topThickness);
+        TopSo = Modelica.Constants.pi*(di + 2*topThickness)^2/2;
+        TopVo = Modelica.Constants.pi*(di + 2*topThickness)^3/12;
       end if;
-  if vesselBottom == Types.HeadShape.flat then
+      if vesselBottom == Types.HeadShape.flat then
         BottomHi = 0;
-        BottomSi = Modelica.Constants.pi * di ^ 2 / 4;
+        BottomSi = Modelica.Constants.pi*di^2/4;
         BottomVi = 0;
         BottomHo = bottomThickness;
-        BottomSo = Modelica.Constants.pi * di ^ 2 / 4 "the intersect volume is considered as of the shell";
-        BottomVo = Modelica.Constants.pi * di ^ 2 / 4 * bottomThickness;
+        BottomSo = Modelica.Constants.pi*di^2/4 "the intersect volume is considered as of the shell";
+        BottomVo = Modelica.Constants.pi*di^2/4*bottomThickness;
       elseif vesselBottom == Types.HeadShape.conical then
         BottomHi = bottomHeight;
-        BottomSi = Modelica.Constants.pi * di * (di ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5;
-        BottomVi = Modelica.Constants.pi * di ^ 2 * bottomHeight / 12;
-        BottomHo = bottomHeight + bottomThickness * (di ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5 / (di / 2);
-        BottomSo = Modelica.Constants.pi * (di + 2 * bottomThickness) * ((di + 2 * bottomThickness) ^ 2 / 4 + bottomHeight ^ 2) ^ 0.5;
-        BottomVo = Modelica.Constants.pi * (di + 2 * bottomThickness) ^ 2 * (bottomHeight + bottomThickness) / 12;
+        BottomSi = Modelica.Constants.pi*di*(di^2/4 + bottomHeight^2)^0.5;
+        BottomVi = Modelica.Constants.pi*di^2*bottomHeight/12;
+        BottomHo = bottomHeight + bottomThickness*(di^2/4 + bottomHeight^2)^0.5/(di/2);
+        BottomSo = Modelica.Constants.pi*(di + 2*bottomThickness)*((di + 2*bottomThickness)^2/4 + bottomHeight^2)^0.5;
+        BottomVo = Modelica.Constants.pi*(di + 2*bottomThickness)^2*(bottomHeight + bottomThickness)/12;
       elseif vesselBottom == Types.HeadShape.Klopper then
-        BottomHi = Balpha2 * di;
+        BottomHi = Balpha2*di;
 //0.19377 * di;
-        BottomSi = 0.947 * di ^ 2;
-        BottomVi = 0.098966 * di ^ 3;
-        BottomHo = Balpha2 * (di + 2 * bottomThickness);
+        BottomSi = 0.947*di^2;
+        BottomVi = 0.098966*di^3;
+        BottomHo = Balpha2*(di + 2*bottomThickness);
 //0.19377 * (di + 2 * bottomThickness);
-        BottomSo = 0.947 * (di + 2 * bottomThickness) ^ 2;
-        BottomVo = 0.098966 * (di + 2 * bottomThickness) ^ 3;
+        BottomSo = 0.947*(di + 2*bottomThickness)^2;
+        BottomVo = 0.098966*(di + 2*bottomThickness)^3;
       elseif vesselBottom == Types.HeadShape.Korbbogen then
-        BottomHi = Balpha2 * di;
+        BottomHi = Balpha2*di;
 //0.25447 * di;
-        BottomSi = 0.986 * di ^ 2;
-        BottomVi = 0.1307 * di ^ 3;
-        BottomHo = Balpha2 * (di + 2 * bottomThickness);
+        BottomSi = 0.986*di^2;
+        BottomVi = 0.1307*di^3;
+        BottomHo = Balpha2*(di + 2*bottomThickness);
 //0.25447 * (di + 2 * bottomThickness);
-        BottomSo = 0.986 * (di + 2 * bottomThickness) ^ 2;
-        BottomVo = 0.1307 * (di + 2 * bottomThickness) ^ 3;
+        BottomSo = 0.986*(di + 2*bottomThickness)^2;
+        BottomVo = 0.1307*(di + 2*bottomThickness)^3;
       elseif vesselBottom == Types.HeadShape.semielliptical then
-        BottomHi = di / 4;
-        BottomSi = 1.084 * di ^ 2;
-        BottomVi = Modelica.Constants.pi * di ^ 3 / 24;
-        BottomHo = di / 4 + bottomThickness;
-        BottomSo = 1.084 * (di + 2 * bottomThickness) ^ 2;
-        BottomVo = Modelica.Constants.pi * (di + 2 * bottomThickness) ^ 3 / 24;
+        BottomHi = di/4;
+        BottomSi = 1.084*di^2;
+        BottomVi = Modelica.Constants.pi*di^3/24;
+        BottomHo = di/4 + bottomThickness;
+        BottomSo = 1.084*(di + 2*bottomThickness)^2;
+        BottomVo = Modelica.Constants.pi*(di + 2*bottomThickness)^3/24;
       elseif vesselBottom == Types.HeadShape.hemispherical then
-        BottomHi = 0.5 * di;
-        BottomSi = Modelica.Constants.pi * di ^ 2 / 2;
-        BottomVi = Modelica.Constants.pi * di ^ 3 / 12;
-        BottomHo = 0.5 * di + bottomThickness;
-        BottomSo = Modelica.Constants.pi * (di + 2 * bottomThickness) ^ 2 / 2;
-        BottomVo = Modelica.Constants.pi * (di + 2 * bottomThickness) ^ 3 / 12;
+        BottomHi = 0.5*di;
+        BottomSi = Modelica.Constants.pi*di^2/2;
+        BottomVi = Modelica.Constants.pi*di^3/12;
+        BottomHo = 0.5*di + bottomThickness;
+        BottomSo = Modelica.Constants.pi*(di + 2*bottomThickness)^2/2;
+        BottomVo = Modelica.Constants.pi*(di + 2*bottomThickness)^3/12;
       end if;
     else
       assert(false, "bad size specification for the vessel");
     end if;
-    ShellMass = (ShellVo - ShellVi) * shellRho;
-    BottomMass = (BottomVo - BottomVi) * bottomRho;
-    TopMass = (TopVo - TopVi) * topRho;
+    ShellMass = (ShellVo - ShellVi)*shellRho;
+    BottomMass = (BottomVo - BottomVi)*bottomRho;
+    TopMass = (TopVo - TopVi)*topRho;
     SiTotal = ShellSi + TopSi + BottomSi;
     ViTotal = ShellVi + TopVi + BottomVi;
     SoTotal = ShellSo + TopSo + BottomSo;
     VoTotal = ShellVo + TopVo + BottomVo;
     MassTotal = ShellMass + TopMass + BottomMass;
-
     annotation(
       Icon(graphics = {Rectangle(origin = {0, -30}, fillColor = {0, 170, 255}, fillPattern = FillPattern.VerticalCylinder, extent = {{-80, 50}, {80, -50}}), Rectangle(origin = {0, 10}, extent = {{-80, 90}, {80, -90}})}),
       Documentation(info = "<html><head></head><body>Contains a detailed description of common vessel shapes. It allows the calculation of volumes and walls mass.</body></html>"));
   end VesselPhysical;
-  
+
   model VesselLevel
     extends VesselPhysical;
     parameter Boolean fixLiquidLevel = true "if true, liquid height will be fixed to liquidL";
@@ -390,64 +385,62 @@ package Vessels "Vessels.mo by Carlos Trujillo
     parameter Boolean fixLiquidVolume = false "if true, liquid volume will be fixed to liquidV. Do not fix height and volume simultaneously";
     parameter SI.Volume liquidV = 0 "fixed liquid volume";
     Modelica.Units.SI.Volume LiquidV "volume of liquid in the vessel";
-    Modelica.Units.SI.Height LiquidL(min=0) "level of liquid in the vessel";
-    Real Alpha(min=0) "adimensional level of liquid: LiquidL/Di";
-  equation  
+    Modelica.Units.SI.Height LiquidL(min = 0) "level of liquid in the vessel";
+    Real Alpha(min = 0) "adimensional level of liquid: LiquidL/Di";
+  equation
     if fixLiquidLevel == true then
       LiquidL = liquidL;
     elseif fixLiquidVolume == true then
       LiquidV = liquidV;
     end if;
-  
     if vesselForm == Types.VesselForm.cylinder then
-      Alpha=LiquidL/Di;
+      Alpha = LiquidL/Di;
     else
-      Alpha=0;
+      Alpha = 0;
     end if;
-    
     if vesselForm == Types.VesselForm.sphere then
-      if LiquidL <= Di / 2 then
-        LiquidV = Modelica.Constants.pi * LiquidL ^ 2 / 4 * (2 * Di - 4 * LiquidL / 3);
+      if LiquidL <= Di/2 then
+        LiquidV = Modelica.Constants.pi*LiquidL^2/4*(2*Di - 4*LiquidL/3);
       elseif LiquidL <= Di then
-        LiquidV = Modelica.Constants.pi * (Di ^ 3 / 6-(Di-LiquidL) ^ 2 / 4 * (2 * Di - 4 * (Di-LiquidL) / 3));
+        LiquidV = Modelica.Constants.pi*(Di^3/6 - (Di - LiquidL)^2/4*(2*Di - 4*(Di - LiquidL)/3));
       else
-        LiquidV=0;
+        LiquidV = 0;
       end if;
     elseif vesselForm == Types.VesselForm.cylinder then
       if isVertical == true then
         if vesselBottom == Types.HeadShape.flat then
-          LiquidV = Modelica.Constants.pi * Di ^ 2 / 4 * LiquidL;
+          LiquidV = Modelica.Constants.pi*Di^2/4*LiquidL;
         elseif vesselBottom == Types.HeadShape.conical then
           if LiquidL <= bottomHeight then
-            LiquidV = Modelica.Constants.pi / 4 * (Di * LiquidL / bottomHeight) ^ 2 * LiquidL / 3;
+            LiquidV = Modelica.Constants.pi/4*(Di*LiquidL/bottomHeight)^2*LiquidL/3;
           elseif LiquidL <= bottomHeight + shellLength then
-            LiquidV = Modelica.Constants.pi * Di ^ 2 / 4 * (LiquidL - 2 * bottomHeight / 3);
+            LiquidV = Modelica.Constants.pi*Di^2/4*(LiquidL - 2*bottomHeight/3);
           else
-            LiquidV=0;
+            LiquidV = 0;
           end if;
         elseif vesselBottom == Types.HeadShape.Klopper or vesselBottom == Types.HeadShape.Korbbogen then
-          if LiquidL <= Balpha1 * Di then
-            LiquidV = Modelica.Constants.pi *(bFd*LiquidL^2*Di-LiquidL^3/3) "pi*Di^3*(bFd*Alpha^2-Alpha^3/3)";
-          elseif LiquidL <= Balpha2 * Di then
-            LiquidV = Modelica.Constants.pi *Di^3*((bFd*Balpha1^2-Balpha1^3/3)+(((0.5-bFk)^2+bFk^2)*(Alpha-Balpha1)-((Alpha-Balpha2)^3-(Balpha1-Balpha2)^3)/3+(0.5-bFk)*((Alpha-Balpha2)*(bFk^2-(Alpha-Balpha2)^2)^0.5-(Balpha1-Balpha2)*(bFk^2-(Balpha1-Balpha2)^2)^0.5+bFk^2*asin((Alpha-Balpha2)/bFk)-bFk^2*asin((Balpha1-Balpha2)/bFk))));
-          elseif LiquidL <= (Balpha2 * Di+shellLength) then
-            LiquidV=Modelica.Constants.pi *Di^3*((bFd*Balpha1^2-Balpha1^3/3)+(((0.5-bFk)^2+bFk^2)*(Balpha2-Balpha1)+(Balpha1-Balpha2)^3/3+(0.5-bFk)*(-(Balpha1-Balpha2)*(bFk^2-(Balpha1-Balpha2)^2)^0.5-bFk^2*asin((Balpha1-Balpha2)/bFk)))+0.25*(Alpha-Balpha2));
+          if LiquidL <= Balpha1*Di then
+            LiquidV = Modelica.Constants.pi*(bFd*LiquidL^2*Di - LiquidL^3/3) "pi*Di^3*(bFd*Alpha^2-Alpha^3/3)";
+          elseif LiquidL <= Balpha2*Di then
+            LiquidV = Modelica.Constants.pi*Di^3*((bFd*Balpha1^2 - Balpha1^3/3) + (((0.5 - bFk)^2 + bFk^2)*(Alpha - Balpha1) - ((Alpha - Balpha2)^3 - (Balpha1 - Balpha2)^3)/3 + (0.5 - bFk)*((Alpha - Balpha2)*(bFk^2 - (Alpha - Balpha2)^2)^0.5 - (Balpha1 - Balpha2)*(bFk^2 - (Balpha1 - Balpha2)^2)^0.5 + bFk^2*asin((Alpha - Balpha2)/bFk) - bFk^2*asin((Balpha1 - Balpha2)/bFk))));
+          elseif LiquidL <= (Balpha2*Di + shellLength) then
+            LiquidV = Modelica.Constants.pi*Di^3*((bFd*Balpha1^2 - Balpha1^3/3) + (((0.5 - bFk)^2 + bFk^2)*(Balpha2 - Balpha1) + (Balpha1 - Balpha2)^3/3 + (0.5 - bFk)*(-(Balpha1 - Balpha2)*(bFk^2 - (Balpha1 - Balpha2)^2)^0.5 - bFk^2*asin((Balpha1 - Balpha2)/bFk))) + 0.25*(Alpha - Balpha2));
           else
-            LiquidV=0;
+            LiquidV = 0;
           end if;
         elseif vesselBottom == Types.HeadShape.semielliptical then
           if LiquidL <= bottomHeight then
-            LiquidV = Modelica.Constants.pi / 4 * (Di * LiquidL / bottomHeight) ^ 2 * (bottomHeight - LiquidL / 3);
+            LiquidV = Modelica.Constants.pi/4*(Di*LiquidL/bottomHeight)^2*(bottomHeight - LiquidL/3);
           elseif LiquidL <= bottomHeight + shellLength then
-            LiquidV = Modelica.Constants.pi * Di ^ 2 / 4 * (LiquidL - bottomHeight / 3);
+            LiquidV = Modelica.Constants.pi*Di^2/4*(LiquidL - bottomHeight/3);
           else
             LiquidV = 0;
           end if;
         elseif vesselBottom == Types.HeadShape.hemispherical then
-          if LiquidL <= Di / 2 then
-            LiquidV = Modelica.Constants.pi * LiquidL ^ 2 / 4 * (2 * Di - 4 * LiquidL / 3);
-          elseif LiquidL <= Di / 2 + shellLength then
-            LiquidV = Modelica.Constants.pi / 4 * (Di ^ 3 / 12 - Di ^ 3 / 4 + LiquidL * Di ^ 2);
+          if LiquidL <= Di/2 then
+            LiquidV = Modelica.Constants.pi*LiquidL^2/4*(2*Di - 4*LiquidL/3);
+          elseif LiquidL <= Di/2 + shellLength then
+            LiquidV = Modelica.Constants.pi/4*(Di^3/12 - Di^3/4 + LiquidL*Di^2);
           else
             LiquidV = 0;
           end if;
@@ -455,24 +448,25 @@ package Vessels "Vessels.mo by Carlos Trujillo
       else
         if vesselBottom == Types.HeadShape.flat then
         elseif vesselBottom == Types.HeadShape.conical then
-  
+
         elseif vesselBottom == Types.HeadShape.Klopper then
-  
+
         elseif vesselBottom == Types.HeadShape.Korbbogen then
-  
+
         elseif vesselBottom == Types.HeadShape.semielliptical then
-  
+
         elseif vesselBottom == Types.HeadShape.hemispherical then
         end if;
       end if;
     end if;
-  annotation(
-      Documentation(info = "<html><head></head><body>Adds the relationship between liquid filled level and volume to the VesselPhysical model.<div>For now the relationship between liquid level and liquid volume is coded only for spheric and vertical cylindrical vessels.<br><div>For vertical vessels the relationship covers only the bottom and the cylindrical shell.</div></div></body></html>"));end VesselLevel;
+    annotation(
+      Documentation(info = "<html><head></head><body>Adds the relationship between liquid filled level and volume to the VesselPhysical model.<div>For now the relationship between liquid level and liquid volume is coded only for spheric and vertical cylindrical vessels.<br><div>For vertical vessels the relationship covers only the bottom and the cylindrical shell.</div></div></body></html>"));
+  end VesselLevel;
 
   model VesselDetailed
     extends VesselFlow;
-    extends VesselLevel(final fixLiquidLevel = false, final fixLiquidVolume=false, final liquidL=0, final liquidV=0, LiquidV(start=initialLiquidMass));
-  annotation(
+    extends VesselLevel(final fixLiquidLevel = false, final fixLiquidVolume = false, final liquidL = 0, final liquidV = 0, LiquidV(start = initialLiquidMass));
+    annotation(
       Documentation(info = "<html><head></head><body><div>Combines the tracking capabilities of the VesselFlow model with a detailed description of the vessel.</div></body></html>"));
   end VesselDetailed;
 
@@ -519,73 +513,73 @@ package Vessels "Vessels.mo by Carlos Trujillo
     SI.Area ScylinderIn, ScylinderOut "cylinder internal/external surface";
     SI.Volume VcylinderIn, VcylinderOut "cylinder internal/external volume";
   algorithm
-    Do := di + 2 * wallThickness;
+    Do := di + 2*wallThickness;
     if bottomShape == "Klopper" then
-      HbottomIn := 0.19377 * di;
-      SbottomIn := 0.947 * di ^ 2;
-      VbottomIn := 0.098966 * di ^ 3;
-      HbottomOut := 0.19377 * Do;
-      SbottomOut := 0.947 * Do ^ 2;
-      VbottomOut := 0.098966 * Do ^ 3;
+      HbottomIn := 0.19377*di;
+      SbottomIn := 0.947*di^2;
+      VbottomIn := 0.098966*di^3;
+      HbottomOut := 0.19377*Do;
+      SbottomOut := 0.947*Do^2;
+      VbottomOut := 0.098966*Do^3;
     elseif bottomShape == "Korbbogen" then
-      HbottomIn := 0.2544 * di;
-      SbottomIn := 0.986 * di ^ 2;
-      VbottomIn := 0.1307 * di ^ 3;
-      HbottomOut := 0.2544 * Do;
-      SbottomOut := 0.986 * Do ^ 2;
-      VbottomOut := 0.1307 * Do ^ 3;
+      HbottomIn := 0.2544*di;
+      SbottomIn := 0.986*di^2;
+      VbottomIn := 0.1307*di^3;
+      HbottomOut := 0.2544*Do;
+      SbottomOut := 0.986*Do^2;
+      VbottomOut := 0.1307*Do^3;
     elseif bottomShape == "Conical" then
       HbottomIn := coneH;
-      SbottomIn := pi * di * (coneH ^ 2 + di ^ 2 / 4) ^ 0.5;
-      VbottomIn := pi * di ^ 2 * coneH / 12;
+      SbottomIn := pi*di*(coneH^2 + di^2/4)^0.5;
+      VbottomIn := pi*di^2*coneH/12;
       HbottomOut := coneH + wallThickness;
-      SbottomOut := pi * Do * (HbottomOut ^ 2 + Do ^ 2 / 4) ^ 0.5;
-      VbottomOut := pi * Do ^ 2 * HbottomOut / 12;
+      SbottomOut := pi*Do*(HbottomOut^2 + Do^2/4)^0.5;
+      VbottomOut := pi*Do^2*HbottomOut/12;
     else
       HbottomIn := 0;
-      SbottomIn := pi * di ^ 2 / 4;
+      SbottomIn := pi*di^2/4;
       VbottomIn := 0;
       HbottomOut := wallThickness;
-      SbottomOut := pi * Do ^ 2 / 4;
-      VbottomIn := SbottomOut * wallThickness;
+      SbottomOut := pi*Do^2/4;
+      VbottomIn := SbottomOut*wallThickness;
     end if;
     if topShape == "Klopper" then
-      HtopIn := 0.19377 * di;
-      StopIn := 0.947 * di ^ 2;
-      VtopIn := 0.098966 * di ^ 3;
-      HtopOut := 0.19377 * Do;
-      StopOut := 0.947 * Do ^ 2;
-      VtopOut := 0.098966 * Do ^ 3;
+      HtopIn := 0.19377*di;
+      StopIn := 0.947*di^2;
+      VtopIn := 0.098966*di^3;
+      HtopOut := 0.19377*Do;
+      StopOut := 0.947*Do^2;
+      VtopOut := 0.098966*Do^3;
     elseif topShape == "Korbbogen" then
-      HtopIn := 0.2544 * di;
-      StopIn := 0.986 * di ^ 2;
-      VtopIn := 0.1307 * di ^ 3;
-      HtopOut := 0.2544 * Do;
-      StopOut := 0.986 * Do ^ 2;
-      VtopOut := 0.1307 * Do ^ 3;
+      HtopIn := 0.2544*di;
+      StopIn := 0.986*di^2;
+      VtopIn := 0.1307*di^3;
+      HtopOut := 0.2544*Do;
+      StopOut := 0.986*Do^2;
+      VtopOut := 0.1307*Do^3;
     elseif topShape == "Conical" then
       HtopIn := coneH;
-      StopIn := pi * di * (coneH ^ 2 + di ^ 2 / 4) ^ 0.5;
-      VtopIn := pi * di ^ 2 * coneH / 12;
+      StopIn := pi*di*(coneH^2 + di^2/4)^0.5;
+      VtopIn := pi*di^2*coneH/12;
       HtopOut := coneH + wallThickness;
-      StopOut := pi * Do * (HtopOut ^ 2 + Do ^ 2 / 4) ^ 0.5;
-      VtopOut := pi * Do ^ 2 * HtopOut / 12;
+      StopOut := pi*Do*(HtopOut^2 + Do^2/4)^0.5;
+      VtopOut := pi*Do^2*HtopOut/12;
     else
       HtopIn := 0;
-      StopIn := pi * di ^ 2 / 4;
+      StopIn := pi*di^2/4;
       VtopIn := 0;
       HtopOut := wallThickness;
-      StopOut := pi * Do ^ 2 / 4;
-      VtopIn := StopOut * wallThickness;
+      StopOut := pi*Do^2/4;
+      VtopIn := StopOut*wallThickness;
     end if;
     HtotalIn := HbottomIn + cylinderH + HtopIn;
-    ScylinderIn := pi * di * cylinderH;
-    VcylinderIn := pi * di ^ 2 / 4 * cylinderH;
-    ScylinderOut := pi * Do * cylinderH;
-    VcylinderOut := pi * Do ^ 2 / 4 * cylinderH;
+    ScylinderIn := pi*di*cylinderH;
+    VcylinderIn := pi*di^2/4*cylinderH;
+    ScylinderOut := pi*Do*cylinderH;
+    VcylinderOut := pi*Do^2/4*cylinderH;
     VtotalIn := VbottomIn + VtopIn + VcylinderIn;
     VtotalOut := VbottomOut + VtopOut + VcylinderOut;
-    VesselMass := (VtotalOut - VtotalIn) * wallRho;
+    VesselMass := (VtotalOut - VtotalIn)*wallRho;
     annotation(
       defaultComponentName = "vessel",
       Icon(coordinateSystem(extent = {{-150, -150}, {150, 150}}, initialScale = 0.2), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, extent = {{-150, 150}, {150, -150}}), Rectangle(fillColor = {85, 170, 255}, fillPattern = FillPattern.VerticalCylinder, extent = {{-150, -150}, {150, -100}}), Line(points = {{-150, 150}, {-150, -150}, {150, -150}, {150, 150}})}),
@@ -599,7 +593,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
   partial model MixerBase
     parameter Modelica.Units.SI.Diameter d = 0 "impeller diameter";
     parameter Integer nImpellers = 0;
-    parameter Modelica.Units.SI.Distance interImpellerDistance;
+    parameter Modelica.Units.SI.Distance interImpellerDistance=1.0;
     parameter Modelica.Units.SI.Power motorPower = 0;
     parameter Boolean useFixedSpeed = true;
     parameter Modelica.Units.NonSI.AngularVelocity_rpm n(start = 60) "shaft rotational speed rpm";
@@ -624,16 +618,16 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Modelica.Units.SI.Diameter DiamShaftMinimum(start = 0.1) "minimum shaft diameter";
   equation
     if useFixedSpeed == true then
-      N = n / 60;
+      N = n/60;
     end if;
-    V = N * pi * d;
-    Torque = W / (2 * pi * N * 0.85) "0.85 is just a safety factor";
-    WimpellerCorr = W / (nImpellers * 0.85);
+    V = N*pi*d;
+    Torque = W/(2*pi*N*0.85) "0.85 is just a safety factor";
+    WimpellerCorr = W/(nImpellers*0.85);
 //end if;
     if doShaftCalc == true then
-      Fimpeller = 0.048 * WimpellerCorr * impellerHydraulicF / (N * d);
-      DiamShaftShear = (16 * (BendingMomentMax ^ 2 + Torque ^ 2) ^ 0.5 / (pi * shaftDSS)) ^ (1 / 3);
-      DiamShaftTension = (16 * (BendingMomentMax + (BendingMomentMax ^ 2 + Torque ^ 2) ^ 0.5) / (pi * shaftDTS)) ^ (1 / 3);
+      Fimpeller = 0.048*WimpellerCorr*impellerHydraulicF/(N*d);
+      DiamShaftShear = (16*(BendingMomentMax^2 + Torque^2)^0.5/(pi*shaftDSS))^(1/3);
+      DiamShaftTension = (16*(BendingMomentMax + (BendingMomentMax^2 + Torque^2)^0.5)/(pi*shaftDTS))^(1/3);
       if DiamShaftShear > DiamShaftTension then
         DiamShaftMinimum = DiamShaftShear;
       else
@@ -662,15 +656,15 @@ package Vessels "Vessels.mo by Carlos Trujillo
     SI.Height Hwetted "wetted height of the anchor";
     Real Z "correction factor for Np for Young-Sei Lee correlation: Journal of Korean Institute of Chemical Engineering Vol.39 n.5 October 2001";
   algorithm
-    Z := width / Hwetted + 0.684 * (nBlades * log(d / (d - 2 * width))) ^ 0.139;
+    Z := width/Hwetted + 0.684*(nBlades*log(d/(d - 2*width)))^0.139;
   equation
     if doShaftCalc == true then
       if footBearing == false then
         ForceOnBottomBearing = 0;
-        BendingMomentMax = Fimpeller * (Htop - hTotal / 2);
+        BendingMomentMax = Fimpeller*(Htop - hTotal/2);
       else
-        ForceOnBottomBearing = Fimpeller * (Htop - hTotal / 2) / Htop;
-        BendingMomentMax = ForceOnBottomBearing * hTotal - Fimpeller * hTotal / 2;
+        ForceOnBottomBearing = Fimpeller*(Htop - hTotal/2)/Htop;
+        BendingMomentMax = ForceOnBottomBearing*hTotal - Fimpeller*hTotal/2;
       end if;
     else
       ForceOnBottomBearing = 0;
@@ -700,12 +694,12 @@ package Vessels "Vessels.mo by Carlos Trujillo
   equation
     if footBearing == false then
       ForceOnBottomBearing = 0;
-      BendingMomentMax = Fimpeller * (nImpellers * (Htop - (nImpellers - 1) / 2 * interImpellerDistance));
+      BendingMomentMax = Fimpeller*(nImpellers*(Htop - (nImpellers - 1)/2*interImpellerDistance));
     else
-      ForceOnBottomBearing = Fimpeller * (nImpellers * (Htop - (nImpellers - 1) / 2 * interImpellerDistance)) / (Htop + hBottom);
-      BendingMomentMax = ForceOnBottomBearing * (hBottom + (nImpellers - 1) * interImpellerDistance) - Fimpeller * nImpellers * (nImpellers - 1) / 2 * interImpellerDistance;
+      ForceOnBottomBearing = Fimpeller*(nImpellers*(Htop - (nImpellers - 1)/2*interImpellerDistance))/(Htop + hBottom);
+      BendingMomentMax = ForceOnBottomBearing*(hBottom + (nImpellers - 1)*interImpellerDistance) - Fimpeller*nImpellers*(nImpellers - 1)/2*interImpellerDistance;
     end if;
-  annotation(
+    annotation(
       Documentation(info = "<html><head></head><body>
 <p><span>From Furukawa et alt., International Journal of Chemical Engineering volume 2012, based on Kamei et al.(1995/6/7) model for many different impeller types</span></p></body></html>"));
   end MixerKamei;
@@ -715,7 +709,8 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
   partial model TankPM "tank is the content of a vessel"
     replaceable package Medium = FreeFluids.TMedia.Fluids.Water constrainedby Modelica.Media.Interfaces.PartialMedium;
-    replaceable VesselCylVert Vessel;
+    replaceable VesselCylVert Vessel(nConcCoils = 1) annotation(
+      Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
     parameter SI.Distance hLiquid = 0 "heigth of liquid from lower most point";
     parameter SI.ThermalInsulance foulingF = 0 "Process side fouling factor" annotation(
       Dialog(tab = "Heat transfer"));
@@ -740,7 +735,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
   algorithm
     Vuse := Vessel.VbottomIn + Vessel.VcylinderIn;
     if hLiquid >= Vessel.HbottomIn then
-      Vliquid := Vessel.VbottomIn + pi * Vessel.di ^ 2 / 4 * (hLiquid - Vessel.HbottomIn);
+      Vliquid := Vessel.VbottomIn + pi*Vessel.di^2/4*(hLiquid - Vessel.HbottomIn);
     else
       Vliquid := 0;
     end if;
@@ -750,7 +745,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Mu = Medium.dynamicViscosity(StateV);
     Cp = Medium.specificHeatCapacityCp(StateV);
     K = Medium.thermalConductivity(StateV);
-    Pr = Cp * Mu / K;
+    Pr = Cp*Mu/K;
     Tmass = T;
 //HTWallCorrExp:=0.1*(8.61e-2*Mu)^(-0.21);
     annotation(
@@ -764,7 +759,8 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
   partial model TankAgitatedAnchorPM "Anchor Vessel. Seems the best model for anchors"
     extends TankPM;
-    replaceable MixerAnchor Mixer;
+    replaceable MixerAnchor Mixer annotation(
+      Placement(visible = true, transformation(origin = {0, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   algorithm
     if hLiquid > Mixer.hTotal then
       Mixer.Hwetted := Mixer.hTotal;
@@ -772,17 +768,17 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Mixer.Hwetted := hLiquid;
     end if;
   equation
-    Mixer.Re = Mixer.d ^ 2 * Mixer.N * Rho / Mu;
-    Mixer.W = Mixer.nImpellers * Mixer.Np * Rho * Mixer.d ^ 5 * Mixer.N ^ 3;
+    Mixer.Re = Mixer.d^2*Mixer.N*Rho/Mu;
+    Mixer.W = Mixer.nImpellers*Mixer.Np*Rho*Mixer.d^5*Mixer.N^3;
     Mixer.Htop = Vessel.HtotalIn;
 //Power number calculation
 //From ChemicalProcessing.com
     if Mixer.Re <= 15 then
-      Mixer.Np = 113 / Mixer.Re * Mixer.Hwetted / Mixer.d * (Vessel.di / (Vessel.di - Mixer.d)) ^ 0.5 * (Mixer.width / Mixer.d) ^ 0.16 * (Mixer.nBlades / 2) ^ 0.67;
+      Mixer.Np = 113/Mixer.Re*Mixer.Hwetted/Mixer.d*(Vessel.di/(Vessel.di - Mixer.d))^0.5*(Mixer.width/Mixer.d)^0.16*(Mixer.nBlades/2)^0.67;
     elseif Mixer.Re < 10000 then
-      Mixer.Np = 113 / Mixer.Re * Mixer.Hwetted / Mixer.d * (Vessel.di / (Vessel.di - Mixer.d)) ^ 0.5 * (Mixer.width / Mixer.d) ^ 0.16 * (Mixer.nBlades / 2) ^ 0.67 * exp(0.013 - 0.17 * log(Mixer.Re) + 0.061 * log(Mixer.Re) ^ 2);
+      Mixer.Np = 113/Mixer.Re*Mixer.Hwetted/Mixer.d*(Vessel.di/(Vessel.di - Mixer.d))^0.5*(Mixer.width/Mixer.d)^0.16*(Mixer.nBlades/2)^0.67*exp(0.013 - 0.17*log(Mixer.Re) + 0.061*log(Mixer.Re)^2);
     else
-      Mixer.Np = 113 / Mixer.Re * Mixer.Hwetted / Mixer.d * (Vessel.di / (Vessel.di - Mixer.d)) ^ 0.5 * (Mixer.width / Mixer.d) ^ 0.16 * (Mixer.nBlades / 2) ^ 0.67 * 0.0065 * Mixer.Re ^ 0.94;
+      Mixer.Np = 113/Mixer.Re*Mixer.Hwetted/Mixer.d*(Vessel.di/(Vessel.di - Mixer.d))^0.5*(Mixer.width/Mixer.d)^0.16*(Mixer.nBlades/2)^0.67*0.0065*Mixer.Re^0.94;
     end if;
     annotation(
       Icon(graphics = {Rectangle(origin = {-7, -53}, extent = {{-35, 1}, {47, -3}}), Rectangle(origin = {-40, -17}, extent = {{-2, -35}, {2, 59}}), Rectangle(origin = {38, -17}, extent = {{2, -35}, {-2, 59}})}));
@@ -819,21 +815,21 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC1 := 1.0;
     else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
+      HTWallCorrFactorC1 := max(0.4, (Mu/MuWall1)^0.13);
     end if;
-    NuCoil1 := homotopy(0.135 * HTWallCorrFactorC1 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.135 * (Coil1.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33) "VDI atlas. Original leading constant 0.084 and 0.14 for viscosity corr. exponent";
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
+    NuCoil1 := homotopy(0.135*HTWallCorrFactorC1*(Coil1.coilDiam/Vessel.di)^0.74*Mixer.Re^0.55*Pr^0.33, 0.135*(Coil1.coilDiam/Vessel.di)^0.74*Mixer.Re^0.55*Pr^0.33) "VDI atlas. Original leading constant 0.084 and 0.14 for viscosity corr. exponent";
+    Hcoil1 := NuCoil1*K/Coil1.Do;
+    Ucoil1 := 1/((foulingF + 1/Hcoil1)*Coil1.Di/Coil1.Do + Coil1.Do*log(Coil1.Do/Coil1.Di)/(2*Vessel.wallK) + 1/Coil1.H + Coil1.foulingF);
+    if (T - Coil1.Ta)*(T - Coil1.Tb) <= 0 then
       LMTDcoil1 := 0;
     elseif T - Coil1.Ta == T - Coil1.Tb then
       LMTDcoil1 := T - Coil1.Ta;
     else
-      LMTDcoil1 := homotopy((Coil1.Tb - Coil1.Ta) / log((T - Coil1.Ta) / (T - Coil1.Tb)), T - Coil1.Ta);
+      LMTDcoil1 := homotopy((Coil1.Tb - Coil1.Ta)/log((T - Coil1.Ta)/(T - Coil1.Tb)), T - Coil1.Ta);
     end if;
   equation
     if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
+      Coil1.W = Ucoil1*LMTDcoil1*Coil1.SusedHT;
     end if;
 //StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
     StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
@@ -844,7 +840,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
   model TankAgitAnchor2Coils
     extends TankAgitAnchor1Coil(Vessel(nConcCoils = 2), numCoils = 2, numHalfCoils = 0);
-    replaceable VesselCylVert Vessel(nConcCoils = 1) annotation(
+    replaceable VesselCylVert Vessel(nConcCoils = 2) annotation(
       Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
     replaceable FreeFluids.Vessels.MixerAnchor Mixer annotation(
       Placement(visible = true, transformation(origin = {0, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -864,21 +860,21 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC2 := 1.0;
     else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.13);
+      HTWallCorrFactorC2 := max(0.4, (Mu/MuWall2)^0.13);
     end if;
-    NuCoil2 := homotopy(0.135 * HTWallCorrFactorC2 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33, 0.135 * (Coil2.coilDiam / Vessel.di) ^ 0.74 * Mixer.Re ^ 0.55 * Pr ^ 0.33);
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
+    NuCoil2 := homotopy(0.135*HTWallCorrFactorC2*(Coil2.coilDiam/Vessel.di)^0.74*Mixer.Re^0.55*Pr^0.33, 0.135*(Coil2.coilDiam/Vessel.di)^0.74*Mixer.Re^0.55*Pr^0.33);
+    Hcoil2 := NuCoil2*K/Coil2.Do;
+    Ucoil2 := 1/((foulingF + 1/Hcoil2)*Coil2.Di/Coil2.Do + Coil2.Do*log(Coil2.Do/Coil2.Di)/(2*Vessel.wallK) + 1/Coil2.H + Coil2.foulingF);
+    if (T - Coil2.Ta)*(T - Coil2.Tb) <= 0 then
       LMTDcoil2 := 0;
     elseif T - Coil2.Ta - (T - Coil2.Tb) == 0 then
       LMTDcoil2 := T - Coil2.Ta;
     else
-      LMTDcoil2 := homotopy((T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb)), T - Coil2.Ta);
+      LMTDcoil2 := homotopy((T - Coil2.Ta - (T - Coil2.Tb))/log((T - Coil2.Ta)/(T - Coil2.Tb)), T - Coil2.Ta);
     end if;
   equation
     if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
+      Coil2.W = Ucoil2*LMTDcoil2*Coil2.SusedHT;
     end if;
     StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
     if numCoils == 2 and numHalfCoils == 0 then
@@ -908,7 +904,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHc1;
   algorithm
     if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
+      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam)/2;
     else
       HalfCoil1.HalfCoilDiam := Vessel.Do;
     end if;
@@ -916,28 +912,28 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc1 := 1.0;
     else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
+      HTWallCorrFactorHc1 := max(0.4, (Mu/MuWallHc1)^0.14);
     end if;
     if Mixer.Re < 100 then
-      NuHalfCoil1 := homotopy(0.69 * HTWallCorrFactorHc1 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3), 0.69 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3));
+      NuHalfCoil1 := homotopy(0.69*HTWallCorrFactorHc1*Mixer.Re^0.5*Pr^(1/3), 0.69*Mixer.Re^0.5*Pr^(1/3));
     else
-      NuHalfCoil1 := homotopy(0.56 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3), 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3));
+      NuHalfCoil1 := homotopy(0.56*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3), 0.56*Mixer.Re^(2/3)*Pr^(1/3));
     end if;
 //NuHalfCoil1 := 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mu / MuWallHc1) ^ 0.14 "McKetta: Heat Transfer Design Methods. Original 0.46";
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    AuxSurfEffHc1 := (HhalfCoil1 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc1 := (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) - 1) / (AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi) * (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if noEvent((T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0) then
+    HhalfCoil1 := NuHalfCoil1*K/Vessel.di;
+    AuxSurfEffHc1 := (HhalfCoil1/(Vessel.wallK*Vessel.wallThickness))^0.5 "partial calculation";
+    AuxSurfEffHc1 := (exp(2*AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)) - 1)/(AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)*(exp(2*AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
+    UhalfCoil1 := 1/((foulingF + 1/HhalfCoil1)*HalfCoil1.SactiveHT/(HalfCoil1.SactiveHT + AuxSurfEffHc1*HalfCoil1.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil1.H + HalfCoil1.foulingF);
+    if noEvent((T - HalfCoil1.Ta)*(T - HalfCoil1.Tb) <= 0) then
       LMTDhalfCoil1 := 0;
     elseif noEvent(T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0) then
       LMTDhalfCoil1 := T - HalfCoil1.Ta;
     else
-      LMTDhalfCoil1 := homotopy((T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb)), T - HalfCoil1.Ta);
+      LMTDhalfCoil1 := homotopy((T - HalfCoil1.Ta - (T - HalfCoil1.Tb))/log((T - HalfCoil1.Ta)/(T - HalfCoil1.Tb)), T - HalfCoil1.Ta);
     end if;
   equation
-  if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT);
+    if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
+      HalfCoil1.W = UhalfCoil1*LMTDhalfCoil1*(HalfCoil1.SactiveHT + AuxSurfEffHc1*HalfCoil1.SauxHT);
 //HalfCoil1.W = HhalfCoil1 * (T-HalfCoil1.Tsurf) * (HalfCoil1.SactiveHT+AuxSurfEffHc1*HalfCoil1.SauxHT);
     end if;
 //StateHc1 = Medium.setBubbleState(Medium.setSat_T(HalfCoil1.Tsurf));
@@ -974,7 +970,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHc2;
   algorithm
     if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
+      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam)/2;
     else
       HalfCoil2.HalfCoilDiam := Vessel.Do;
     end if;
@@ -982,27 +978,27 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc2 := 1.0;
     else
-      HTWallCorrFactorHc2 := max(0.4, (Mu / MuWallHc2) ^ 0.14);
+      HTWallCorrFactorHc2 := max(0.4, (Mu/MuWallHc2)^0.14);
     end if;
     if Mixer.Re < 100 then
-      NuHalfCoil2 := homotopy(0.69 * HTWallCorrFactorHc2 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3), 0.69 * Mixer.Re ^ 0.5 * Pr ^ (1 / 3));
+      NuHalfCoil2 := homotopy(0.69*HTWallCorrFactorHc2*Mixer.Re^0.5*Pr^(1/3), 0.69*Mixer.Re^0.5*Pr^(1/3));
     else
-      NuHalfCoil2 := homotopy(0.56 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3), 0.56 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3));
+      NuHalfCoil2 := homotopy(0.56*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3), 0.56*Mixer.Re^(2/3)*Pr^(1/3));
     end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    AuxSurfEffHc2 := (HhalfCoil2 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc2 := (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) - 1) / (AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi) * (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) + 1));
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
-    if noEvent((T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0) then
+    HhalfCoil2 := NuHalfCoil2*K/Vessel.di;
+    AuxSurfEffHc2 := (HhalfCoil2/(Vessel.wallK*Vessel.wallThickness))^0.5 "partial calculation";
+    AuxSurfEffHc2 := (exp(2*AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)) - 1)/(AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)*(exp(2*AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)) + 1));
+    UhalfCoil2 := 1/((foulingF + 1/HhalfCoil2)*HalfCoil2.SactiveHT/(HalfCoil2.SactiveHT + AuxSurfEffHc2*HalfCoil2.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil2.H + HalfCoil2.foulingF);
+    if noEvent((T - HalfCoil2.Ta)*(T - HalfCoil2.Tb) <= 0) then
       LMTDhalfCoil2 := 0;
     elseif noEvent(T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0) then
       LMTDhalfCoil2 := T - HalfCoil2.Ta;
     else
-      LMTDhalfCoil2 := homotopy((T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb)), T - HalfCoil2.Ta);
+      LMTDhalfCoil2 := homotopy((T - HalfCoil2.Ta - (T - HalfCoil2.Tb))/log((T - HalfCoil2.Ta)/(T - HalfCoil2.Tb)), T - HalfCoil2.Ta);
     end if;
   equation
     if HalfCoil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT);
+      HalfCoil2.W = UhalfCoil2*LMTDhalfCoil2*(HalfCoil2.SactiveHT + AuxSurfEffHc2*HalfCoil2.SauxHT);
 //HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
     end if;
     StateHc2 = Medium.setState_pTX(fixedPressure, HalfCoil2.Tsurf);
@@ -1015,33 +1011,34 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
   partial model TankAgitatedKameiPM
     extends TankPM;
-    replaceable MixerKamei Mixer;
+    replaceable MixerKamei Mixer annotation(
+      Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
 //flow numbers must be reviewed
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" then
-      Mixer.NpMax = 6.5 * (Mixer.nBlades ^ 0.7 * Mixer.width * sin(Mixer.angle) ^ 1.6 / Mixer.d) ^ 1.7;
-      Mixer.Nq = 0.62 * (Mixer.d / Vessel.di) ^ (-0.7) * (Mixer.width / Vessel.di) ^ 0.82 * Mixer.nBlades ^ 0.6;
+      Mixer.NpMax = 6.5*(Mixer.nBlades^0.7*Mixer.width*sin(Mixer.angle)^1.6/Mixer.d)^1.7;
+      Mixer.Nq = 0.62*(Mixer.d/Vessel.di)^(-0.7)*(Mixer.width/Vessel.di)^0.82*Mixer.nBlades^0.6;
     elseif Mixer.reference == "radialTurbine" or Mixer.reference == "anchor" then
-      if Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d <= 0.54 then
-        Mixer.NpMax = 10 * (Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d) ^ 1.3;
-      elseif Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d > 0.54 and Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d <= 1.6 then
-        Mixer.NpMax = 8.3 * Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d;
+      if Mixer.nBlades^0.7*Mixer.width/Mixer.d <= 0.54 then
+        Mixer.NpMax = 10*(Mixer.nBlades^0.7*Mixer.width/Mixer.d)^1.3;
+      elseif Mixer.nBlades^0.7*Mixer.width/Mixer.d > 0.54 and Mixer.nBlades^0.7*Mixer.width/Mixer.d <= 1.6 then
+        Mixer.NpMax = 8.3*Mixer.nBlades^0.7*Mixer.width/Mixer.d;
       else
-        Mixer.NpMax = 10 * (Mixer.nBlades ^ 0.7 * Mixer.width / Mixer.d) ^ 0.6;
+        Mixer.NpMax = 10*(Mixer.nBlades^0.7*Mixer.width/Mixer.d)^0.6;
       end if;
-      Mixer.Nq = 1.3 * (Mixer.d / Vessel.di) ^ (-0.86) * (Mixer.width / Vessel.di) ^ 0.82 * Mixer.nBlades ^ 0.6;
+      Mixer.Nq = 1.3*(Mixer.d/Vessel.di)^(-0.86)*(Mixer.width/Vessel.di)^0.82*Mixer.nBlades^0.6;
     elseif Mixer.reference == "intermig" then
       Mixer.NpMax = 0.3;
-      Mixer.Nq = 0.8 * (Mixer.d / Vessel.di) ^ (-0.7) * (0.2 * Mixer.d / Vessel.di) ^ 0.82 * Mixer.nBlades ^ 0.6;
+      Mixer.Nq = 0.8*(Mixer.d/Vessel.di)^(-0.7)*(0.2*Mixer.d/Vessel.di)^0.82*Mixer.nBlades^0.6;
     elseif Mixer.reference == "mig" then
       Mixer.NpMax = 0.2;
-      Mixer.Nq = 0.8 * (Mixer.d / Vessel.di) ^ (-0.7) * (0.2 * Mixer.d / Vessel.di) ^ 0.82 * Mixer.nBlades ^ 0.6;
+      Mixer.Nq = 0.8*(Mixer.d/Vessel.di)^(-0.7)*(0.2*Mixer.d/Vessel.di)^0.82*Mixer.nBlades^0.6;
     else
-      Mixer.NpMax = 8.3 * (2 * Mixer.angle / pi) ^ 0.9 * Mixer.nBlades ^ 0.7 * Mixer.width * sin(Mixer.angle) ^ 1.6 / Mixer.d "axial turbines";
-      Mixer.Nq = 0.8 * (Mixer.d / Vessel.di) ^ (-0.7) * (Mixer.width * sin(Mixer.angle) / Vessel.di) ^ 0.82 * Mixer.nBlades ^ 0.6;
+      Mixer.NpMax = 8.3*(2*Mixer.angle/pi)^0.9*Mixer.nBlades^0.7*Mixer.width*sin(Mixer.angle)^1.6/Mixer.d "axial turbines";
+      Mixer.Nq = 0.8*(Mixer.d/Vessel.di)^(-0.7)*(Mixer.width*sin(Mixer.angle)/Vessel.di)^0.82*Mixer.nBlades^0.6;
     end if;
 //cambio explicado correcto? Va el ^1.7?
-    Mixer.Re = Mixer.d ^ 2 * Mixer.N * Rho / Mu;
+    Mixer.Re = Mixer.d^2*Mixer.N*Rho/Mu;
     if Mixer.reference == "intermig" or Mixer.reference == "mig" then
       Mixer.eta = 0;
       Mixer.beta = 0;
@@ -1056,62 +1053,62 @@ package Vessels "Vessels.mo by Carlos Trujillo
       Mixer.f = 0;
       if Mixer.reference == "intermig" then
         if Mixer.Re < 500 then
-          Mixer.Np0 = 0.5 * (0.39471382 + 100.84884 / Mixer.Re + 44.730788 / Mixer.Re ^ 1.5 - 45.978678 / Mixer.Re ^ 2);
+          Mixer.Np0 = 0.5*(0.39471382 + 100.84884/Mixer.Re + 44.730788/Mixer.Re^1.5 - 45.978678/Mixer.Re^2);
         elseif Mixer.Re < 10000 then
-          Mixer.Np0 = 0.5 * (0.25174729 - 3.8632725E-14 * Mixer.Re ^ 3 + 203533.57 * log(Mixer.Re) / Mixer.Re ^ 2 - 1177817 / Mixer.Re ^ 2);
+          Mixer.Np0 = 0.5*(0.25174729 - 3.8632725E-14*Mixer.Re^3 + 203533.57*log(Mixer.Re)/Mixer.Re^2 - 1177817/Mixer.Re^2);
         else
           Mixer.Np0 = 0.1;
         end if;
         if Mixer.Re < 10000 then
-          Mixer.Np = 0.5 * (0.57957364 + 22.206363 * log(Mixer.Re) / Mixer.Re + 89.438236 / Mixer.Re ^ 1.5 + 56.420189 * log(Mixer.Re) / Mixer.Re ^ 2);
+          Mixer.Np = 0.5*(0.57957364 + 22.206363*log(Mixer.Re)/Mixer.Re + 89.438236/Mixer.Re^1.5 + 56.420189*log(Mixer.Re)/Mixer.Re^2);
         else
-          Mixer.Np = 0.5 * 0.6;
+          Mixer.Np = 0.5*0.6;
         end if;
       elseif Mixer.reference == "mig" then
         if Mixer.Re < 500 then
-          Mixer.Np0 = (0.39471382 + 100.84884 / Mixer.Re + 44.730788 / Mixer.Re ^ 1.5 - 45.978678 / Mixer.Re ^ 2) / 3;
+          Mixer.Np0 = (0.39471382 + 100.84884/Mixer.Re + 44.730788/Mixer.Re^1.5 - 45.978678/Mixer.Re^2)/3;
         elseif Mixer.Re < 10000 then
-          Mixer.Np0 = (0.25174729 - 3.8632725E-14 * Mixer.Re ^ 3 + 203533.57 * log(Mixer.Re) / Mixer.Re ^ 2 - 1177817 / Mixer.Re ^ 2) / 3;
+          Mixer.Np0 = (0.25174729 - 3.8632725E-14*Mixer.Re^3 + 203533.57*log(Mixer.Re)/Mixer.Re^2 - 1177817/Mixer.Re^2)/3;
         else
           Mixer.Np0 = 0.067;
         end if;
         if Mixer.Re < 4000 then
-          Mixer.Np = (0.56800494 - 8.1033728 * log(Mixer.Re) / Mixer.Re + 94.680892 / Mixer.Re - 15.271562 / Mixer.Re ^ 2) / 3;
+          Mixer.Np = (0.56800494 - 8.1033728*log(Mixer.Re)/Mixer.Re + 94.680892/Mixer.Re - 15.271562/Mixer.Re^2)/3;
         else
-          Mixer.Np = 0.58 / 3;
+          Mixer.Np = 0.58/3;
         end if;
       end if;
       Mixer.NpB = 0;
     else
-      Mixer.eta = 0.711 * (0.157 + (Mixer.nBlades * log(Vessel.di / Mixer.d)) ^ 0.611) / (Mixer.nBlades ^ 0.52 * (1 - (Mixer.d / Vessel.di) ^ 2)) "OK";
-      Mixer.beta = 2 * log(Vessel.di / Mixer.d) / (Vessel.di / Mixer.d - Mixer.d / Vessel.di) "OK";
-      Mixer.gamma = (Mixer.eta * log(Vessel.di / Mixer.d) / (Mixer.beta * Vessel.di / Mixer.d) ^ 5) ^ (1 / 3) "OK";
-      Mixer.X = Mixer.gamma * Mixer.nBlades ^ 0.7 * Mixer.width * sin(Mixer.angle) ^ 1.6 / hLiquid "OK";
+      Mixer.eta = 0.711*(0.157 + (Mixer.nBlades*log(Vessel.di/Mixer.d))^0.611)/(Mixer.nBlades^0.52*(1 - (Mixer.d/Vessel.di)^2)) "OK";
+      Mixer.beta = 2*log(Vessel.di/Mixer.d)/(Vessel.di/Mixer.d - Mixer.d/Vessel.di) "OK";
+      Mixer.gamma = (Mixer.eta*log(Vessel.di/Mixer.d)/(Mixer.beta*Vessel.di/Mixer.d)^5)^(1/3) "OK";
+      Mixer.X = Mixer.gamma*Mixer.nBlades^0.7*Mixer.width*sin(Mixer.angle)^1.6/hLiquid "OK";
       if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" then
-        Mixer.Ct = ((3 * Mixer.X ^ 1.5) ^ (-7.8) + 0.25 ^ (-7.8)) ^ (-1 / 7.8);
-        Mixer.m = ((0.8 * Mixer.X ^ 0.373) ^ (-7.8) + 0.333 ^ (-7.8)) ^ (-1 / 7.8);
+        Mixer.Ct = ((3*Mixer.X^1.5)^(-7.8) + 0.25^(-7.8))^(-1/7.8);
+        Mixer.m = ((0.8*Mixer.X^0.373)^(-7.8) + 0.333^(-7.8))^(-1/7.8);
       else
-        Mixer.Ct = ((1.96 * Mixer.X ^ 1.19) ^ (-7.8) + 0.25 ^ (-7.8)) ^ (-1 / 7.8);
-        Mixer.m = ((0.71 * Mixer.X ^ 0.373) ^ (-7.8) + 0.333 ^ (-7.8)) ^ (-1 / 7.8);
+        Mixer.Ct = ((1.96*Mixer.X^1.19)^(-7.8) + 0.25^(-7.8))^(-1/7.8);
+        Mixer.m = ((0.71*Mixer.X^0.373)^(-7.8) + 0.333^(-7.8))^(-1/7.8);
       end if;
-      Mixer.fInf = 0.0151 * Mixer.d / Vessel.di * Mixer.Ct ^ 0.308 "it was 0.00756 in original Kamei for axial turbine";
-      Mixer.Ctr = 23.8 * (Mixer.d / Vessel.di) ^ (-3.24) * (Mixer.width * sin(Mixer.angle) / Vessel.di) ^ (-1.18) * Mixer.X ^ (-0.74) "OK";
-      Mixer.Cl = 0.215 * Mixer.eta * Mixer.nBlades * Mixer.d / hLiquid * (1 - (Mixer.d / Vessel.di) ^ 2) + 1.83 * Mixer.width * sin(Mixer.angle) / hLiquid * (Mixer.nBlades / sin(Mixer.angle) / 2) ^ (1 / 3) "?";
-      Mixer.ReG = pi * Mixer.eta * log(Vessel.di / Mixer.d) / (4 * Mixer.d / (Mixer.beta * Vessel.di)) * Mixer.Re "OK";
-      Mixer.f = Mixer.Cl / Mixer.ReG + Mixer.Ct * ((Mixer.Ctr / Mixer.ReG + Mixer.ReG) ^ (-1) + (Mixer.fInf / Mixer.Ct) ^ (1 / Mixer.m)) ^ Mixer.m "friction factor OK";
-      Mixer.Np0 = 1.2 * pi ^ 4 * Mixer.beta ^ 2 / (8 * Mixer.d ^ 3 / (Vessel.di ^ 2 * hLiquid)) * Mixer.f "OK";
-      Mixer.NpB = (1 + (4.5 * Vessel.baffleWidth / Vessel.di * Vessel.nBaffles ^ 0.8 / ((2 * Mixer.angle / pi) ^ 0.72 * Mixer.NpMax ^ 0.2) + Mixer.Np0 / Mixer.NpMax) ^ (-3)) ^ (-1 / 3) * Mixer.NpMax "OK";
+      Mixer.fInf = 0.0151*Mixer.d/Vessel.di*Mixer.Ct^0.308 "it was 0.00756 in original Kamei for axial turbine";
+      Mixer.Ctr = 23.8*(Mixer.d/Vessel.di)^(-3.24)*(Mixer.width*sin(Mixer.angle)/Vessel.di)^(-1.18)*Mixer.X^(-0.74) "OK";
+      Mixer.Cl = 0.215*Mixer.eta*Mixer.nBlades*Mixer.d/hLiquid*(1 - (Mixer.d/Vessel.di)^2) + 1.83*Mixer.width*sin(Mixer.angle)/hLiquid*(Mixer.nBlades/sin(Mixer.angle)/2)^(1/3) "?";
+      Mixer.ReG = pi*Mixer.eta*log(Vessel.di/Mixer.d)/(4*Mixer.d/(Mixer.beta*Vessel.di))*Mixer.Re "OK";
+      Mixer.f = Mixer.Cl/Mixer.ReG + Mixer.Ct*((Mixer.Ctr/Mixer.ReG + Mixer.ReG)^(-1) + (Mixer.fInf/Mixer.Ct)^(1/Mixer.m))^Mixer.m "friction factor OK";
+      Mixer.Np0 = 1.2*pi^4*Mixer.beta^2/(8*Mixer.d^3/(Vessel.di^2*hLiquid))*Mixer.f "OK";
+      Mixer.NpB = (1 + (4.5*Vessel.baffleWidth/Vessel.di*Vessel.nBaffles^0.8/((2*Mixer.angle/pi)^0.72*Mixer.NpMax^0.2) + Mixer.Np0/Mixer.NpMax)^(-3))^(-1/3)*Mixer.NpMax "OK";
       if Mixer.NpB > Mixer.Np0 then
         Mixer.Np = Mixer.NpB;
       else
         Mixer.Np = Mixer.Np0;
       end if;
     end if;
-    Mixer.W = Mixer.nImpellers * Mixer.Np * Rho * Mixer.d ^ 5 * Mixer.N ^ 3;
+    Mixer.W = Mixer.nImpellers*Mixer.Np*Rho*Mixer.d^5*Mixer.N^3;
     Mixer.Htop = Vessel.HtotalIn - Mixer.hBottom;
-    Mixer.Q = Mixer.nImpellers * Mixer.Nq * Mixer.N * Mixer.d ^ 3;
-    Mixer.Vc = 4 * Mixer.Q / (pi * (Vessel.di ^ 2 * hLiquid) ^ (2 / 3));
-    Mixer.ScaleOfAgitation = Mixer.Vc * 32.8;
+    Mixer.Q = Mixer.nImpellers*Mixer.Nq*Mixer.N*Mixer.d^3;
+    Mixer.Vc = 4*Mixer.Q/(pi*(Vessel.di^2*hLiquid)^(2/3));
+    Mixer.ScaleOfAgitation = Mixer.Vc*32.8;
     annotation(
       Icon(graphics = {Ellipse(origin = {-13, -57}, extent = {{13, -3}, {-15, 5}}, endAngle = 360), Ellipse(origin = {12, -55}, extent = {{-12, 3}, {16, -5}}, endAngle = 360)}),
       Documentation(info = "<html><head></head><body>From Furukawa et alt., International Journal of Chemical Engineering volume 2012, based on Kamei et al.(1995/6/7) model for many different impeller types</body></html>"));
@@ -1149,23 +1146,23 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC1 := 1.0;
     else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
+      HTWallCorrFactorC1 := max(0.4, (Mu/MuWall1)^0.13);
     end if;
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
+      NuCoil1 := 0.016*Mixer.Re^0.67*Pr^0.37*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.14;
     elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
+      NuCoil1 := 0.03*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width/(0.2*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.08;
     elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
+      NuCoil1 := 0.025*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width*sin(Mixer.angle)/(0.17*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.08;
     end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
+    Hcoil1 := NuCoil1*K/Coil1.Do;
+    Ucoil1 := 1/((foulingF + 1/Hcoil1)*Coil1.Di/Coil1.Do + Coil1.Do*log(Coil1.Do/Coil1.Di)/(2*Vessel.wallK) + 1/Coil1.H + Coil1.foulingF);
+    if (T - Coil1.Ta)*(T - Coil1.Tb) <= 0 then
       LMTDcoil1 := 0;
     elseif T - Coil1.Ta == T - Coil1.Tb then
       LMTDcoil1 := T - Coil1.Ta;
     else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
+      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb))/log((T - Coil1.Ta)/(T - Coil1.Tb));
     end if;
   equation
     if Coil1.fullHTlength == false then
@@ -1174,13 +1171,13 @@ package Vessels "Vessels.mo by Carlos Trujillo
       elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
         Coil1.SusedHT = Coil1.SactiveHT;
       else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
+        Coil1.SusedHT = Coil1.SactiveHT*(hLiquid - Vessel.HbottomIn - Coil1.heightInit)/Coil1.CoilHeigth;
       end if;
     end if;
 //StateC1 = Medium.setBubbleState(Medium.setSat_T(Coil1.Tsurf));
     StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
     if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
+      Coil1.W = Ucoil1*LMTDcoil1*Coil1.SusedHT;
     end if;
     if numCoils == 1 and numHalfCoils == 0 then
       W = -Coil1.W;
@@ -1207,7 +1204,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHc1;
   algorithm
     if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
+      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam)/2;
     else
       HalfCoil1.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1215,46 +1212,46 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc1 := 1.0;
     else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
+      HTWallCorrFactorHc1 := max(0.4, (Mu/MuWallHc1)^0.14);
     end if;
     if HalfCoil1.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.9*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 1.1*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 1.08*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.31*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil1 := 0.74*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := 0.54*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
+    HhalfCoil1 := NuHalfCoil1*K/Vessel.di;
+    UhalfCoil1 := 1/((foulingF + 1/HhalfCoil1)*HalfCoil1.SactiveHT/(HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil1.H + HalfCoil1.foulingF);
+    if (T - HalfCoil1.Ta)*(T - HalfCoil1.Tb) <= 0 then
       LMTDhalfCoil1 := 0;
     elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
       LMTDhalfCoil1 := T - HalfCoil1.Ta;
     else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
+      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb))/log((T - HalfCoil1.Ta)/(T - HalfCoil1.Tb));
     end if;
   equation
     StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
     if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
+      HalfCoil1.W = UhalfCoil1*LMTDhalfCoil1*HalfCoil1.SactiveHT;
     end if;
     if numCoils == 1 and numHalfCoils == 1 then
       W = (-Coil1.W) - HalfCoil1.W;
@@ -1282,7 +1279,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHc2;
   algorithm
     if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
+      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam)/2;
     else
       HalfCoil2.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1290,46 +1287,46 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc2 := 1.0;
     else
-      HTWallCorrFactorHc2 := max(0.4, (Mu / MuWallHc2) ^ 0.14);
+      HTWallCorrFactorHc2 := max(0.4, (Mu/MuWallHc2)^0.14);
     end if;
     if HalfCoil2.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.9*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 1.1*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc2 "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil2 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 1.08*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2*HTWallCorrFactorHc2 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.31*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc2 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil2 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil2 := 0.74*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil2 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
+          NuHalfCoil2 := 0.54*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT";
         else
-          NuHalfCoil2 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
+          NuHalfCoil2 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
-    if (T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0 then
+    HhalfCoil2 := NuHalfCoil2*K/Vessel.di;
+    UhalfCoil2 := 1/((foulingF + 1/HhalfCoil2)*HalfCoil2.SactiveHT/(HalfCoil2.SactiveHT + HalfCoil2.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil2.H + HalfCoil2.foulingF);
+    if (T - HalfCoil2.Ta)*(T - HalfCoil2.Tb) <= 0 then
       LMTDhalfCoil2 := 0;
     elseif T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0 then
       LMTDhalfCoil2 := T - HalfCoil2.Ta;
     else
-      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb));
+      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb))/log((T - HalfCoil2.Ta)/(T - HalfCoil2.Tb));
     end if;
   equation
     StateHc2 = Medium.setState_pTX(fixedPressure, HalfCoil2.Tsurf);
     if HalfCoil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
+      HalfCoil2.W = UhalfCoil2*LMTDhalfCoil2*HalfCoil2.SactiveHT;
     end if;
     if numCoils == 1 and numHalfCoils == 2 then
       W = (-Coil1.W) - HalfCoil1.W - HalfCoil2.W;
@@ -1338,7 +1335,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
   model TankAgitKamei2Coils
     extends FreeFluids.Vessels.TankAgitKamei1Coil(numCoils = 2, numHalfCoils = 0);
-    replaceable FreeFluids.Vessels.VesselCylVert Vessel(nConcCoils = 1) annotation(
+    replaceable FreeFluids.Vessels.VesselCylVert Vessel(nConcCoils = 2) annotation(
       Placement(visible = true, transformation(origin = {0, 0}, extent = {{-30, -30}, {30, 30}}, rotation = 0)));
     replaceable FreeFluids.Vessels.MixerKamei Mixer annotation(
       Placement(visible = true, transformation(origin = {0, 2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -1357,28 +1354,28 @@ package Vessels "Vessels.mo by Carlos Trujillo
     MuWall2 := Medium.dynamicViscosity(StateC2);
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC2 := 1.0;
-    elseif noEvent(Mu / MuWall2 >= 1.0e4) then
+    elseif noEvent(Mu/MuWall2 >= 1.0e4) then
       HTWallCorrFactorC2 := 10000.0;
-    elseif noEvent(Mu / MuWall2 <= 0.000006) then
+    elseif noEvent(Mu/MuWall2 <= 0.000006) then
       HTWallCorrFactorC2 := 0.000006;
     else
-      HTWallCorrFactorC2 := Mu / MuWall2;
+      HTWallCorrFactorC2 := Mu/MuWall2;
     end if;
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil2 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.14;
+      NuCoil2 := 0.016*Mixer.Re^0.67*Pr^0.37*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.14;
     elseif Mixer.reference == "radialTurbine" then
-      NuCoil2 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
+      NuCoil2 := 0.03*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width/(0.2*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.08;
     elseif Mixer.reference == "axialTurbine" then
-      NuCoil2 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
+      NuCoil2 := 0.025*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width*sin(Mixer.angle)/(0.17*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.08;
     end if;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
+    Hcoil2 := NuCoil2*K/Coil2.Do;
+    Ucoil2 := 1/((foulingF + 1/Hcoil2)*Coil2.Di/Coil2.Do + Coil2.Do*log(Coil2.Do/Coil2.Di)/(2*Vessel.wallK) + 1/Coil2.H + Coil2.foulingF);
+    if (T - Coil2.Ta)*(T - Coil2.Tb) <= 0 then
       LMTDcoil2 := 0;
     elseif T - Coil2.Ta == T - Coil2.Tb then
       LMTDcoil2 := T - Coil2.Ta;
     else
-      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb));
+      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb))/log((T - Coil2.Ta)/(T - Coil2.Tb));
     end if;
   equation
     if Coil2.fullHTlength == false then
@@ -1387,12 +1384,12 @@ package Vessels "Vessels.mo by Carlos Trujillo
       elseif Coil2.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
         Coil2.SusedHT = Coil2.SactiveHT;
       else
-        Coil2.SusedHT = Coil2.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil2.heightInit) / Coil2.CoilHeigth;
+        Coil2.SusedHT = Coil2.SactiveHT*(hLiquid - Vessel.HbottomIn - Coil2.heightInit)/Coil2.CoilHeigth;
       end if;
     end if;
     StateC2 = Medium.setState_pTX(fixedPressure, Coil2.Tsurf);
     if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
+      Coil2.W = Ucoil2*LMTDcoil2*Coil2.SusedHT;
     end if;
     if numCoils == 2 and numHalfCoils == 0 then
       W = (-Coil1.W) - Coil2.W;
@@ -1419,7 +1416,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHc1;
   algorithm
     if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
+      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam)/2;
     else
       HalfCoil1.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1427,46 +1424,46 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc1 := 1.0;
     else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.14);
+      HTWallCorrFactorHc1 := max(0.4, (Mu/MuWallHc1)^0.14);
     end if;
     if HalfCoil1.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.9*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 1.1*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 1.08*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.31*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil1 := 0.74*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := 0.54*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
+    HhalfCoil1 := NuHalfCoil1*K/Vessel.di;
+    UhalfCoil1 := 1/((foulingF + 1/HhalfCoil1)*HalfCoil1.SactiveHT/(HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil1.H + HalfCoil1.foulingF);
+    if (T - HalfCoil1.Ta)*(T - HalfCoil1.Tb) <= 0 then
       LMTDhalfCoil1 := 0;
     elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
       LMTDhalfCoil1 := T - HalfCoil1.Ta;
     else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
+      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb))/log((T - HalfCoil1.Ta)/(T - HalfCoil1.Tb));
     end if;
   equation
     StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
     if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
+      HalfCoil1.W = UhalfCoil1*LMTDhalfCoil1*HalfCoil1.SactiveHT;
     end if;
     if numCoils == 2 and numHalfCoils == 1 then
       W = (-Coil1.W) - Coil2.W - HalfCoil1.W;
@@ -1508,48 +1505,48 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC1 := 1.0;
     else
-      HTWallCorrFactorC1 := max(0.4, (Mu / MuWall1) ^ 0.13);
+      HTWallCorrFactorC1 := max(0.4, (Mu/MuWall1)^0.13);
     end if;
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil1 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.14;
+      NuCoil1 := 0.016*Mixer.Re^0.67*Pr^0.37*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.14;
     elseif Mixer.reference == "radialTurbine" then
-      NuCoil1 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
+      NuCoil1 := 0.03*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width/(0.2*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.08;
     elseif Mixer.reference == "axialTurbine" then
-      NuCoil1 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil1.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC1 ^ 0.08;
+      NuCoil1 := 0.025*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width*sin(Mixer.angle)/(0.17*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil1.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC1^0.08;
     end if;
-    Hcoil1 := NuCoil1 * K / Coil1.Do;
-    Ucoil1 := 1 / ((foulingF + 1 / Hcoil1) * Coil1.Di / Coil1.Do + Coil1.Do * log(Coil1.Do / Coil1.Di) / (2 * Vessel.wallK) + 1 / Coil1.H + Coil1.foulingF);
-    if (T - Coil1.Ta) * (T - Coil1.Tb) <= 0 then
+    Hcoil1 := NuCoil1*K/Coil1.Do;
+    Ucoil1 := 1/((foulingF + 1/Hcoil1)*Coil1.Di/Coil1.Do + Coil1.Do*log(Coil1.Do/Coil1.Di)/(2*Vessel.wallK) + 1/Coil1.H + Coil1.foulingF);
+    if (T - Coil1.Ta)*(T - Coil1.Tb) <= 0 then
       LMTDcoil1 := 0;
     elseif T - Coil1.Ta == T - Coil1.Tb then
       LMTDcoil1 := T - Coil1.Ta;
     else
-      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb)) / log((T - Coil1.Ta) / (T - Coil1.Tb));
+      LMTDcoil1 := (T - Coil1.Ta - (T - Coil1.Tb))/log((T - Coil1.Ta)/(T - Coil1.Tb));
     end if;
     MuWall2 := Medium.dynamicViscosity(StateC2);
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC2 := 1.0;
     else
-      HTWallCorrFactorC2 := max(0.4, (Mu / MuWall2) ^ 0.13);
+      HTWallCorrFactorC2 := max(0.4, (Mu/MuWall2)^0.13);
     end if;
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil2 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.14;
+      NuCoil2 := 0.016*Mixer.Re^0.67*Pr^0.37*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.14;
     elseif Mixer.reference == "radialTurbine" then
-      NuCoil2 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
+      NuCoil2 := 0.03*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width/(0.2*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.08;
     elseif Mixer.reference == "axialTurbine" then
-      NuCoil2 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil2.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC2 ^ 0.08;
+      NuCoil2 := 0.025*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width*sin(Mixer.angle)/(0.17*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil2.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC2^0.08;
     end if;
-    Hcoil2 := NuCoil2 * K / Coil2.Do;
-    Ucoil2 := 1 / ((foulingF + 1 / Hcoil2) * Coil2.Di / Coil2.Do + Coil2.Do * log(Coil2.Do / Coil2.Di) / (2 * Vessel.wallK) + 1 / Coil2.H + Coil2.foulingF);
-    if (T - Coil2.Ta) * (T - Coil2.Tb) <= 0 then
+    Hcoil2 := NuCoil2*K/Coil2.Do;
+    Ucoil2 := 1/((foulingF + 1/Hcoil2)*Coil2.Di/Coil2.Do + Coil2.Do*log(Coil2.Do/Coil2.Di)/(2*Vessel.wallK) + 1/Coil2.H + Coil2.foulingF);
+    if (T - Coil2.Ta)*(T - Coil2.Tb) <= 0 then
       LMTDcoil2 := 0;
     elseif T - Coil2.Ta == T - Coil2.Tb then
       LMTDcoil2 := T - Coil2.Ta;
     else
-      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb)) / log((T - Coil2.Ta) / (T - Coil2.Tb));
+      LMTDcoil2 := (T - Coil2.Ta - (T - Coil2.Tb))/log((T - Coil2.Ta)/(T - Coil2.Tb));
     end if;
     if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
+      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam)/2;
     else
       HalfCoil1.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1557,90 +1554,90 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc1 := 1.0;
     else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.13);
+      HTWallCorrFactorHc1 := max(0.4, (Mu/MuWallHc1)^0.13);
     end if;
     if HalfCoil1.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.9*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 1.1*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc1 "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 1.08*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2*HTWallCorrFactorHc1 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "PDHengineer";
+        NuHalfCoil1 := 0.31*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc1 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil1 := 0.74*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := 0.54*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
-    if (T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0 then
+    HhalfCoil1 := NuHalfCoil1*K/Vessel.di;
+    UhalfCoil1 := 1/((foulingF + 1/HhalfCoil1)*HalfCoil1.SactiveHT/(HalfCoil1.SactiveHT + HalfCoil1.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil1.H + HalfCoil1.foulingF);
+    if (T - HalfCoil1.Ta)*(T - HalfCoil1.Tb) <= 0 then
       LMTDhalfCoil1 := 0;
     elseif T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0 then
       LMTDhalfCoil1 := T - HalfCoil1.Ta;
     else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
+      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb))/log((T - HalfCoil1.Ta)/(T - HalfCoil1.Tb));
     end if;
     if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
+      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam)/2;
     else
       HalfCoil2.HalfCoilDiam := Vessel.Do;
     end if;
     MuWallHc2 := Medium.dynamicViscosity(StateHc2);
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc2 := 1.0;
-    elseif noEvent(Mu / MuWallHc2 >= 1e4) then
-      HTWallCorrFactorHc2 := 10000 ^ 0.14;
-    elseif noEvent(Mu / MuWallHc2 <= 0.000008) then
-      HTWallCorrFactorHc2 := 0.000008 ^ 0.14;
+    elseif noEvent(Mu/MuWallHc2 >= 1e4) then
+      HTWallCorrFactorHc2 := 10000^0.14;
+    elseif noEvent(Mu/MuWallHc2 <= 0.000008) then
+      HTWallCorrFactorHc2 := 0.000008^0.14;
     else
-      HTWallCorrFactorHc2 := (Mu / MuWallHc2) ^ 0.14;
+      HTWallCorrFactorHc2 := (Mu/MuWallHc2)^0.14;
     end if;
     if HalfCoil2.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.9 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.9*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 1.1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * HTWallCorrFactorHc2 "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 1.1*Mixer.Re^(2/3)*Pr^(1/3)*HTWallCorrFactorHc2 "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil2 := 1.08 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 1.08*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2*HTWallCorrFactorHc2 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.31 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "PDHengineer";
+        NuHalfCoil2 := 0.31*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc2 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 0.5 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * HTWallCorrFactorHc2 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 0.5*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*HTWallCorrFactorHc2 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil2 := 0.74 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil2 := 0.74*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil2 := 0.54 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
+          NuHalfCoil2 := 0.54*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT";
         else
-          NuHalfCoil2 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
+          NuHalfCoil2 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
-    if (T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0 then
+    HhalfCoil2 := NuHalfCoil2*K/Vessel.di;
+    UhalfCoil2 := 1/((foulingF + 1/HhalfCoil2)*HalfCoil2.SactiveHT/(HalfCoil2.SactiveHT + HalfCoil2.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil2.H + HalfCoil2.foulingF);
+    if (T - HalfCoil2.Ta)*(T - HalfCoil2.Tb) <= 0 then
       LMTDhalfCoil2 := 0;
     elseif T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0 then
       LMTDhalfCoil2 := T - HalfCoil2.Ta;
     else
-      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb));
+      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb))/log((T - HalfCoil2.Ta)/(T - HalfCoil2.Tb));
     end if;
   equation
     if Coil1.fullHTlength == false then
@@ -1649,7 +1646,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       elseif Coil1.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
         Coil1.SusedHT = Coil1.SactiveHT;
       else
-        Coil1.SusedHT = Coil1.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil1.heightInit) / Coil1.CoilHeigth;
+        Coil1.SusedHT = Coil1.SactiveHT*(hLiquid - Vessel.HbottomIn - Coil1.heightInit)/Coil1.CoilHeigth;
       end if;
     end if;
     if Coil2.fullHTlength == false then
@@ -1658,7 +1655,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       elseif Coil2.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
         Coil2.SusedHT = Coil2.SactiveHT;
       else
-        Coil2.SusedHT = Coil2.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil2.heightInit) / Coil2.CoilHeigth;
+        Coil2.SusedHT = Coil2.SactiveHT*(hLiquid - Vessel.HbottomIn - Coil2.heightInit)/Coil2.CoilHeigth;
       end if;
     end if;
     StateC1 = Medium.setState_pTX(fixedPressure, Coil1.Tsurf);
@@ -1666,16 +1663,16 @@ package Vessels "Vessels.mo by Carlos Trujillo
     StateHc1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
     StateHc2 = Medium.setState_pTX(fixedPressure, HalfCoil2.Tsurf);
     if Coil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil1.W = Ucoil1 * LMTDcoil1 * Coil1.SusedHT;
+      Coil1.W = Ucoil1*LMTDcoil1*Coil1.SusedHT;
     end if;
     if Coil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil2.W = Ucoil2 * LMTDcoil2 * Coil2.SusedHT;
+      Coil2.W = Ucoil2*LMTDcoil2*Coil2.SusedHT;
     end if;
     if HalfCoil1.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
+      HalfCoil1.W = UhalfCoil1*LMTDhalfCoil1*HalfCoil1.SactiveHT;
     end if;
     if HalfCoil2.thermalType == FreeFluids.Types.ThermalType.detailed then
-      HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
+      HalfCoil2.W = UhalfCoil2*LMTDhalfCoil2*HalfCoil2.SactiveHT;
     end if;
     if numCoils == 2 and numHalfCoils == 2 then
       W = (-Coil1.W) - Coil2.W - HalfCoil1.W - HalfCoil2.W;
@@ -1706,23 +1703,23 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorC0 := 1.0;
     else
-      HTWallCorrFactorC0 := max(0.4, (Mu / MuWall0) ^ 0.13);
+      HTWallCorrFactorC0 := max(0.4, (Mu/MuWall0)^0.13);
     end if;
     if Mixer.reference == "hydrofoil" or Mixer.reference == "propeller" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-      NuCoil0 := 0.016 * Mixer.Re ^ 0.67 * Pr ^ 0.37 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.14;
+      NuCoil0 := 0.016*Mixer.Re^0.67*Pr^0.37*(3*Mixer.d/Vessel.di)^0.1*(Coil0.Do/Vessel.di/0.04)^0.5*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC0^0.14;
     elseif Mixer.reference == "radialTurbine" then
-      NuCoil0 := 0.03 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width / (0.2 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.08;
+      NuCoil0 := 0.03*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width/(0.2*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil0.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC0^0.08;
     elseif Mixer.reference == "axialTurbine" then
-      NuCoil0 := 0.025 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (Mixer.width * sin(Mixer.angle) / (0.17 * Mixer.d)) ^ 0.2 * (3 * Mixer.d / Vessel.di) ^ 0.1 * (Coil0.Do / Vessel.di / 0.04) ^ 0.5 * (2 / Mixer.nBlades) ^ 0.2 * 0.82 ^ (Vessel.nConcCoils - 1) * HTWallCorrFactorC0 ^ 0.08;
+      NuCoil0 := 0.025*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(Mixer.width*sin(Mixer.angle)/(0.17*Mixer.d))^0.2*(3*Mixer.d/Vessel.di)^0.1*(Coil0.Do/Vessel.di/0.04)^0.5*(2/Mixer.nBlades)^0.2*0.82^(Vessel.nConcCoils - 1)*HTWallCorrFactorC0^0.08;
     end if;
-    Hcoil0 := NuCoil0 * K / Coil0.Do;
-    Ucoil0 := 1 / ((foulingF + 1 / Hcoil0) * Coil0.Di / Coil0.Do + Coil0.Do * log(Coil0.Do / Coil0.Di) / (2 * Vessel.wallK) + 1 / Coil0.H + Coil0.foulingF);
-    if (T - Coil0.Ta) * (T - Coil0.Tb) <= 0 then
+    Hcoil0 := NuCoil0*K/Coil0.Do;
+    Ucoil0 := 1/((foulingF + 1/Hcoil0)*Coil0.Di/Coil0.Do + Coil0.Do*log(Coil0.Do/Coil0.Di)/(2*Vessel.wallK) + 1/Coil0.H + Coil0.foulingF);
+    if (T - Coil0.Ta)*(T - Coil0.Tb) <= 0 then
       LMTDcoil0 := 0;
     elseif T - Coil0.Ta == T - Coil0.Tb then
       LMTDcoil0 := T - Coil0.Ta;
     else
-      LMTDcoil0 := (T - Coil0.Ta - (T - Coil0.Tb)) / log((T - Coil0.Ta) / (T - Coil0.Tb));
+      LMTDcoil0 := (T - Coil0.Ta - (T - Coil0.Tb))/log((T - Coil0.Ta)/(T - Coil0.Tb));
     end if;
   equation
     if Coil0.fullHTlength == false then
@@ -1731,12 +1728,12 @@ package Vessels "Vessels.mo by Carlos Trujillo
       elseif Coil0.CoilFinalHeight <= hLiquid - Vessel.HbottomIn then
         Coil0.SusedHT = Coil0.SactiveHT;
       else
-        Coil0.SusedHT = Coil0.SactiveHT * (hLiquid - Vessel.HbottomIn - Coil0.heightInit) / Coil0.CoilHeigth;
+        Coil0.SusedHT = Coil0.SactiveHT*(hLiquid - Vessel.HbottomIn - Coil0.heightInit)/Coil0.CoilHeigth;
       end if;
     end if;
     StateC0 = Medium.setState_pTX(fixedPressure, Coil0.Tsurf);
     if Coil0.thermalType == FreeFluids.Types.ThermalType.detailed then
-      Coil0.W = Ucoil0 * LMTDcoil0 * Coil0.SusedHT;
+      Coil0.W = Ucoil0*LMTDcoil0*Coil0.SusedHT;
     end if;
     if numCoils == 3 then
       W = (-Coil0.W) - Coil1.W - Coil2.W;
@@ -1764,7 +1761,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     Medium.ThermodynamicState StateHC1, StateHC2;
   algorithm
     if HalfCoil1.isBottomJacket == true then
-      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam) / 2;
+      HalfCoil1.HalfCoilDiam := (HalfCoil1.largerHalfCoilDiam + HalfCoil1.lowerHalfCoilDiam)/2;
     else
       HalfCoil1.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1772,51 +1769,51 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc1 := 1.0;
     else
-      HTWallCorrFactorHc1 := max(0.4, (Mu / MuWallHc1) ^ 0.13);
+      HTWallCorrFactorHc1 := max(0.4, (Mu/MuWallHc1)^0.13);
     end if;
     if HalfCoil1.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-        NuHalfCoil1 := 0.9 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "PDHengineer";
+        NuHalfCoil1 := 0.9*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3) "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 1.1 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 1.1*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3) "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil1 := 0.5 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 "PDHengineer";
+        NuHalfCoil1 := 0.5*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil1 := 1.08 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 "PDHengineer";
+        NuHalfCoil1 := 1.08*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil1 := 0.31 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 "PDHengineer";
+        NuHalfCoil1 := 0.31*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil1 := 0.5 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil1 := 0.5*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "mig" then
-        NuHalfCoil1 := 0.46 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "Ekato";
+        NuHalfCoil1 := 0.46*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3) "Ekato";
       elseif Mixer.reference == "intermig" then
-        NuHalfCoil1 := 0.54 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "Ekato";
+        NuHalfCoil1 := 0.54*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3) "Ekato";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil1 := 0.74 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil1 := 0.74*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil1 := 0.54 * HTWallCorrFactorHc1 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 "DeltaT";
+          NuHalfCoil1 := 0.54*HTWallCorrFactorHc1*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2 "DeltaT";
         else
-          NuHalfCoil1 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc1 "DeltaT";
+          NuHalfCoil1 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc1 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil1 := NuHalfCoil1 * K / Vessel.di;
-    AuxSurfEffHc1 := (HhalfCoil1 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc1 := (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) - 1) / (AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi) * (exp(2 * AuxSurfEffHc1 * (HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
-    UhalfCoil1 := 1 / ((foulingF + 1 / HhalfCoil1) * HalfCoil1.SactiveHT / (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil1.H + HalfCoil1.foulingF);
+    HhalfCoil1 := NuHalfCoil1*K/Vessel.di;
+    AuxSurfEffHc1 := (HhalfCoil1/(Vessel.wallK*Vessel.wallThickness))^0.5 "partial calculation";
+    AuxSurfEffHc1 := (exp(2*AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)) - 1)/(AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)*(exp(2*AuxSurfEffHc1*(HalfCoil1.path - HalfCoil1.basePipeDi)) + 1));
+    UhalfCoil1 := 1/((foulingF + 1/HhalfCoil1)*HalfCoil1.SactiveHT/(HalfCoil1.SactiveHT + AuxSurfEffHc1*HalfCoil1.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil1.H + HalfCoil1.foulingF);
 //UhalfCoil1 := HhalfCoil1/(1+foulingF * HhalfCoil1);
-    if noEvent((T - HalfCoil1.Ta) * (T - HalfCoil1.Tb) <= 0) then
+    if noEvent((T - HalfCoil1.Ta)*(T - HalfCoil1.Tb) <= 0) then
       LMTDhalfCoil1 := 0;
     elseif noEvent(T - HalfCoil1.Ta - (T - HalfCoil1.Tb) == 0) then
       LMTDhalfCoil1 := T - HalfCoil1.Ta;
     else
-      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb)) / log((T - HalfCoil1.Ta) / (T - HalfCoil1.Tb));
+      LMTDhalfCoil1 := (T - HalfCoil1.Ta - (T - HalfCoil1.Tb))/log((T - HalfCoil1.Ta)/(T - HalfCoil1.Tb));
     end if;
     if HalfCoil2.isBottomJacket == true then
-      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam) / 2;
+      HalfCoil2.HalfCoilDiam := (HalfCoil2.largerHalfCoilDiam + HalfCoil2.lowerHalfCoilDiam)/2;
     else
       HalfCoil2.HalfCoilDiam := Vessel.Do;
     end if;
@@ -1824,54 +1821,54 @@ package Vessels "Vessels.mo by Carlos Trujillo
     if useHTWallCorrFactor == false then
       HTWallCorrFactorHc2 := 1.0;
     else
-      HTWallCorrFactorHc2 := max(0.4, (Mu / MuWallHc2) ^ 0.13);
+      HTWallCorrFactorHc2 := max(0.4, (Mu/MuWallHc2)^0.13);
     end if;
     if HalfCoil2.isBottomJacket == true then
       if Mixer.reference == "hydrofoil" or Mixer.reference == "mig" or Mixer.reference == "intermig" then
-        NuHalfCoil2 := 0.9 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "PDHengineer";
+        NuHalfCoil2 := 0.9*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3) "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 1.1 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 1.1*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3) "No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "radialTurbine" then
-        NuHalfCoil2 := 0.5 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.2 * Vessel.di)) ^ 0.2 "PDHengineer";
+        NuHalfCoil2 := 0.5*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.2*Vessel.di))^0.2 "PDHengineer";
       elseif Mixer.reference == "axialTurbine" then
-        NuHalfCoil2 := 1.08 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Mixer.nBlades * Mixer.width / (4 * 0.17 * Vessel.di)) ^ 0.2 "PDHengineer";
+        NuHalfCoil2 := 1.08*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Mixer.nBlades*Mixer.width/(4*0.17*Vessel.di))^0.2 "PDHengineer";
       end if;
     else
       if Mixer.reference == "hydrofoil" then
-        NuHalfCoil2 := 0.31 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 "PDHengineer";
+        NuHalfCoil2 := 0.31*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15 "PDHengineer";
       elseif Mixer.reference == "propeller" then
-        NuHalfCoil2 := 0.5 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
+        NuHalfCoil2 := 0.5*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15 "Handbook of    Industrial Mixing. No he entrado la correcion para el angulo de la pala";
       elseif Mixer.reference == "mig" then
-        NuHalfCoil2 := 0.46 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "Ekato";
+        NuHalfCoil2 := 0.46*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3) "Ekato";
       elseif Mixer.reference == "intermig" then
-        NuHalfCoil2 := 0.54 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) "Ekato";
+        NuHalfCoil2 := 0.54*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3) "Ekato";
       elseif Mixer.reference == "radialTurbine" or Mixer.reference == "axialTurbine" then
         if Mixer.Re > 10000 then
-          NuHalfCoil2 := 0.74 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 "DeltaT, liquid heigth correction from PDHengineer";
+          NuHalfCoil2 := 0.74*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2 "DeltaT, liquid heigth correction from PDHengineer";
         elseif Mixer.Re < 400 then
-          NuHalfCoil2 := 0.54 * HTWallCorrFactorHc2 * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 "DeltaT";
+          NuHalfCoil2 := 0.54*HTWallCorrFactorHc2*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2 "DeltaT";
         else
-          NuHalfCoil2 := (0.1679 + 0.0621 * log(Mixer.Re)) * Mixer.Re ^ (2 / 3) * Pr ^ (1 / 3) * (Vessel.di / hLiquid * Mixer.nImpellers) ^ 0.15 * (5 * Mixer.nBlades * Mixer.width * sin(Mixer.angle) / (6 * Mixer.d)) ^ 0.2 * HTWallCorrFactorHc2 "DeltaT";
+          NuHalfCoil2 := (0.1679 + 0.0621*log(Mixer.Re))*Mixer.Re^(2/3)*Pr^(1/3)*(Vessel.di/hLiquid*Mixer.nImpellers)^0.15*(5*Mixer.nBlades*Mixer.width*sin(Mixer.angle)/(6*Mixer.d))^0.2*HTWallCorrFactorHc2 "DeltaT";
         end if;
       end if;
     end if;
-    HhalfCoil2 := NuHalfCoil2 * K / Vessel.di;
-    AuxSurfEffHc2 := (HhalfCoil2 / (Vessel.wallK * Vessel.wallThickness)) ^ 0.5 "partial calculation";
-    AuxSurfEffHc2 := (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) - 1) / (AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi) * (exp(2 * AuxSurfEffHc2 * (HalfCoil2.path - HalfCoil2.basePipeDi)) + 1));
-    UhalfCoil2 := 1 / ((foulingF + 1 / HhalfCoil2) * HalfCoil2.SactiveHT / (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT) + Vessel.wallThickness / Vessel.wallK + 1 / HalfCoil2.H + HalfCoil2.foulingF);
+    HhalfCoil2 := NuHalfCoil2*K/Vessel.di;
+    AuxSurfEffHc2 := (HhalfCoil2/(Vessel.wallK*Vessel.wallThickness))^0.5 "partial calculation";
+    AuxSurfEffHc2 := (exp(2*AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)) - 1)/(AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)*(exp(2*AuxSurfEffHc2*(HalfCoil2.path - HalfCoil2.basePipeDi)) + 1));
+    UhalfCoil2 := 1/((foulingF + 1/HhalfCoil2)*HalfCoil2.SactiveHT/(HalfCoil2.SactiveHT + AuxSurfEffHc2*HalfCoil2.SauxHT) + Vessel.wallThickness/Vessel.wallK + 1/HalfCoil2.H + HalfCoil2.foulingF);
 //UhalfCoil2 := HhalfCoil2/(1+foulingF * HhalfCoil2);
-    if noEvent((T - HalfCoil2.Ta) * (T - HalfCoil2.Tb) <= 0) then
+    if noEvent((T - HalfCoil2.Ta)*(T - HalfCoil2.Tb) <= 0) then
       LMTDhalfCoil2 := 0;
     elseif noEvent(T - HalfCoil2.Ta - (T - HalfCoil2.Tb) == 0) then
       LMTDhalfCoil2 := T - HalfCoil2.Ta;
     else
-      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb)) / log((T - HalfCoil2.Ta) / (T - HalfCoil2.Tb));
+      LMTDhalfCoil2 := (T - HalfCoil2.Ta - (T - HalfCoil2.Tb))/log((T - HalfCoil2.Ta)/(T - HalfCoil2.Tb));
     end if;
   equation
 //HalfCoil1.W = UhalfCoil1 * LMTDhalfCoil1 * HalfCoil1.SactiveHT;
-    HalfCoil1.W = 1 / (1 / HhalfCoil1 + foulingF) * (T - HalfCoil1.Tsurf) * (HalfCoil1.SactiveHT + AuxSurfEffHc1 * HalfCoil1.SauxHT);
+    HalfCoil1.W = 1/(1/HhalfCoil1 + foulingF)*(T - HalfCoil1.Tsurf)*(HalfCoil1.SactiveHT + AuxSurfEffHc1*HalfCoil1.SauxHT);
 //HalfCoil2.W = UhalfCoil2 * LMTDhalfCoil2 * HalfCoil2.SactiveHT;
-    HalfCoil2.W = 1 / (1 / HhalfCoil2 + foulingF) * (T - HalfCoil2.Tsurf) * (HalfCoil2.SactiveHT + AuxSurfEffHc2 * HalfCoil2.SauxHT);
+    HalfCoil2.W = 1/(1/HhalfCoil2 + foulingF)*(T - HalfCoil2.Tsurf)*(HalfCoil2.SactiveHT + AuxSurfEffHc2*HalfCoil2.SauxHT);
 //StateHC1 = Medium.setBubbleState(Medium.setSat_T(HalfCoil1.Tsurf));
 //StateHC2 = Medium.setBubbleState(Medium.setSat_T(HalfCoil2.Tsurf));
     StateHC1 = Medium.setState_pTX(fixedPressure, HalfCoil1.Tsurf);
@@ -1951,25 +1948,25 @@ package Vessels "Vessels.mo by Carlos Trujillo
 
     model VesselSimpleWithPump
       extends Modelica.Icons.Example;
-      FreeFluids.Vessels.VesselSimple Vessel(height = 5, initialLiquidVolume = 1, initialT = 298.15, inletL = 0.8, lgConductance = 2, overflowL = 1.5, section = 2, ventOutL = 2, vesselVolume = 10)  annotation(
+      FreeFluids.Vessels.VesselSimple Vessel(height = 5, initialLiquidVolume = 1, initialT = 298.15, inletL = 0.8, lgConductance = 2, overflowL = 1.5, section = 2, ventOutL = 2, vesselVolume = 10) annotation(
         Placement(visible = true, transformation(origin = {44, -8}, extent = {{-22, -22}, {22, 22}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 99999.99999999999, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-56, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-      FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900 / 60, numParallelUnits = 1, q1 = 0.0016667, q2 = 0.0025, r1 = 0.705, r2 = 0.73) annotation(
+      FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, forceSpeed = true, h0 = 29.1, h1 = 27, h2 = 23, n0 = 2900/60, numParallelUnits = 1, q1 = 0.0016667, q2 = 0.0025, r1 = 0.705, r2 = 0.73) annotation(
         Placement(visible = true, transformation(origin = {-16, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
     equation
-  connect(Pump.PortB, Vessel.Inlet) annotation(
+      connect(Pump.PortB, Vessel.Inlet) annotation(
         Line(points = {{-10, -24}, {24, -24}}, color = {0, 127, 255}));
-  connect(Source.PortB, Pump.PortA) annotation(
+      connect(Source.PortB, Pump.PortA) annotation(
         Line(points = {{-50, -24}, {-22, -24}}, color = {0, 127, 255}));
       annotation(
         Diagram(coordinateSystem(extent = {{-60, 20}, {80, -40}})),
         experiment(StartTime = 0, StopTime = 1700, Tolerance = 1e-06, Interval = 7.2),
-  Documentation(info = "<html><head></head><body>Vessel pressurization with a bump pump.</body></html>"));
+        Documentation(info = "<html><head></head><body>Vessel pressurization with a bump pump.</body></html>"));
     end VesselSimpleWithPump;
-  
+
     model VesselLevelTest
-  extends Modelica.Icons.Example;
+      extends Modelica.Icons.Example;
       VesselLevel Vessel(bottomHeight = 0.25, di = 1, fixLiquidLevel = true, liquidL = 0.5, liquidV = 3, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, vesselBottom = FreeFluids.Types.HeadShape.hemispherical, vesselTop = FreeFluids.Types.HeadShape.Korbbogen) annotation(
         Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       annotation(
@@ -1982,19 +1979,19 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar"), T = 323.15, externalP = true) annotation(
         Placement(visible = true, transformation(origin = {-24, 8}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-  FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
+      FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10) annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Pipes.PipeFlow1Ph OutletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.022, lTube = 3) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph OutletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.022, lTube = 3) annotation(
         Placement(visible = true, transformation(origin = {94, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSink Sink(P = 102000, fix = FreeFluids.Types.BoundaryOption.fixPressure)  annotation(
+      FreeFluids.Interfaces.FlowSink Sink(P = 102000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {96, -6}, extent = {{-6, -6}, {6, 6}}, rotation = 180)));
-  FreeFluids.Pipes.PipeFlow1Ph VentPipe(redeclare package Medium = Modelica.Media.Air.DryAirNasa, di = 0.01, lTube = 4) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph VentPipe(redeclare package Medium = Modelica.Media.Air.DryAirNasa, di = 0.01, lTube = 4) annotation(
         Placement(visible = true, transformation(origin = {78, 54}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-  FreeFluids.Interfaces.FlowSink Vent(P = 101325, fix = FreeFluids.Types.BoundaryOption.fixPressure)  annotation(
+      FreeFluids.Interfaces.FlowSink Vent(P = 101325, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {108, 54}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-  FreeFluids.Valves.PressureVacuumValve PSV1(pressureFlow = 0.0005555555555555556, pressureSet = 103325, rho(displayUnit = "kg/m3"), vacuumFlow = 0.0005555555555555556, vacuumSet = 99324.99999999999)  annotation(
+      FreeFluids.Valves.PressureVacuumValve PSV1(pressureFlow = 0.0005555555555555556, pressureSet = 103325, rho(displayUnit = "kg/m3"), vacuumFlow = 0.0005555555555555556, vacuumSet = 99324.99999999999) annotation(
         Placement(visible = true, transformation(origin = {57.2319, 48.0414}, extent = {{-6.04142, 4.64725}, {6.04142, 16.7301}}, rotation = 90)));
-  Modelica.Blocks.Sources.Ramp SourceRamp(duration = 3600, height = 2e5, offset = 1.1e5)  annotation(
+      Modelica.Blocks.Sources.Ramp SourceRamp(duration = 3600, height = 2e5, offset = 1.1e5) annotation(
         Placement(visible = true, transformation(origin = {-34, 42}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
     equation
       connect(Source.PortB, InletPipe.PortA) annotation(
@@ -2005,26 +2002,26 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Line(points = {{68, -32}, {84, -32}}, color = {0, 127, 255}));
       connect(OutletPipe.PortB, Sink.PortA) annotation(
         Line(points = {{104, -32}, {113, -32}, {113, -6}, {102, -6}}, color = {0, 127, 255}));
-  connect(VentPipe.PortB, Vent.PortA) annotation(
+      connect(VentPipe.PortB, Vent.PortA) annotation(
         Line(points = {{86, 54}, {102, 54}}, color = {0, 127, 255}));
-  connect(PSV1.PortB, VentPipe.PortA) annotation(
+      connect(PSV1.PortB, VentPipe.PortA) annotation(
         Line(points = {{47, 54}, {70, 54}}, color = {0, 127, 255}));
-  connect(SourceRamp.y, Source.Pext) annotation(
+      connect(SourceRamp.y, Source.Pext) annotation(
         Line(points = {{-28, 42}, {-20, 42}, {-20, 14}}, color = {0, 0, 127}));
-  connect(Vessel.VentOut, PSV1.PortA) annotation(
+      connect(Vessel.VentOut, PSV1.PortA) annotation(
         Line(points = {{46, 28}, {46, 42}}, color = {0, 127, 255}));
       annotation(
         Diagram(coordinateSystem(extent = {{-40, 60}, {120, -40}})),
         experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end VesselDetailedWithPVvalve;
-  
+
     model VesselDetailedClosed
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 99999.99999999999, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {84, 0}, extent = {{-34, -34}, {34, 34}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 150000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-20, -24}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-  FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
+      FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10) annotation(
         Placement(visible = true, transformation(origin = {14, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(Source.PortB, InletPipe.PortA) annotation(
@@ -2035,24 +2032,24 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Diagram(coordinateSystem(extent = {{-40, 40}, {120, -40}})),
         experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end VesselDetailedClosed;
-  
+
     model VesselDetailedPressureRelief
       extends Modelica.Icons.Example;
       FreeFluids.Vessels.VesselDetailed Vessel(bottomHeight = 0.25, di = 1.5, initialLiquidVolume = 1, initialP = 110000, initialT = 298.15, inletL = 0.8, outletL = 0.0, overflowL = 1.5, shellLength = 2, shellThickness = 0.001, topHeight = 0.25, ventOutL = 2, vesselBottom = FreeFluids.Types.HeadShape.semielliptical, vesselTop = FreeFluids.Types.HeadShape.semielliptical, vesselVolume = 4.41786) annotation(
         Placement(visible = true, transformation(origin = {36, -6}, extent = {{-36, -36}, {36, 36}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, Elevation = 1, P(displayUnit = "bar") = 180000, T = 323.15) annotation(
         Placement(visible = true, transformation(origin = {-18, -6}, extent = {{-6, -6}, {6, 6}}, rotation = 180)));
-    FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10)  annotation(
+      FreeFluids.Pipes.PipeFlow1Ph InletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 10) annotation(
         Placement(visible = true, transformation(origin = {-22, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Pipes.PipeFlow1Ph OutletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 3) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph OutletPipe(redeclare package Medium = FreeFluids.LMedia.Fluids.Water, di = 0.015, lTube = 3) annotation(
         Placement(visible = true, transformation(origin = {94, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    FreeFluids.Interfaces.FlowSink Sink(P = 103000, fix = FreeFluids.Types.BoundaryOption.fixPressure)  annotation(
+      FreeFluids.Interfaces.FlowSink Sink(P = 103000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {96, -6}, extent = {{-6, -6}, {6, 6}}, rotation = 180)));
-    FreeFluids.Pipes.PipeFlow1Ph VentPipe(redeclare package Medium = Modelica.Media.Air.DryAirNasa, di = 0.01, lTube = 4) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph VentPipe(redeclare package Medium = Modelica.Media.Air.DryAirNasa, di = 0.01, lTube = 4) annotation(
         Placement(visible = true, transformation(origin = {76, 48}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-    FreeFluids.Interfaces.FlowSink Vent(P = 105000, fix = FreeFluids.Types.BoundaryOption.fixPressure)  annotation(
+      FreeFluids.Interfaces.FlowSink Vent(P = 105000, fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
         Placement(visible = true, transformation(origin = {106, 48}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-  FreeFluids.Valves.PressureReliefValve PSV(flowRating = 0.0002777777777777778, pSet = 110000)  annotation(
+      FreeFluids.Valves.PressureReliefValve PSV(flowRating = 0.0002777777777777778, pSet = 110000) annotation(
         Placement(visible = true, transformation(origin = {46, 42}, extent = {{-6, -6}, {6, 6}}, rotation = 90)));
     equation
       connect(Source.PortB, InletPipe.PortA) annotation(
@@ -2065,9 +2062,9 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Line(points = {{104, -32}, {113, -32}, {113, -6}, {102, -6}}, color = {0, 127, 255}));
       connect(VentPipe.PortB, Vent.PortA) annotation(
         Line(points = {{84, 48}, {100, 48}}, color = {0, 127, 255}));
-  connect(Vessel.VentOut, PSV.PortA) annotation(
+      connect(Vessel.VentOut, PSV.PortA) annotation(
         Line(points = {{46, 28}, {46, 36}}, color = {0, 127, 255}));
-  connect(PSV.PortB, VentPipe.PortA) annotation(
+      connect(PSV.PortB, VentPipe.PortA) annotation(
         Line(points = {{46, 48}, {68, 48}}, color = {0, 127, 255}));
       annotation(
         Diagram(coordinateSystem(extent = {{-40, 60}, {120, -40}})),
@@ -2075,14 +2072,12 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end VesselDetailedPressureRelief;
 
     model AnchorVessel
-      extends FreeFluids.Vessels.TankAgitAnchor2Coils1Hc(
-      Coil1(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.0669, coilDiam = 1.7, num = 12, numTubes = 3, path = 0.142, rhoWall = 8000, thickness = 3.05e-3, numActiveTubes = 3, foulingF = 0.0004), 
-      Coil2(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.0669, coilDiam = 2.0, num = 12, numTubes = 3, path = 0.142, rhoWall = 8000, thickness = 3.05e-3, numActiveTubes = 3, foulingF = 0.0004), 
-      HalfCoil1(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, basePipeDi = 0.083, num = 12, numActiveTubes = 2, numTubes = 2, path = 0.115, thickness = 0.01, Ltube(start = 60.3186), foulingF = 0.0004, fixedW = -25000, thermalType = FreeFluids.Types.ThermalType.detailed), Vessel(cylinderH = 3.2, di = 2.5, nBaffles = 4, baffleWidth = 0.15, wallThickness = 0.01, topShape = "Korbbogen", nConcCoils = 2), Mixer(d = 1.5, width = 0.16, hTotal = 2.2, n = 35));
+      extends FreeFluids.Vessels.TankAgitAnchor2Coils1Hc(Coil1(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.0669, coilDiam = 1.7, num = 12, numTubes = 3, path = 0.142, rhoWall = 8000, thickness = 3.05e-3, numActiveTubes = 3, foulingF = 0.0004), Coil2(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.0669, coilDiam = 2.0, num = 12, numTubes = 3, path = 0.142, rhoWall = 8000, thickness = 3.05e-3, numActiveTubes = 3, foulingF = 0.0004), HalfCoil1(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, basePipeDi = 0.083, num = 12, numActiveTubes = 2, numTubes = 2, path = 0.115, thickness = 0.01, Ltube(start = 60.3186), foulingF = 0.0004, fixedW = -25000, thermalType = FreeFluids.Types.ThermalType.detailed), Vessel(cylinderH = 3.2, di = 2.5, nBaffles = 4, baffleWidth = 0.15, wallThickness = 0.01, topShape = "Korbbogen", nConcCoils = 2), Mixer(d = 1.5, width = 0.16, hTotal = 2.2, n = 35));
     end AnchorVessel;
+
     model AnchorKettle
       extends AnchorVessel(Coil1(Tsurf.start = InitialValues.TF1initT, PortB.H(start = InitialValues.TF1initH)), Coil2(Tsurf.start = InitialValues.TF1initT, PortB.H(start = InitialValues.TF1initH)), HalfCoil1(Tsurf.start = InitialValues.TF1initT, PortB.H(start = InitialValues.TF1initH)), hLiquid = InitialValues.hLiquid, useHTWallCorrFactor = InitialValues.useHTWallCorr, Mixer.n = InitialValues.n, T(start = InitialValues.initT));
-      FreeFluids.Pipes.PipeFlow1Ph PipeToVessel(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 206.5e-3, equivL_Di = 2 * 16 + 340 + 2 * 16 + 2 * 340, kv = 150, lTube = 5, thermalType = FreeFluids.Types.ThermalType.isenthalpic, useTubeLength = true, PortB.H(start = InitialValues.TF1initH)) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph PipeToVessel(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 206.5e-3, equivL_Di = 2*16 + 340 + 2*16 + 2*340, kv = 150, lTube = 5, thermalType = FreeFluids.Types.ThermalType.isenthalpic, useTubeLength = true, PortB.H(start = InitialValues.TF1initH)) annotation(
         Placement(visible = true, transformation(origin = {-62, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSourceSP Source(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, Elevation = 0, P = 231000, T = 553.15, isGsource = false) annotation(
         Placement(visible = true, transformation(origin = {-137, 53}, extent = {{-9, -9}, {9, 9}}, rotation = 0)));
@@ -2096,13 +2091,13 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Placement(visible = true, transformation(origin = {107, 19}, extent = {{-6, -6}, {6, 6}}, rotation = -90)));
       FreeFluids.Pipes.MixerPH MixerIn(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, PortC.H(start = InitialValues.TF1initH)) annotation(
         Placement(visible = true, transformation(origin = {104, -42}, extent = {{-7, -7}, {7, 7}}, rotation = -90)));
-      FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, Qtotal(start = 0.0463889), Qunit(start = 0.0463889), fixedSpeed = 0.85 * 2900 / 60, forceSpeed = true, h0 = 49.47, h1 = 46.82, h2 = 37.52, n0 = 2900 / 60, q1 = 0.0409639, q2 = 0.0689667, r1 = 0.729, r2 = 0.813, PortB.H(start = InitialValues.TF1initH)) annotation(
+      FreeFluids.Pumps.BumpPump Pump(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, Qtotal(start = 0.0463889), Qunit(start = 0.0463889), fixedSpeed = 0.85*2900/60, forceSpeed = true, h0 = 49.47, h1 = 46.82, h2 = 37.52, n0 = 2900/60, q1 = 0.0409639, q2 = 0.0689667, r1 = 0.729, r2 = 0.813, PortB.H(start = InitialValues.TF1initH)) annotation(
         Placement(visible = true, transformation(origin = {-138, -2}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Valves.ValveIncompressible FV2(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, fix = FreeFluids.Types.ValveFixOption.fixKv, fixedKv = 350, isLinear = false) annotation(
         Placement(visible = true, transformation(origin = {-128, -34}, extent = {{-5, -5}, {5, 5}}, rotation = -90)));
       FreeFluids.HeatExchangers.HEXgeneric1Ph Exchanger(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.02058, extG = 22.3439, extSratio = 20, extTin = 288.15, numPasses = 3, numRows = 6, numTubesTotal = 132, numVelocityHeads = 4.5, perimeter = 0.0735, section = 0.0002851, thickness = 0.00211, tubeLength = 4, u = 11.39) annotation(
         Placement(visible = true, transformation(origin = {-112, -66}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-      FreeFluids.Pipes.PipeFlow1Ph PipeExchanger(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.1554, equivL_Di = 12 * 16 + 2 * 340 + 2 * 35, lTube = 24, thermalType = FreeFluids.Types.ThermalType.isenthalpic, thickness = 4.85e-3, useTubeLength = true, PortB.H(start = InitialValues.TF1initH)) annotation(
+      FreeFluids.Pipes.PipeFlow1Ph PipeExchanger(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, di = 0.1554, equivL_Di = 12*16 + 2*340 + 2*35, lTube = 24, thermalType = FreeFluids.Types.ThermalType.isenthalpic, thickness = 4.85e-3, useTubeLength = true, PortB.H(start = InitialValues.TF1initH)) annotation(
         Placement(visible = true, transformation(origin = {-96, -36}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
       FreeFluids.Pipes.MixerPH MixerExchanger(redeclare package Medium = FreeFluids.LMedia.Fluids.MarlothermSH, PortC.H(start = InitialValues.TF1initH)) annotation(
         Placement(visible = true, transformation(origin = {-90, -6}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
@@ -2149,19 +2144,19 @@ package Vessels "Vessels.mo by Carlos Trujillo
         Line(points = {{62, 0}, {74, 0}, {74, 0}, {74, 0}}, color = {0, 127, 255}));
       connect(PipeFromVessel.PortB, MixerIn.PortB) annotation(
         Line(points = {{94, 0}, {102, 0}, {102, -35}, {101, -35}}, color = {0, 127, 255}));
-      der(T) = W / (Vliquid * Rho * Cp + (Vessel.VesselMass + 2000.0) * Vessel.wallCp);
+      der(T) = W/(Vliquid*Rho*Cp + (Vessel.VesselMass + 2000.0)*Vessel.wallCp);
       annotation(
         Diagram(coordinateSystem(extent = {{-160, 100}, {140, -100}})));
     end AnchorKettle;
 
     model AnchorKettleHeating
-      extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 0.0001, InitialValues.TF1initT = 403.15, Exchanger.thermalType = FreeFluids.Types.ThermalType.isenthalpic, Source.T = 453.15, Source.P.displayUnit = "Pa", TV01.aperture = 0.6);
+      extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 0.0001, Exchanger.thermalType = FreeFluids.Types.ThermalType.isenthalpic, Source.T = 453.15, Source.P.displayUnit = "Pa", TV01.aperture = 0.6, InitialValues(TF1initT = 403.15));
       annotation(
         experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end AnchorKettleHeating;
 
     model AnchorKettleCooling
-      extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 1, InitialValues.TF1initT = 368.15, Exchanger.thermalType = FreeFluids.Types.ThermalType.detailed, Source.T = 363.15, Source.P.displayUnit = "Pa", TV01.aperture = 0, FV1.aperture = 0, InitialValues.initT = 373.15);
+      extends AnchorKettle(redeclare package Medium = Modelica.Media.Water.StandardWater, FV2.aperture = 1, Exchanger.thermalType = FreeFluids.Types.ThermalType.detailed, Source.P.displayUnit = "Pa", TV01.aperture = 0, FV1.aperture = 0, InitialValues(TF1initT(displayUnit = "degC") = 368.15, initT = 373.15), Source(T(displayUnit = "degC") = 363.15));
       annotation(
         experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 7.2));
     end AnchorKettleCooling;
@@ -2169,7 +2164,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
     model TurbineVessel
       extends FreeFluids.Vessels.TankAgitKamei2Coils(Vessel(baffleWidth = 0.2, cylinderH = 2, di = 2.5, nBaffles = 4, wallThickness = 0.008, bottomShape = "Klopper", topShape = "Korbbogen", nConcCoils = 2), Mixer(angle(displayUnit = "rad") = 0.5235987755982988, d = 1.6, doShaftCalc = true, hBottom = 0.6, interImpellerDistance = 0.8, nBlades = 3, nImpellers = 2, width = 0.45, n = 60), Coil1(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, coilDiam = 1.7, di = 0.06693, num = 3, numTubes = 1, path = 0.146, thickness = 0.00305, SusedHT(start = 6.3), PLossFriction.displayUnit = "Pa", heightInit = 0), Coil2(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, coilDiam = 2.0, di = 0.06693, num = 3, numTubes = 1, path = 0.146, thickness = 0.00305, SusedHT(start = 8.9), PLossFriction.displayUnit = "Pa", heightInit = 0.4, thermalType = FreeFluids.Types.ThermalType.detailed));
     equation
-    
+
     end TurbineVessel;
 
     model TurbineKettle
@@ -2177,14 +2172,14 @@ package Vessels "Vessels.mo by Carlos Trujillo
       FreeFluids.Interfaces.FlowSourceSP Source(Elevation = 0, redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, P(displayUnit = "bar") = 899999.9999999998, T(displayUnit = "degC") = 553.15) annotation(
         Placement(visible = true, transformation(origin = {74, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       FreeFluids.Interfaces.FlowSink Sink(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, P = 880000, PortA(P(start = Source.P - 0.5e5)), fix = FreeFluids.Types.BoundaryOption.fixPressure) annotation(
-        Placement(visible = true, transformation(origin = {84, -18}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(transformation(origin = {92, -34}, extent = {{-10, -10}, {10, 10}})));
       FreeFluids.Vessels.InitializationParamSP InitialValues(redeclare package Medium1 = FreeFluids.LMedia.Fluids.ShellS2, n = 55) annotation(
         Placement(visible = true, transformation(origin = {12, 62}, extent = {{-12, -12}, {12, 12}}, rotation = 0)));
       FreeFluids.Pipes.MixerPH MixerOut(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, PortC.H(start = InitialValues.TF1initH)) annotation(
-        Placement(visible = true, transformation(origin = {66, 8}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
+        Placement(transformation(origin = {66, 10}, extent = {{-7, -7}, {7, 7}})));
       FreeFluids.Pipes.MixerPH MixerIn(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, PortC.H(start = InitialValues.TF1initH)) annotation(
-        Placement(visible = true, transformation(origin = {99, 11}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
-      FreeFluids.Pumps.BumpPump P10(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, forceSpeed = true, h0 = 50, h1 = 47, h2 = 34, n0 = 2900 / 60, q1(displayUnit = "m3/h") = 0.01944444444444444, q2(displayUnit = "m3/h") = 0.02777777777777778, r1 = 0.76, r2 = 0.73) annotation(
+        Placement(transformation(origin = {99, 13}, extent = {{-6, -6}, {6, 6}})));
+      FreeFluids.Pumps.BumpPump P10(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, forceSpeed = true, h0 = 50, h1 = 47, h2 = 34, n0 = 2900/60, q1(displayUnit = "m3/h") = 0.01944444444444444, q2(displayUnit = "m3/h") = 0.02777777777777778, r1 = 0.76, r2 = 0.73) annotation(
         Placement(visible = true, transformation(origin = {-145, 3}, extent = {{-9, -9}, {9, 9}}, rotation = 0)));
       FreeFluids.Pipes.PdiffSource DeltaP(redeclare package Medium = FreeFluids.LMedia.Fluids.ShellS2, dP(displayUnit = "bar") = -235000, refG(displayUnit = "kg/h") = 20.83333333333333, useFixedDiffP = false) annotation(
         Placement(visible = true, transformation(origin = {-58, 0}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -2213,21 +2208,21 @@ package Vessels "Vessels.mo by Carlos Trujillo
       FreeFluids.Instruments.PI TIC10(T = 400, initType = Modelica.Blocks.Types.Init.NoInit, k = 10) annotation(
         Placement(visible = true, transformation(origin = {-62, 84}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     equation
-      der(T) = (W - InitialValues.distPower) / (Vliquid * Rho * Cp + (Vessel.VesselMass + 1920.0) * Vessel.wallCp);
+      der(T) = (W - InitialValues.distPower)/(Vliquid*Rho*Cp + (Vessel.VesselMass + 1920.0)*Vessel.wallCp);
       connect(Coil2.PortB, MixerOut.PortA) annotation(
-        Line(points = {{12, 26}, {60, 26}, {60, 12}}, color = {0, 127, 255}));
+        Line(points = {{12, 26}, {11.4844, 26}, {11.4844, 24}, {59.5, 24}, {59.5, 13}, {59, 13}}, color = {0, 127, 255}));
       connect(MixerOut.PortC, Sink.PortA) annotation(
-        Line(points = {{74, 8}, {73, 8}, {73, -18}, {74, -18}}));
+        Line(points = {{73, 10}, {73, -34}, {82, -34}}));
       connect(DeltaP.PortB, Coil2.PortA) annotation(
         Line(points = {{-50, 0}, {-12, 0}, {-12, 26}}, color = {0, 127, 255}));
       connect(MixerOut.PortC, MixerIn.PortB) annotation(
-        Line(points = {{73, 8}, {93, 8}}, color = {0, 127, 255}));
+        Line(points = {{73, 10}, {93, 10}}, color = {0, 127, 255}));
       connect(MixerIn.PortC, P10.PortA) annotation(
-        Line(points = {{105, 11}, {113, 11}, {113, -84}, {-154, -84}, {-154, 3}}, color = {0, 127, 255}));
+        Line(points = {{105, 13}, {113, 13}, {113, -84}, {-154, -84}, {-154, 3}}, color = {0, 127, 255}));
       connect(Source.PortB, TV01.PortA) annotation(
         Line(points = {{84, 60}, {92, 60}, {92, 51}}, color = {0, 127, 255}));
       connect(TV01.PortB, MixerIn.PortA) annotation(
-        Line(points = {{92, 37}, {93, 37}, {93, 14}}, color = {0, 127, 255}));
+        Line(points = {{92, 37}, {92, 39}, {93, 39}, {93, 16}}, color = {0, 127, 255}));
       connect(Tmax.y, From_degC.u) annotation(
         Line(points = {{-145, 94}, {-139, 94}}, color = {0, 0, 127}));
       connect(From_degC.y, Min.u1) annotation(
@@ -2263,7 +2258,7 @@ package Vessels "Vessels.mo by Carlos Trujillo
       connect(MixerE01.Tout, TIC10.u2) annotation(
         Line(points = {{-80, 4}, {-80, 79.5}, {-72, 79.5}, {-72, 79}}, color = {0, 0, 127}));
       connect(Coil1.PortB, MixerOut.PortB) annotation(
-        Line(points = {{10, -14}, {60, -14}, {60, 4}}, color = {0, 127, 255}));
+        Line(points = {{10, -14}, {10, -13}, {34.5, -13}, {34.5, 7}, {59, 7}}, color = {0, 127, 255}));
       connect(DeltaP.PortB, Coil1.PortA) annotation(
         Line(points = {{-50, 0}, {-10, 0}, {-10, -14}}, color = {0, 127, 255}));
       annotation(
@@ -2271,22 +2266,21 @@ package Vessels "Vessels.mo by Carlos Trujillo
     end TurbineKettle;
 
     model TurbineKettleHeating
-      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 463.15, InitialValues.initT = 323.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667);
+      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = 60, E01.thermalType = FreeFluids.Types.ThermalType.isenthalpic, InitialValues.distPower.displayUnit = "W", Tmax.k = 200, P10.q1 = 0.01777777777777778, P10.q2 = 0.02666666666666667, InitialValues(TF1initT = 463.15, initT = 323.15), Source(T = 523.15));
     equation
-
+    
       annotation(
         experiment(StartTime = 0, StopTime = 12000, Tolerance = 1e-06, Interval = 20),
         Documentation(info = "<html><head></head><body>This is an example of a controlled heating, where the thermal oil temperature is controlled to some degrees over the kettle temperature. The maximum oil temperature is also limited.<div>As this is a complex example, convergence is difficult, and you must play with the guessed temperature for oil outlet in the InitialValues template.</div><div>The heat exchanger has been configured to isenthalpic in order not to make any calculation regarding exchanged heat.</div></body></html>"));
     end TurbineKettleHeating;
 
     model TurbineKettleCooling
-      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, InitialValues.TF1initT = 453.15, InitialValues.initT = 473.15, Source.T = 523.15, InitialValues.hLiquid = 1.8, InitialValues.foulingF = 0.0, Source.T.displayUnit = "degC", Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = -60, E01.thermalType = FreeFluids.Types.ThermalType.detailed, Tmax.k = 200);
+      extends TurbineKettle(redeclare package Medium = FreeFluids.LMedia.Fluids.EG, Source.P = 899999.9999999999, DeltaP.refG.displayUnit = "kg/h", DeltaT.k = -60, E01.thermalType = FreeFluids.Types.ThermalType.detailed, Tmax.k = 200, Source(T = 523.15), InitialValues(hLiquid = 1.8, foulingF = 0.0, initT = 473.15, TF1initT = 453.15));
     equation
 
       annotation(
         experiment(StartTime = 0, StopTime = 5000, Tolerance = 1e-06, Interval = 20));
     end TurbineKettleCooling;
-    
   end Examples;
   annotation(
     Icon(coordinateSystem(initialScale = 0.1)),

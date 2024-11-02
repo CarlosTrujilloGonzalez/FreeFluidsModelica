@@ -1,3 +1,6 @@
+Version 3.2.1
+- Added initial values to some parameters, as OpenModelica is not running with default values. This was the cause of some examples in the Vessels package not running.
+
 Version 3.2.0
 - Modified thermal conductivity calculation, in ExternalPure package, in order to use density dependent calculations, with dedicated equations or with Nist coefficents and reference substance.
 
