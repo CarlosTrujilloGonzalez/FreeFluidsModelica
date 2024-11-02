@@ -26,7 +26,7 @@ package Valves "Valves.mo by Carlos Trujillo
       Dialog(tab = "Flow"));
     parameter Modelica.Units.SI.PressureDifference fixedDP(displayUnit = "bar") = -0.5e5 "negative if PortB.P<PortA.P" annotation(
       Dialog(tab = "Flow"));
-    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h") "fixed mass flow to maintain at Port A. Possitive if flow is in" annotation(
+    parameter Modelica.Units.SI.MassFlowRate fixedFlow(displayUnit = "kg/h")=1.0 "fixed mass flow to maintain at Port A. Possitive if flow is in" annotation(
       Dialog(tab = "Flow"));
     Modelica.Units.SI.Area Kv(min = 0.0001, max = 2000, start = 1);
     Modelica.Units.SI.Area Cv(min = 0.0001, max = 2000, start = 1);
