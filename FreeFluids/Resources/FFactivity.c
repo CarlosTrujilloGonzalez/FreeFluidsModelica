@@ -26,6 +26,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include "FFbasic.h"
 #include "FFeosPure.h"
 #include "FFactivity.h"
@@ -402,8 +403,12 @@ void FF_ActivityFloryHugginsM(const int *numSubs,const  FF_BaseProp baseProp[],c
 //In data, we receive for each substance, its composition in number of each subgroup. So each register is: id substance, id subgroup, num of ocurrences
 //for polymers the num of subgroups in data must be the multiplication of the monomer composition by the number of monomer units
 //In uni we answer all the calculations
-void CALLCONV FF_UNIFACParams(int numData, const int data[][3], FF_UnifacData *uni){
+void CALLCONV FF_UNIFACParams(int numData, const int data[][3], const char *resDir, FF_UnifacData *uni){
     int ver=0;
+    char path1[FILENAME_MAX]="";
+    char path2[FILENAME_MAX]="";
+    strcat(path1,resDir);
+    strcat(path2,resDir);
     int i,j,k,newSubs,newSubg;
     //We need to count the different subgroups used, and to store their id
     int numSubgroups=0;
@@ -452,11 +457,16 @@ void CALLCONV FF_UNIFACParams(int numData, const int data[][3], FF_UnifacData *u
     unsigned sg,g,g1,g2;
     double A12,B12,C12,A21,B21,C21;
     double r,q;
-    //char r[6],q[6];
-    if (uni->model==FF_UNIFACStd) f=fopen("Data/UnifacSubgStd.txt","r");
+
+    /*if (uni->model==FF_UNIFACStd) f=fopen("Data/UnifacSubgStd.txt","r");
     else if ((uni->model==FF_UNIFACPSRK)||(uni->model==FF_EntropicFV)||(uni->model==FF_UNIFACZM)) f=fopen("Data/UnifacSubgPSRK.txt","r");
     else if (uni->model==FF_UNIFACDort) f=fopen("Data/UnifacSubgDort.txt","r");
-    else if (uni->model==FF_UNIFACNist) f=fopen("Data/UnifacSubgNist.txt","r");
+    else if (uni->model==FF_UNIFACNist) f=fopen("Data/UnifacSubgNist.txt","r");*/
+    if (uni->model==FF_UNIFACStd) strcat(path1,"Data/UnifacSubgStd.txt");
+    else if ((uni->model==FF_UNIFACPSRK)||(uni->model==FF_EntropicFV)||(uni->model==FF_UNIFACZM)) strcat(path1,"Data/UnifacSubgPSRK.txt");
+    else if (uni->model==FF_UNIFACDort) strcat(path1,"Data/UnifacSubgDort.txt");
+    else if (uni->model==FF_UNIFACNist) strcat(path1,"Data/UnifacSubgNist.txt");
+    f=fopen(path1,"r");
     for (i=0;i<numSubgroups;i++){
         do{
             fscanf(f,"%3lu%3lu%6lf%6lf\n",&sg,&g,&r,&q);
@@ -482,22 +492,26 @@ void CALLCONV FF_UNIFACParams(int numData, const int data[][3], FF_UnifacData *u
     }
     if (uni->model==FF_UNIFACStd){
         numLines=635;
-        f=fopen("Data/UnifacInterStd.txt","r");
+        strcat(path2,"Data/UnifacInterStd.txt");
+        f=fopen(path2,"r");
         if (f==NULL) printf("Error opening Data/UnifacInterStd.txt\n");
     }
     else if ((uni->model==FF_UNIFACPSRK)||(uni->model==FF_EntropicFV)||(uni->model==FF_UNIFACZM)){
         numLines=956;
-        f=fopen("Data/UnifacInterPSRK.txt","r");
+        strcat(path2,"Data/UnifacInterPSRK.txt");
+        f=fopen(path2,"r");
         if (f==NULL) printf("Error opening Data/UnifacInterPSRK.txt\n");
     }
     else if ((uni->model==FF_UNIFACDort)){
         numLines=756;
-        f=fopen("Data/UnifacInterDort.txt","r");
+        strcat(path2,"Data/UnifacInterDort.txt");
+        f=fopen(path2,"r");
         if (f==NULL) printf("Error opening data/UnifacInterDort.txt\n");
     }
     else if (uni->model==FF_UNIFACNist){
         numLines=1969;
-        f=fopen("Data/UnifacInterNist.txt","r");
+        strcat(path2,"Data/UnifacInterNist.txt");
+        f=fopen(path2,"r");
         if (f==NULL) printf("Error opening data/UnifacInterNist.txt\n");
     }
     if (f==NULL) printf("Error\n");
@@ -806,7 +820,7 @@ void CALLCONV FF_PhiAndActivity(FF_MixData *mix,const double *T,const double *P,
                 else phi[i]=0;
             }
             break;
-        case FF_SWtype:
+        /*case FF_SWtype:
             for(i=0;i<mix->numSubs;i++){
                 if(mix->baseProp[i].numMono<20){
                     FF_VfromTPeos(mix->eosType,*T,*P,&mix->swData[i],option,answerL,answerG,&state);
@@ -815,7 +829,7 @@ void CALLCONV FF_PhiAndActivity(FF_MixData *mix,const double *T,const double *P,
                 }
                 else phi[i]=0;
             }
-            break;
+            break;*/
         case FF_CubicType:
         case FF_CubicPRtype:
         case FF_CubicSRKtype:
@@ -877,7 +891,7 @@ void CALLCONV FF_PhiFromActivity(FF_MixData *mix,const double *T,const double *P
                 else phi[i]=0;
             }
             break;
-        case FF_SWtype:
+        /*case FF_SWtype:
             for(i=0;i<mix->numSubs;i++){
                 if(mix->baseProp[i].numMono<20){
                     FF_VfromTPeos(mix->eosType,*T,*P,&mix->swData[i],option,answerL,answerG,&state);
@@ -886,7 +900,7 @@ void CALLCONV FF_PhiFromActivity(FF_MixData *mix,const double *T,const double *P
                 }
                 else phi[i]=0;
             }
-            break;
+            break;*/
         case FF_CubicType:
         case FF_CubicPRtype:
         case FF_CubicSRKtype:

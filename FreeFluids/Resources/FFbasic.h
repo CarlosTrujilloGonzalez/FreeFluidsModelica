@@ -135,9 +135,9 @@ typedef struct{int numSubs,thModelActEos,actModel,refVpEos,eosType,mixRule;}FF_T
 typedef struct {char name[30],description[150],subsName[15][30],CAS[15][22];int model,numSubs,thModelActEos,actModel,refVpEos,eosType,mixRule,intForm,id[15];
                 double refT,refP,intParam[15][15][6];FF_BaseProp baseProp[15];FF_UnifacData unifStdData,
                 unifPSRKData,unifDortData,unifNistData;FF_SinglePointData RI[15],cp0[15],vp[15],hVsat[15],lCp[15],lDens[15],lVisc[15],lThC[15],lSurfT[15],
-                gVisc[15],gThC[15],sDens[15],sCp[15];FF_CubicEOSdata cubicData[15];FF_SaftEOSdata saftData[15];FF_SWEOSdata swData[15];
+                gVisc[15],gThC[15],sDens[15],sCp[15];FF_CubicEOSdata cubicData[15];FF_SaftEOSdata saftData[15];
                 FF_Correlation cp0Corr[15],vpCorr[15],btCorr[15],hVsatCorr[15],lCpCorr[15],lDensCorr[15],lViscCorr[15],lThCCorr[15],lSurfTCorr[15],
-                gDensCorr[15],gViscCorr[15],gThCCorr[15],sDensCorr[15],sCpCorr[15];}FF_MixData;
+                gDensCorr[15],gViscCorr[15],gThCCorr[15],sDensCorr[15],sCpCorr[15];}FF_MixData;//FF_SWEOSdata swData[15];
 //Thermodynamic properties records
 typedef struct {double MW,T,P,V,A,G,S,U,H,dP_dT,dP_dV,Cv,Cp,SS,JT,IT;}FF_ThermoProperties;
 typedef struct {double fraction,MW,T,P,V,A,G,S,U,H,dP_dT,dP_dV,Cv,Cp,SS,JT,IT,ArrDer[6],c[15],subsPhi[15];}FF_PhaseThermoProp;//fraction stands for (phase moles)/(total mix moles)

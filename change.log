@@ -1,3 +1,6 @@
+Version 4.0.0
+- Added new package ExternalMix. It implements VLE for mixtures, using cubic and PCSAFT EOS.
+
 Version 3.2.1
 - Added initial values to some parameters, as OpenModelica is not running with default values. This was the cause of some examples in the Vessels package not running.
 
