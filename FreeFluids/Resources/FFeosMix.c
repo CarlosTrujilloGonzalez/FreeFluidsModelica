@@ -163,16 +163,17 @@ EXP_IMP FF_MixData * CALLCONV FF_MixDataFromSubsData(int numSubs,const FF_Substa
     }
     //printf(" %i %i %i %i\n",k,unifacCompStd[k][0],unifacCompStd[k][1],unifacCompStd[k][2]);
     printf("Std:%i PSRK:%i Dort:%i Nist:%i\n",useUnifacStd,useUnifacPSRK,useUnifacDort,useUnifacNist==1);
-    if(useUnifacStd==1) FF_UNIFACParams(k,unifacCompStd,&mixData.unifStdData);
-    if(useUnifacPSRK==1) FF_UNIFACParams(l,unifacCompPSRK,&mixData.unifPSRKData);
-    if(useUnifacDort==1) FF_UNIFACParams(m,unifacCompDort,&mixData.unifDortData);
-    if(useUnifacNist==1) FF_UNIFACParams(n,unifacCompNist,&mixData.unifNistData);
+    char path[FILENAME_MAX]="";
+    if(useUnifacStd==1) FF_UNIFACParams(k,unifacCompStd,path,&mixData.unifStdData);
+    if(useUnifacPSRK==1) FF_UNIFACParams(l,unifacCompPSRK,path,&mixData.unifPSRKData);
+    if(useUnifacDort==1) FF_UNIFACParams(m,unifacCompDort,path,&mixData.unifDortData);
+    if(useUnifacNist==1) FF_UNIFACParams(n,unifacCompNist,path,&mixData.unifNistData);
     return &mixData;
 
 }
 
 //Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[],FF_MixData *mixData){
+EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData){
     int ver=0;
     if (numSubs>15) numSubs=15;
     int h,i,j=0,k=0,l=0,m=0,n=0;
@@ -258,6 +259,7 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData s
             j++;
             l++;
         }
+
         j=0;
         if(subsData[i].UnifDortSubg[j][0]<=0) useUnifacDort=0;
         while(subsData[i].UnifDortSubg[j][0]>0){
@@ -281,13 +283,14 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData s
             j++;
             n++;
         }
+
     }
 
-    if(useUnifacStd==1)FF_UNIFACParams(k,unifacCompStd,&mixData->unifStdData);
-    if(useUnifacPSRK==1)FF_UNIFACParams(l,unifacCompPSRK,&mixData->unifPSRKData);
-    if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,&mixData->unifDortData);
-    if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,&mixData->unifNistData);
-
+    if(useUnifacStd==1)FF_UNIFACParams(k,unifacCompStd,path,&mixData->unifStdData);
+    if(useUnifacPSRK==1)FF_UNIFACParams(l,unifacCompPSRK,path,&mixData->unifPSRKData);
+    if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,path,&mixData->unifDortData);
+    if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,path,&mixData->unifNistData);
+    //return;
 }
 
 //Fill a Mixture data structure from an array of substance data structures
@@ -400,11 +403,11 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData(int *numSubs,FF_SubstanceData *
     }
 
     //printf(" %i %i %i %i\n",k,unifacCompStd[k][0],unifacCompStd[k][1],unifacCompStd[k][2]);
-
-    if(useUnifacStd==1)FF_UNIFACParams(k,unifacCompStd,&mixData->unifStdData);
-    if(useUnifacPSRK==1)FF_UNIFACParams(l,unifacCompPSRK,&mixData->unifPSRKData);
-    if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,&mixData->unifDortData);
-    if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,&mixData->unifNistData);
+    char path[FILENAME_MAX]="";
+    if(useUnifacStd==1)FF_UNIFACParams(k,unifacCompStd,path,&mixData->unifStdData);
+    if(useUnifacPSRK==1)FF_UNIFACParams(l,unifacCompPSRK,path,&mixData->unifPSRKData);
+    if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,path,&mixData->unifDortData);
+    if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,path,&mixData->unifNistData);
 
 }
 
@@ -427,6 +430,7 @@ EXP_IMP void CALLCONV FF_MixDataToFile(const char *name,FF_MixData *mix){
 //-----------------------------------------------------------------------------------------------------------------------------------
 void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int *numSubs,const  FF_CubicEOSdata data[],
         const double pintParam[15][15][6],const double x[], FF_CubicParam *param,double dTheta_dXi[],double db_dXi[],double dc_dXi[]){
+    int ver=0;
     int i,j;
     double k,kInv,l,a,aInv,b,Co;
     FF_CubicParam sParam[*numSubs];
@@ -434,7 +438,7 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
     {
         FF_FixedParamCubic(&data[i],&sParam[i]);
         FF_ThetaDerivCubic(T,&data[i],&sParam[i]);
-        //printf("i a,b,Theta,dTheta,d2Theta,x: %i %f %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta,sParam[i].dTheta,sParam[i].d2Theta,x[i]);
+        if (ver==1) printf(" i a,b,Theta,dTheta,d2Theta,x: %i %f %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta,sParam[i].dTheta,sParam[i].d2Theta,x[i]);
     }
     param->Theta=0;
     param->b=0;
@@ -942,6 +946,7 @@ void CALLCONV FF_MixParamCubicEOSOld(const enum FF_EOS eos[],const enum FF_Mixin
 //Calculates Theta,b and c, given a cubic EOS,excess G, composition, and pure substance parameters
 //------------------------------------------------------------------------------------------------
 void CALLCONV FF_MixParamCubicEOSgE(const FF_MixData *mix,const double *T,const double x[], FF_CubicParam *param){
+        int ver=0;
         int i,j;
         FF_SubsActivityData actData[mix->numSubs];
         FF_ExcessData excData={0,0,0,0};
@@ -974,14 +979,14 @@ void CALLCONV FF_MixParamCubicEOSgE(const FF_MixData *mix,const double *T,const 
             excData.gER=excData.gER+x[i]*actData[i].lnGammaR;
         }
         excData.gE=excData.gEC+excData.gESG+excData.gER;
-        //printf("gE: %f %f %f %f\n",excData.gEC,excData.gESG,excData.gER,excData.gE);
+        if (ver==1) printf("gE: %f %f %f %f\n",excData.gEC,excData.gESG,excData.gER,excData.gE);
 
         //Next we get the parameters of the individual substances
         for (i=0;i< mix->numSubs;i++)//First we get the parameters of the individual substances
         {
             FF_FixedParamCubic(&mix->cubicData[i],&sParam[i]);
             FF_ThetaDerivCubic(T,&mix->cubicData[i],&sParam[i]);
-            //printf("i a,b,Theta,dTheta,d2Theta: %i %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta*1e3,sParam[i].dTheta*1e3,sParam[i].d2Theta*1e3);
+            if (ver==1) printf("i a,b,Theta,dTheta,d2Theta: %i %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta*1e3,sParam[i].dTheta*1e3,sParam[i].d2Theta*1e3);
         }
         param->Theta=0;
         param->b=0;
@@ -989,7 +994,10 @@ void CALLCONV FF_MixParamCubicEOSgE(const FF_MixData *mix,const double *T,const 
         param->u=sParam[0].u;
         param->w=sParam[0].w;
         for (i=0;i< mix->numSubs;i++){
-            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))) return;//We check that all cubic eos are of the same type
+            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))) {
+                printf("Different type of cubic EOS\n");
+                return;//We check that all cubic eos are of the same type
+            }
             if (sParam[i].c>0) param->c=param->c+x[i]*sParam[i].c;//Calculation of mix volume translation
         }
 
@@ -1106,7 +1114,7 @@ void CALLCONV FF_MixParamCubicEOSgE(const FF_MixData *mix,const double *T,const 
             break;
         }
 
-    //printf("Theta:%f b:%f c:%f\n",param->Theta,param->b,param->c);
+    if (ver==1) printf("Theta:%f b:%f c:%f\n",param->Theta,param->b,param->c);
 }
 
 //Calculates Theta,b,c and their composition derivatives, given a cubic EOS,excess G, composition, and pure substance parameters
@@ -1161,7 +1169,10 @@ void CALLCONV FF_MixParamNderCubicEOSgE(const FF_MixData *mix,const double *T,co
         param->u=sParam[0].u;
         param->w=sParam[0].w;
         for (i=0;i< mix->numSubs;i++){
-            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))) return;//We check that all cubic eos are of the same type
+            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))){
+                printf("Cubic EOS are of different types\n");
+                return;//We check that all cubic eos are of the same type
+            }
         }
 
         double sPartA=0,sPartB=0,dPartB_dXi[mix->numSubs];//sum of individual substances contribution
@@ -1321,6 +1332,7 @@ void CALLCONV FF_MixParamNderCubicEOSgE(const FF_MixData *mix,const double *T,co
 //Calculates Theta,b,c and their temperature derivatives, given a cubic EOS,excess G, composition, and pure substance parameters
 //------------------------------------------------------------------------------------------------------------------------------
 void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,const double x[], FF_CubicParam *param){
+    int ver=0;
     int i,j;
     double dT=0.01;
     double Tplus,Tminus;//Temperature variation to obtain numeric temperature derivative of theta
@@ -1387,14 +1399,14 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
         d2gER=(dgER-((excData.gER-excDataMinus.gER)/dT))/dT;
         dgE=dgEC+dgESG+dgER;
         d2gE=d2gEC+d2gESG+d2gER;
-        //printf("gE: %f %f %f %f\n",excData.gEC,excData.gESG,excData.gER,excData.gE);
+        if (ver==1) printf("gE: %f %f %f %f\n",excData.gEC,excData.gESG,excData.gER,excData.gE);
 
         //Next we get the parameters of the individual substances
         for (i=0;i< mix->numSubs;i++)//First we get the parameters of the individual substances
         {
             FF_FixedParamCubic(&mix->cubicData[i],&sParam[i]);
             FF_ThetaDerivCubic(T,&mix->cubicData[i],&sParam[i]);
-            //printf("i a,b,Theta,dTheta,d2Theta: %i %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta*1e3,sParam[i].dTheta*1e3,sParam[i].d2Theta*1e3);
+            if (ver==1) printf("i a,b,Theta,dTheta,d2Theta: %i %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta*1e3,sParam[i].dTheta*1e3,sParam[i].d2Theta*1e3);
         }
         param->Theta=0;
         param->b=0;
@@ -1402,7 +1414,10 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
         param->u=sParam[0].u;
         param->w=sParam[0].w;
         for (i=0;i< mix->numSubs;i++){
-            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))) return;//We check that all cubic eos are of the same type
+            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))){
+                printf("Cubic EOS are of different types\n");
+                return;//We check that all cubic eos are of the same type
+            }
             if (sParam[i].c>0) param->c=param->c+x[i]*sParam[i].c;//Calculation of mix volume translation
         }
         double sPartA=0,sPartB=0;//sum of individual substances contribution
@@ -1555,16 +1570,14 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
             param->d2Theta=0;
             break;
         }
-
-    //printf("Theta:%f dTheta: %f b:%f c:%f\n",param->Theta,param->dTheta,param->b,param->c);
-
+    if (ver==1) printf("Theta:%f dTheta:%f d2Theta:%f b:%f c:%f\n",param->Theta,param->dTheta, param->d2Theta, param->b,param->c);
 }
 
 
 //Mixture SAFT EOS calculations
 //==============================
 
-//Z and Arr calculation for a mixture, given T and V, according to FF_PCSAFT EOS
+//Z and Arr calculation for a mixture, given T and V, according to FF_PCSAFT EOS. combRul=2
 //------------------------------------------------------------------------------
 void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *T,const double *V,const int *numSubs,
                                         const  FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *Arr,double *Z)
@@ -1582,7 +1595,10 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
         substRho[i]=x[i]*rhoM;
         d[i] = data[i].sigma * (1 - 0.12 * exp(-3 * data[i].epsilon / *T))*1e-10;//Diameter of each segment of the chain in m
     }
+    //************
     int combRul=2;
+    //************
+
     for (i=0;i<*numSubs;i++)
         for (j=0;j<*numSubs;j++)
         {
@@ -2229,7 +2245,7 @@ void CALLCONV FF_MixPfromTVeos(const FF_MixData *mix,const double *T,const doubl
             break;
         default://if we have a cubic eos the first step is to calculate its parameters
             if((mix->mixRule==FF_VdW)||(mix->mixRule==FF_VdWnoInt)||(mix->mixRule==FF_PR)||(mix->mixRule==FF_MKP)){
-                FF_MixParamXderCubicEOS(mix->mixRule,T,mix->numSubs,mix->cubicData,mix->intParam,x,&param,da_di,db_di,dc_di);
+                FF_MixParamXderCubicEOS(&mix->mixRule,T,&mix->numSubs,mix->cubicData,mix->intParam,x,&param,da_di,db_di,dc_di);
             }
             else{
                 FF_MixParamCubicEOSgE(mix,T,x,&param);
@@ -2364,7 +2380,7 @@ EXP_IMP void CALLCONV FF_MixPhiEOS(const FF_MixData *mix,const double *T,const d
                 //printf("phi[%i]: %f\n",i,phi[i]);
             }
         }
-        else{
+        else{//gE mixing rule
             FF_MixParamNderCubicEOSgE(mix,T,x,&param,da_di,db_di);
             double B=*P*param.b/(R* *T);
             FF_VfromTPcubic(*T,*P,&param,*option,resultL,resultG,&state);
@@ -2452,9 +2468,8 @@ EXP_IMP void CALLCONV FF_MixPhiEOScubic(const FF_MixData *mix,FF_CubicParam *par
 }
 
 //Mixture Ideal gas thermodynamic properties calculation, from a reference state, specified by T and P, where H and S are 0
-void CALLCONV FF_MixIdealThermoEOS(const int *numSubs,const  FF_Correlation cp0[],const double x[],double *refT,double *refP, FF_ThermoProperties *th0)
+void CALLCONV FF_MixIdealThermoEOS(const int *numSubs,const  FF_Correlation cp0[], const FF_BaseProp baseProp[], const double x[],double *refT,double *refP, FF_ThermoProperties *th0)
 {
-    //printf("Hola, soy FF_MixIdealThermoEOS\n");
      FF_ThermoProperties th0S;//Ideal thermodynamic properties of the selected substance
     int i;
     th0S.T=th0->T;
@@ -2463,11 +2478,13 @@ void CALLCONV FF_MixIdealThermoEOS(const int *numSubs,const  FF_Correlation cp0[
     //printf("I am going for individual calculation. Num subs: %i\n",*numSubs);
     //printf("%i %f %f %f %f %f\n",equation[0],coef[0][0],coef[0][1],coef[0][2],coef[0][3],coef[0][4]);
     for (i=0;i<*numSubs;i++){
+        th0S.MW=baseProp[i].MW;
         FF_IdealThermoEos(cp0[i].form,cp0[i].coef,*refT,*refP,&th0S);
         th0->Cp=th0->Cp+x[i]*th0S.Cp;
         th0->H=th0->H+x[i]*th0S.H;
         th0->S=th0->S+x[i]*(th0S.S-log(x[i]));
     }
+    //printf("Ideal cp mix:%f\n",th0->Cp);
     th0->Cv=th0->Cp-R;
     th0->U=th0->H-R*(th0->T- *refT);//We need to substrat the integration of d(P*V)=d(R*T)=R*dT from reference T to actual T
     th0->A=th0->U-th0->T*th0->S;
@@ -2561,7 +2578,7 @@ void CALLCONV FF_MixThermoEOS(FF_MixData *mix,double *refT,double *refP, FF_Phas
     th0.T=thR.T=th->T;
     th0.V=thR.V=th->V;
     //printf("Now going to calculate Ideal part\n");
-    FF_MixIdealThermoEOS(&mix->numSubs,mix->cp0Corr,th->c,refT,refP,&th0);
+    FF_MixIdealThermoEOS(&mix->numSubs,mix->cp0Corr,mix->baseProp,th->c,refT,refP,&th0);
     if (mix->eosType==FF_IdealType)
     {
         th->P=R*th->T/th->V;

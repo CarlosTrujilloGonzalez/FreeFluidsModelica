@@ -494,8 +494,7 @@ void CALLCONV FF_VfromTPcubic(double T,double P,const  FF_CubicParam *param,char
         //printf("Z:%f\n",Z[0]);
         Veos=Z[0]* R * T / P;
         resultL[0]=resultG[0]=Veos-param->c;//this is V
-        //resultL[1]=resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultL[0]/(Veos-param->b));//This is Arr
-        resultL[1]=resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(Veos/(Veos-param->b));//This is Arr
+        resultL[1]=resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultL[0]/(Veos-param->b));//This is Arr
         resultL[2]=resultG[2]=Z[0]*resultL[0]/Veos;//Z as per the translated volume
         if (T>=param->Tc) *state='G';
         else if (P>=param->Pc) *state='L';
@@ -518,9 +517,8 @@ void CALLCONV FF_VfromTPcubic(double T,double P,const  FF_CubicParam *param,char
         else resultG[2] = Z[3];//this is Z gas as P*Veos/(R*T)
         Veos=resultG[2]* R * T / P;
         resultG[0]=Veos-param->c;//this is V
-        //resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultG[0]/(Veos-param->b));//This is Arr
-        resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(Veos/(Veos-param->b));//This is Arr
-        //resultG[2]=resultG[2]*resultG[0]/Veos;//This is Z gas as P*V/(R*T)
+        resultG[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultG[0]/(Veos-param->b));//This is Arr
+        resultG[2]=resultG[2]*resultG[0]/Veos;//This is Z gas as P*V/(R*T)
         if ((Z[1] < Z[2]) && (Z[1] < Z[3]) && (Z[1]>0)) resultL[2] = Z[1];
         else if ((Z[2] < Z[3]) && (Z[2]>0)) resultL[2] = Z[2];
         else if (Z[3]>0) resultL[2] = Z[3];
@@ -528,9 +526,8 @@ void CALLCONV FF_VfromTPcubic(double T,double P,const  FF_CubicParam *param,char
         Veos=resultL[2]* R * T / P;
         //printf("Veos: %f c:%f\n",Veos,param->c);
         resultL[0]=Veos-param->c;//this is V
-        //resultL[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultL[0]/(Veos-param->b));//This is Arr
-        resultL[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(Veos/(Veos-param->b));//This is Arr
-        //resultL[2]=resultL[2]*resultL[0]/Veos;
+        resultL[1]=param->Theta/(param->b*R* T*(param->w-param->u))*log((Veos+ub)/(Veos+wb))+log(resultL[0]/(Veos-param->b));//This is Arr
+        resultL[2]=resultL[2]*resultL[0]/Veos;
         //printf("V:%f Z:%f\n",resultL[0],resultL[2]);
         *state='b';
         //printf("Two solutions T:%f P:%f Vl:%f Vg:%f Zl:%f Zg:%f\n",T,P,resultL[0],resultG[0],resultL[2],resultG[2]);

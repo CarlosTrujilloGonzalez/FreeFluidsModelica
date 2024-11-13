@@ -64,7 +64,7 @@ EXP_IMP FF_MixData * CALLCONV FF_MixDataFromSubsData(int numSubs,const FF_Substa
 
 
 //Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[],FF_MixData *mixData);
+EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData);
 
 
 //Fill a Mixture data structure from an array of substance data structures
@@ -131,7 +131,7 @@ EXP_IMP void CALLCONV FF_MixPfromTVeos(const FF_MixData *mix,const double *T,con
 EXP_IMP void CALLCONV FF_MixVfromTPeos(const FF_MixData *mix,const double *T,const double *P,const double x[],
                                        const char *option,double resultL[3],double resultG[3],char *state);
 //Mixture Ideal gas thermodynamic properties calculation, from a reference state, specified by T and P, where H and S are 0
-EXP_IMP void CALLCONV FF_MixIdealThermoEOS(const int *numSubs,const  FF_Correlation cp0[],const double x[],double *refT,double *refP, FF_ThermoProperties *th0);
+EXP_IMP void CALLCONV FF_MixIdealThermoEOS(const int *numSubs,const  FF_Correlation cp0[], const FF_BaseProp baseProp[],const double x[],double *refT,double *refP, FF_ThermoProperties *th0);
 
 //Mixture Residual thermodynamic properties calculation from T and V, using EOS
 EXP_IMP void CALLCONV FF_MixResidualThermoEOS(FF_MixData *mix,FF_PhaseThermoProp *thR);
