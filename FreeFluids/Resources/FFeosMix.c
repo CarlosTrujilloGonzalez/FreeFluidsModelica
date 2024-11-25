@@ -199,6 +199,7 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData s
     for (i=0;i<numSubs;i++){
         mixData->id[i]=subsData[i].id;
         strcpy(mixData->subsName[i],subsData[i].name);
+        strcpy(mixData->CAS[i],subsData[i].CAS);
         mixData->baseProp[i]=subsData[i].baseProp;
         if((mixData->baseProp[i].MWmono>0)&&(mixData->baseProp[i].MW>0)) mixData->baseProp[i].numMono=557;//mixData->baseProp[i].numMono=mixData->baseProp[i].MW/mixData->baseProp[i].MWmono;
         else mixData->baseProp[i].numMono=1;
@@ -1580,7 +1581,7 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
 //Z and Arr calculation for a mixture, given T and V, according to FF_PCSAFT EOS. combRul=2
 //------------------------------------------------------------------------------
 void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *T,const double *V,const int *numSubs,
-                                        const  FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *Arr,double *Z)
+                                          FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *Arr,double *Z)
 {
     //Initial calculations: molecular volume, molecular density, and hard molecule volume fraction, etc.
     int i,j,k;
@@ -1620,6 +1621,16 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
                 else pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
                 pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
                 break;
+
+            /*case 2://CR-1 modified by Wolbach and Sandler, to use with cross-association. How to detect? perhaps dipole and non assoc. dipole moment is not in the information received
+                if ((data[i].kAB==0)&&(data[i].base)){
+                    data[i].kAB=data[j].kAB;
+                    data[i].epsilonAB=data[j].epsilonAB;
+                }
+                pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
+                pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
+                break;*/
+
             case 3://Gross and Sadowski
                 if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
                 else if (data[j].kAB==0) pairKAB[i][j]=data[i].kAB;
@@ -1697,6 +1708,7 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
     for (k=0;k<13;k++) //This is a iteration to approximate non associated fraction
         for (i=0;i<*numSubs;i++)
         {
+            //if (data[i].nPos==0) data[i].nPos=1;//to use with cross-association. How to detect? perhaps dipole and non assoc.
             if (data[i].nPos>0)
             {
                 xPos[i]=0.0;

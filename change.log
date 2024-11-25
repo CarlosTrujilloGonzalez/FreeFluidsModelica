@@ -1,3 +1,10 @@
+Version 4.1.0
+- Solved bug in the p,T flash code.
+- Added p,h flash.
+- Added interaction parameters for EOS and activity models.
+- Some small improvements in the code.
+- Added new substances.
+
 Version 4.0.0
 - Added new package ExternalMix. It implements VLE for mixtures, using cubic and PCSAFT EOS.
 

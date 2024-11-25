@@ -142,6 +142,21 @@ within FreeFluids.MediaCommon;
     gSatDensCorr = 101, gSatDensCoef = {2.319940e+02, -2.901920e+00, -3.579250e+00, -1.049650e+01, -5.837450e+01, 4.697000e+02}, gSatDensLimI = 1.631500e+02, gSatDensLimS = 4.651500e+02,
     gViscCorr = 110, gViscCoef = {6.341200e-08, 8.475800e-01, 4.171800e+01, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 1.434200e+02, gViscLimS = 1.000000e+03,
     gThCondCorr = 120, gThCondCoef = {-6.844000e+02, 7.640000e-01, -1.055000e+09, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.731500e+02, gThCondLimS = 1.000000e+03); 
+   
+  constant FreeFluids.MediaCommon.DataRecord PhthalicAnhydride(
+    name = "PhthalicAnhydride2", description = "Liq. reduced bulk modulus from PCSAFT 3B 2023-2 EOS", CAS = "85-44-9", family = 0, MW = 1.481100e+02, molarMass = 1.481100e-01, Tc = 7.910000e+02, criticalPressure = 4.760000e+06, Vc = 3.680000e-04, Zc = 2.663000e-01, w = 7.600000e-01, Tb = 5.576500e+02, mu = 5.300000e+00, lnuA = 5.505902e-03, lnuB = -3.985804e+00,
+    Cp0Corr = 2, Cp0Coef = {-4.455000e+00, 6.540000e-01, -4.283000e-04, 1.009000e-07, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 0.000000e+00, Cp0LimS = 0.000000e+00,
+    VpCorr = 20, VpCoef = {2.786800e+01, -7.076100e+03, -5.856700e-01, 1.442000e-18, 6.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, VpLimI = 4.890000e+02, VpLimS = 7.910000e+02,
+    HvCorr = 90, HvCoef = {5.549500e+07, 3.800000e-02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 7.910000e+02}, HvLimI = 4.041500e+02, HvLimS = 7.910000e+02,
+    lDensCorr = 41, lDensCoef = {5.393000e-01, 2.270400e-01, 7.910000e+02, 2.480000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lDensLimI = 4.041500e+02, lDensLimS = 7.910000e+02,
+    lCpCorr = 15, lCpCoef = {5.419200e+01, 1.054600e+00, -2.109100e-03, 1.738800e-06, 0.000000e+00, 0.000000e+00}, lCpLimI = 4.140000e+02, lCpLimS = 6.740000e+02,
+    lViscCorr = 32, lViscCoef = {-2.515100e+01, 5.040000e+03, 4.200000e-02, -2.490000e-05, 0.000000e+00, 0.000000e+00}, lViscLimI = 4.050000e+02, lViscLimS = 7.910000e+02,
+    lThCondCorr = 50, lThCondCoef = {2.294600e-01, -2.134500e-04, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 4.041500e+02, lThCondLimS = 5.576500e+02,
+    lSurfTensCorr = 61, lSurfTensCoef = {7.800000e-02, 1.156000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 7.910000e+02}, lSurfTensLimI = 4.041500e+02, lSurfTensLimS = 7.910000e+02,
+    lBulkModRCorr = 150, lBulkModRCoef = {-4.234050e+00, 3.536130e-03, 8.169990e-06, -9.526430e-09, 3.466960e-12, 0.000000e+00}, lBulkModRLimI = 4.040000e+02, lBulkModRLimS = 7.740000e+02,
+    gSatDensCorr = 101, gSatDensCoef = {3.658300e+02, -2.202570e+00, -5.946840e+00, -1.465650e+01, -5.116880e+01, 8.086680e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gSatDensLimI = 4.041500e+02, gSatDensLimS = 8.086880e+02,
+    gViscCorr = 110, gViscCoef = {4.351100e-08, 9.080000e-01, 1.027300e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 4.041500e+02, gViscLimS = 1.000000e+03,
+    gThCondCorr = 120, gThCondCoef = {5.930000e-05, 1.046000e+00, 7.655000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 5.576500e+02, gThCondLimS = 1.000000e+03); 
 
   constant FreeFluids.MediaCommon.DataRecord Propane(
     name = "Propane", description = "", CAS = "74-98-6", family = 1, MW = 4.410000e+01, molarMass=0.0441, Tc = 3.698000e+02, criticalPressure = 4.245518e+06, Vc = 2.030000e-04, Zc = 2.810000e-01, w = 1.520000e-01, Tb = 2.310500e+02, mu = 8.700000e-02, lnuA = 1.449900e-02, lnuB = -5.381233e+00,
@@ -261,7 +276,7 @@ within FreeFluids.MediaCommon;
   <p>Methanol</p><p>MethylEthylKetone</p> 
   <p>N2 (Nitrogen)</p>
   <p>O2 (Oxygen)</p><p>Octane_n</p>
-  <p>Pentane_n</p>
+  <p>Pentane_n</p><p>PhthalicAnhydride</p>
   <p>Propane</p>
   <p>R134A (1,1,1,2-Tetrafluorethane)</p>
   <p>R410A</p> 

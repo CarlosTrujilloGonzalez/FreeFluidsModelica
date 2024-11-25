@@ -17,6 +17,22 @@ within FreeFluids.MediaCommon;
       You should have received a copy of the GNU General Public License
       along with this program; if not, write to the Free Software
       Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA."
+      
+  constant FreeFluids.MediaCommon.DataRecord AceticAcid(
+    name = "AceticAcid", description = "Liq.Cp from corr+cubic EOS", CAS = "64-19-7", family = 13, MW = 6.006000e+01, molarMass = 6.006000e-02, Tc = 5.92700e+02, criticalPressure = 5.790000e+06, Vc = 1.710000e-04, Zc = 2.000000e-01, w = 4.540000e-01, Tb = 3.910500e+02, mu = 1.300000e+00, lnuA = 7.662690e-03, lnuB = -4.928421e+00,
+    Cp0Corr = 5, Cp0Coef = {4.000000e+00, 3.400000e+04, 1.440000e+02, 3.460400e+01, -2.958200e+01, 3.127000e+07, 3.880000e+02, 8.100000e+01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 5.000000e+01, Cp0LimS = 1.500000e+03,
+    VpCorr = 24, VpCoef = {5.786000e+06, -8.294300e+00, 9.792800e-01, -2.174500e-01, -5.723670e+00, 5.927100e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, VpLimI = 2.898100e+02, VpLimS = 5.92700e+02,
+    HvCorr = 90, HvCoef = {4.017900e+07, 2.603700e+00, -5.003100e+00, 2.706900e+00, 0.000000e+00, 5.919500e+02}, HvLimI = 2.898100e+02, HvLimS = 5.919500e+02,
+    lDensCorr = 46, lDensCoef = {3.512280e+02, 6.898360e+02, 3.868320e+02, -4.539620e+02, 3.404970e+02, 5.927000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lDensLimI = 2.898100e+02, lDensLimS = 5.927000e+02,
+    lCpCorr = 19, lCpCoef = {1.620680e+02, 2.374810e+03, -2.935450e+03, 9.335750e+03, -1.214500e+04, 5.927000e+02}, lCpLimI = 2.898100e+02, lCpLimS = 5.926000e+02,
+    lViscCorr = 30, lViscCoef = {-9.030000e+00, 1.212300e+03, -3.220000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lViscLimI = 2.898100e+02, lViscLimS = 3.910500e+02,
+    lThCondCorr = 50, lThCondCoef = {2.140000e-01, -1.834000e-04, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 2.898100e+02, lThCondLimS = 3.910500e+02,
+    lSurfTensCorr = 61, lSurfTensCoef = {5.750200e-02, 1.076900e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 5.919500e+02}, lSurfTensLimI = 2.898100e+02, lSurfTensLimS = 5.919500e+02,
+    lBulkModRCorr = 150, lBulkModRCoef = {-1.422230e+01, 4.999100e-02, -7.122800e-05, 5.261720e-08, -1.442340e-11, 0.000000e+00}, lBulkModRLimI = 2.898100e+02, lBulkModRLimS = 5.681500e+02,
+    gSatDensCorr = 101, gSatDensCoef = {3.512280e+02, -4.557950e+00, -1.271770e+00, -1.685460e+01, -2.698890e+01, 5.927000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gSatDensLimI = 2.898100e+02, gSatDensLimS = 5.927000e+02,
+    gViscCorr = 110, gViscCoef = {4.339500e-09, 1.240000e+00, -1.750900e+02, 2.501300e+04, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.898100e+02, gViscLimS = 1.000000e+03,
+    gThCondCorr = 120, gThCondCoef = {1.691000e-06, 1.669200e+00, 6.580000e+02, -9.540000e+04, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.947000e+02, gThCondLimS = 6.868800e+02); 
+
  
     constant  FreeFluids.MediaCommon.DataRecord Acetone(name="Acetone", CAS = "67-64-1", family = 12, MW = 5.807900e+01, molarMass=0.058079, Tc = 5.081000e+02, criticalPressure = 4.700000e+06, Vc = 2.090000e-04, Zc = 2.320000e-01, w = 3.040000e-01, mu=2.88, Tb = 3.291500e+02, IsothComp = 0.0, lnuA = 0.0111638, lnuB = -5.723473,
      Cp0Corr = 5, Cp0Coef = {4.000000e+00, 5.330000e+05, 3.320000e+02, 4.221700e+01, -2.769400e+01, 4.681000e+07, 3.210000e+02, 1.320000e+02, 0.0, 0.0, 0.0, 0.0, 0.0}, Cp0LimI = 2.000000e+02, Cp0LimS = 1.500000e+03,
@@ -119,6 +135,21 @@ within FreeFluids.MediaCommon;
     gSatDensCorr = 101, gSatDensCoef = {4.681910e+02, -2.745970e+00, -3.755080e+00, -9.631140e+00, -7.911270e+01, 3.041400e+02}, gSatDensLimI = 2.165800e+02, gSatDensLimS = 3.041400e+02,
     gViscCorr = 110, gViscCoef = {2.246400e-06, 4.549500e-01, 2.926400e+02, 1.669100e+03, 0.0, 0.0}, gViscLimI = 1.700000e+02, gViscLimS = 1.900000e+03,
     gThCondCorr = 120, gThCondCoef = {5.804000e+00, -4.452200e-01, 7.941300e+02, 2.139600e+06, 0.0, 0.0}, gThCondLimI = 1.800000e+02, gThCondLimS = 1.500000e+03);
+
+  constant FreeFluids.MediaCommon.DataRecord Cyclohexane(
+    name = "Cyclohexane", description = "Mainly from Zhou 2014 EOS", CAS = "110-82-7", family = 4, MW = 8.418000e+01, molarMass = 8.418000e-02, Tc = 5.53500e+02, criticalPressure = 4.082400e+06, Vc = 3.101737e-04, Zc = 2.751000e-01, w = 2.130000e-01, Tb = 3.541500e+02, mu = 3.000000e-01, lnuA = 1.163961e-02, lnuB = -5.353849e+00,
+    Cp0Corr = 5, Cp0Coef = {4.000000e+00, 1.483000e+06, 4.820000e+02, 5.777500e+01, -6.023000e+00, -3.343000e+07, 1.720000e+02, 1.550000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 1.730000e+02, Cp0LimS = 3.000000e+03,
+    VpCorr = 26, VpCoef = {4.082400e+06, 5.536000e+02, -1.507316e-03, 3.100000e-02, 1.945441e-03, 8.700000e-02, -6.247177e+00, 9.760000e-01, 4.795420e-01, 2.262000e+00, -3.680368e+00, 3.530000e+00, -5.145902e+00, 9.757000e+00}, VpLimI = 2.794700e+02, VpLimS = 5.536000e+02,
+    HvCorr = 91, HvCoef = {7.139490e+05, 1.822410e+00, -3.137030e+00, 2.705630e+00, -9.232270e-01, 5.536000e+02}, HvLimI = 2.794700e+02, HvLimS = 5.536000e+02,
+    lDensCorr = 241, lDensCoef = {3.224000e+03, 5.536000e+02, 2.729676e-01, 1.650000e-01, -1.106482e+00, 2.430000e-01, 2.774881e+01, 4.980000e-01, -3.401756e+01, 5.640000e-01, 9.815362e+00, 7.170000e-01, 6.570397e+01, 1.262100e+01}, lDensLimI = 2.794700e+02, lDensLimS = 5.536000e+02,
+    lCpCorr = 19, lCpCoef = {4.903550e+01, 2.951170e+03, -3.053460e+03, 1.458750e+03, -1.016170e+03, 5.536000e+02}, lCpLimI = 2.794700e+02, lCpLimS = 5.535000e+02,
+    lViscCorr = 30, lViscCoef = {-7.530100e+01, 3.764750e+03, 9.979330e+00, -1.358900e-05, 2.000000e+00, 0.000000e+00}, lViscLimI = 2.931500e+02, lViscLimS = 5.031500e+02,
+    lThCondCorr = 50, lThCondCoef = {1.981300e-01, -2.505000e-04, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 2.796900e+02, lThCondLimS = 3.538700e+02,
+    lSurfTensCorr = 64, lSurfTensCoef = {5.536400e+02, 6.485000e-02, 1.263000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lSurfTensLimI = 2.794700e+02, lSurfTensLimS = 5.536400e+02,
+    lBulkModRCorr = 150, lBulkModRCoef = {-6.147870e+00, 4.810340e-03, 4.298150e-05, -6.892490e-08, 3.428730e-11, 0.000000e+00}, lBulkModRLimI = 2.794700e+02, lBulkModRLimS = 5.481500e+02,
+    gSatDensCorr = 102, gSatDensCoef = {3.224000e+03, 5.536000e+02, 7.912786e+00, 3.950000e-01, -1.491202e+01, 4.320000e-01, 5.351653e+00, 6.040000e-01, -3.875832e+00, 9.940000e-01, -6.953693e+00, 4.823000e+00, 3.685860e+03, 1.836000e+01}, gSatDensLimI = 2.794700e+02, gSatDensLimS = 5.536000e+02,
+    gViscCorr = 110, gViscCoef = {6.772600e-08, 8.366500e-01, 3.678600e+01, -2.030100e+01, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.796900e+02, gViscLimS = 9.000000e+02,
+    gThCondCorr = 120, gThCondCoef = {8.590000e-07, 1.770900e+00, 2.430000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 3.250000e+02, gThCondLimS = 1.000000e+03);
 
   constant FreeFluids.MediaCommon.DataRecord D4(
     name = "D4", description = "", CAS = "556-67-2", family = 0, MW = 2.966160e+02, molarMass = 2.966160e-01, Tc = 5.865000e+02, criticalPressure = 1.347215e+06, Vc = 9.587728e-04, Zc = 2.649000e-01, w = 5.890000e-01, Tb = 4.485500e+02, lnuA = 9.458775e-03, lnuB = -4.576029e+00,
@@ -272,17 +303,16 @@ within FreeFluids.MediaCommon;
       gThCondCorr = 120, gThCondCoef = {8.977200e-02, 1.850100e-01, 6.392300e+02, 1.114700e+06, 0.0, 0.0}, gThCondLimI = 2.614300e+02, gThCondLimS = 1.000000e+03); 
     
 annotation(
-      Documentation(info = "<html>
-  <body>
+      Documentation(info = "<html><head></head><body>
   <p>Contains data of the individual substances, mainly parameters for temperature dependent correlations for physical properties. The records can be used both with the ideal gas medium packages, and with the temperature dependent liquid packages.</p>
   <p><strong>There are data records for the following substances:</strong></p>
-  <p>Acetone</p>
+  <p>Acetic acid</p><p>Acetone</p>
   <p>Air</p>
   <p>Ammonia</p>
   <p>Benzene</p>
   <p>Butane_n</p>
   <p>Butanol_n</p>
-  <p>CO2 (Carbon dioxide)</p>
+  <p>CO2 (Carbon dioxide)</p><p>Cyclohexane</p>
   <p>D4 (Octamethylcyclotetrasiloxane)</p>
   <p>D5 (Decamethylcyclpentasiloxane)</p>
   <p>DecanoicAcid</p>
@@ -293,6 +323,6 @@ annotation(
   <p>Heptane_n</p> 
   <p>Hexane_n</p>  
   <p>Isobutane</p>
-  </body>
-  </html>"));
+  
+  </body></html>"));
   end MediaDataAL;

@@ -2,7 +2,7 @@ within FreeFluids;
 
 package MediaCommon "MediaCommon.mo by Carlos Trujillo
       This file is part of the Free Fluids application
-      Copyright (C) 2008-2021  Carlos Trujillo Gonzalez
+      Copyright (C) 2008-2023  Carlos Trujillo Gonzalez
         
       This program is free software; you can redistribute it and/or
       modify it under the terms of the GNU General Public License version 3
