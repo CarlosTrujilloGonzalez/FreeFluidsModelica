@@ -107,7 +107,7 @@ EXP_IMP void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const doub
 //------------------------------
 //Mixture Z and Arr calculation for a mixture, given T and V, according to FF_PCSAFT EOS
 EXP_IMP void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *T,const double *V,const int *numSubs,
-                                        const  FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *Arr,double *Z);
+                                          FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *Arr,double *Z);
 //Mixture P calculation given T, V, and composition according to FF_PCSAFT EOS
 EXP_IMP void CALLCONV FF_MixPfromTVSAFT(const enum FF_MixingRule *rule,const double *T,const double *V,const int *numSubs,
                                         const  FF_SaftEOSdata data[],const double pintParam[15][15][6],const double x[],double *P);

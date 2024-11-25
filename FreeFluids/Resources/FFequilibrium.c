@@ -2369,6 +2369,101 @@ void CALLCONV FF_TemperatureEnvelope(FF_MixData *mix,const double *P, const int 
     y[0]=x[0]=0;
 }
 
+//VL flash calculation, given T, P, feed composition, eos and mixing rule, using bubble and dew pressure as help
+void CALLCONV FF_TwoPhasesPreFlashPT(FF_MixData *mix, const double *T,const double *P,const double f[],
+                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta){
+    int i,j,n;
+    double guess=0,bP=0,dP=0, pAux;
+    FF_BubbleP(mix,T,f,&guess,&bP,y,substPhiL,substPhiG);
+    FF_DewP(mix,T,f,&guess,&dP,x,substPhiL,substPhiG);
+    if (dP>bP){
+        pAux=bP;
+        bP=dP;
+        dP=pAux;
+    }
+
+    if ((*P>=bP)&&(bP>0)){
+        *beta=0;
+        for(i=0;i<mix->numSubs;i++){
+            x[i]=f[i];
+            y[i]=0.0;
+        }
+    }
+    else{
+        if ((*P<=dP)||(bP==0)||(dP==0)){
+            *beta=1;
+            for(i=0;i<mix->numSubs;i++){
+                y[i]=f[i];
+                x[i]=0.0;
+            }
+        }
+        else{
+            double k[mix->numSubs];
+            int numRep=10;
+            double a, fa, aNew, aOld=1e6, aMin,aMax,faMin,faMax;
+            double xTotal,yTotal;
+            char option;
+            for(i=0;i<mix->numSubs;i++){
+                k[i]=(*P-dP)*(y[i]/f[i]-f[i]/x[i])/(bP-dP)+f[i]/x[i];//we initialize k
+            }
+            a=0.5;//and initialize a
+            for(j=0;j<numRep;j++){//We will perform n times the solution of the Rachford-Rice equation
+                aMin=0;
+                aMax=0;
+                faMin=0;
+                faMax=0;
+                n=0;
+                do{ //find a for the given k
+                  fa=0;
+                  for(i=0;i<mix->numSubs;i++) fa=fa+(k[i]-1)*f[i]/(1+a*(k[i]-1));
+
+                  if (fa>0){
+                      aMax=a;
+                      faMax=fa;
+                      aNew=a*1.2;
+                  }
+                  else if (fa<0){
+                      aMin=a;
+                      faMin=fa;
+                      aNew=a*0.8;
+                  }
+                  if (!((aMin*aMax)==0)) aNew=aMin-faMin*(aMax-aMin)/(faMax-faMin);
+                  n++;
+                  //printf("j:%i n:%i a:%f fa:%f \n",j,n,a,fa);//printf("a:%f fa:%f faMin:%f faMax:%f \n",a,fa,faMin,faMax);
+                  if ((fabs(a-aNew)<0.0001)||(fabs(fa)<0.0001)) break;
+                  a=aNew;
+
+                }while (n<15);
+
+                xTotal=0;
+                yTotal=0;
+                for(i=0;i<mix->numSubs;i++){
+                    x[i]=f[i]/(1+a*(k[i]-1));
+                    xTotal=xTotal+x[i];
+                    y[i]=f[i]*k[i]/(1+a*(k[i]-1));
+                    yTotal=yTotal+y[i];
+                }
+                for(i=0;i<mix->numSubs;i++){
+                    x[i]=x[i]/xTotal;
+                    y[i]=y[i]/xTotal;
+                }
+                option='l';
+                FF_MixPhiEOS(mix,T,P,x,&option,substPhiL);
+                option='g';
+                FF_MixPhiEOS(mix,T,P,y,&option,substPhiG);
+
+                if (fabs(aOld-a)<0.0001) break;
+                aOld=a;
+                for(i=0;i<mix->numSubs;i++) k[i]=substPhiL[i]/substPhiG[i];
+
+            }
+            *beta=a;
+            //printf("x[0]:%f \n",x[0]);
+        }
+    }
+}
+
+
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
 void CALLCONV FF_TwoPhasesFlashPT(FF_MixData *mix,const double *T,const double *P,const double f[],
                            double x[],double y[],double substPhiL[],double substPhiG[],double *beta){//f is feed composition, beta is the gas fraction
@@ -2930,10 +3025,162 @@ void CALLCONV FF_TwoPhasesFlashPTDE(FF_FeedData *data, double x[],double y[],dou
 
 }
 
+//VL flash calculation, given h, P, feed composition, eos and mixing rule, using bubble and dew pressure as help
+void CALLCONV FF_TwoPhasesPreFlashPH(FF_MixData *mix, const double *H,const double *P,const double f[], double *T,
+                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta){
+    int i;
+    double guess=0,bT=0,dT=0, tAux;
+    double answerL[3],answerG[3];
+    char option,state;
+    FF_PhaseThermoProp th;
+    th.P=*P;
+    double Tl=0,Th=0,Tnew,Hd,Hb,Ht,Hlow,Hhigh;
+    int counter=0;
+
+    FF_DewT(mix,P,f,&guess,&dT,x,substPhiL,substPhiG);
+    FF_BubbleT(mix,P,f,&guess,&bT,y,substPhiL,substPhiG);
+
+    if (dT<bT){
+        tAux=bT;
+        bT=dT;
+        dT=tAux;
+    }
+
+    option='g';//Ask for the stable phase
+    FF_MixVfromTPeos(mix,&dT,P,f,&option,answerL,answerG,&state);
+    th.T=dT;
+    th.V=answerG[0];
+    for (i=0;i<mix->numSubs;i++)th.c[i]=f[i];
+    FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+    Hd=th.H;
+    //printf("H:%f dew T:%f dew V:%f dew H:%f  \n",*H,th.T,th.V,th.H);
+    if (*H>=Hd){
+        option='g';
+        *beta=1.0;
+        for(i=0;i<mix->numSubs;i++){
+            y[i]=f[i];
+            x[i]=0.0;
+        }
+        *T=dT;
+        Ht=Hd;
+        do{
+            if (*H>Ht){
+                Tl=*T;
+                Hlow=Ht;
+                Tnew=*T*1.08;
+            }
+            else if(*H<Ht){
+                Th=*T;
+                Hhigh=Ht;
+                Tnew=*T/1.08;
+            }
+            else break;
+            if (Tl*Th>0) Tnew=Tl+(*H-Hlow)*(Th-Tl)/(Hhigh-Hlow);//Tnew=(Hhigh*Tl-Hlow*Th)/(Hhigh-Hlow);
+            if ((fabs(*T-Tnew)<0.001)||(fabs(Ht-*H)<0.1)) break;
+            else *T=Tnew;
+            FF_MixVfromTPeos(mix,T,P,f,&option,answerL,answerG,&state);
+            th.T=*T;
+            th.V=answerG[0];
+            FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+            Ht=th.H;
+            counter++;
+            //printf("Counter:%i n:%i yTotal:%f New T:%f tpdg:%f\n",counter,n,yTotal,T,tpdg);
+        } while(counter<15);
+    }
+    else {
+        option='l';
+        FF_MixVfromTPeos(mix,&bT,P,f,&option,answerL,answerG,&state);
+        th.T=bT;
+        th.V=answerL[0];
+        for (i=0;i<mix->numSubs;i++)th.c[i]=f[i];
+        FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+        //printf("H:%f bub T:%f bub V:%f bub H:%f  \n",*H,th.T,th.V,th.H);
+        Hb=th.H;
+        if (*H<=Hb){
+            option='l';
+            *beta=0.0;
+            for(i=0;i<mix->numSubs;i++){
+                x[i]=f[i];
+                y[i]=0.0;
+            }
+            *T=bT;
+            Ht=Hb;
+            do{
+                if (*H>Ht){
+                    Tl=*T;
+                    Hlow=Ht;
+                    Tnew=*T*1.08;
+                }
+                else if(*H<Ht){
+                    Th=*T;
+                    Hhigh=Ht;
+                    Tnew=*T/1.08;
+                }
+                else break;
+                if (Tl*Th>0) Tnew= Tl+(*H-Hlow)*(Th-Tl)/(Hhigh-Hlow);//(Hhigh*Tl-Hlow*Th)/(Hhigh-Hlow);
+                if ((fabs(*T-Tnew)<0.001)||(fabs(Ht-*H)<1)) break;
+                else *T=Tnew;
+                FF_MixVfromTPeos(mix,T,P,f,&option,answerL,answerG,&state);
+                th.T=*T;
+                th.V=answerL[0];
+                FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+                Ht=th.H;
+                counter++;
+                //printf("Counter:%i n:%i yTotal:%f New T:%f tpdg:%f\n",counter,n,yTotal,T,tpdg);
+            } while(counter<15);
+        }
+        else{
+            double Hliq,Hgas;
+            *T=bT;//just in order to give some value
+            Ht=Hb;
+            Th=dT;
+            Hhigh=Hd;
+            Tl=bT;
+            Hlow=Hb;
+            do{ if (*H>Ht){
+                    Tl=*T;
+                    Hlow=Ht;
+                    //Tnew=*T*1.1;
+                }
+                else if(*H<Ht){
+                    Th=*T;
+                    Hhigh=Ht;
+                    //Tnew=*T/1.1;
+                }
+                if (Tl*Th>0) Tnew=Tl+(Th-Tl)*(*H-Hlow)/(Hhigh-Hlow);//(Hhigh*Tl-Hlow*Th)/(Hhigh-Hlow);//(xmin*fxmax-xmax*fxmin)/(fxmax-fxmin)
+                if ((fabs(*T-Tnew)<0.001)||(fabs(Ht-*H)<1.0)) break;
+                else *T=Tnew;
+                FF_TwoPhasesPreFlashPT(mix,T,P,f,x,y,substPhiL,substPhiG,beta);
+                option='l';
+                FF_MixVfromTPeos(mix,T,P,x,&option,answerL,answerG,&state);
+                th.T=*T;
+                th.V=answerL[0];
+                for (i=0;i<mix->numSubs;i++)th.c[i]=x[i];
+                FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+                Hliq=th.H;
+                option='g';
+                FF_MixVfromTPeos(mix,T,P,y,&option,answerL,answerG,&state);
+                th.T=*T;
+                th.V=answerG[0];
+                for (i=0;i<mix->numSubs;i++)th.c[i]=y[i];
+                FF_MixThermoEOS(mix,&mix->refT,&mix->refP,&th);
+                Hgas=th.H;
+                Ht = *beta * Hgas +(1.0- *beta)*Hliq;
+                counter++;
+                //printf("H:%f T:%f Ht:%f  \n",*H,*T,Ht);
+                //printf("Counter:%i n:%i yTotal:%f New T:%f tpdg:%f\n",counter,n,yTotal,T,tpdg);
+            } while(counter<15);
+
+        }
+    }
+}
+
+
+
 //Mixture 2 phases flash, given P,H, composition, and thermo model to use.
 void CALLCONV FF_TwoPhasesFlashPH(FF_FeedData *data, FF_PhaseThermoProp phase[2],double *minT, double *maxT,double *refT,double *refP){
     double Tlow,Thigh,Hlow,Hhigh,answerL[3],answerG[3],V,Tplus,Hplus;
-    char option,state,stateLow,stateHigh;
+    char option,state;
     int i,j;
     if(*minT>0) Tlow=*minT;
     else Tlow=10;

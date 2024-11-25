@@ -464,7 +464,7 @@ void FF_surfaceTensionM(const char *name, const char *resDir, int thermoModel, i
 //Creates a static mixture array that is charged each time it is called
 //void *FF_createMixData(const char *name, int numSubs, const char subsNames[15][30], const char *resDir) {
 void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel) {
-    int i,j;
+    int i,j,k,count;
     static int n;//defined mixtures counter
     static char mixture[3][30];//stored mixture names
     static FF_MixData mixData[3];
@@ -507,27 +507,168 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
         strcat(path,resDir);
         strcat(path,"/Extra/");
         FF_MixFillDataWithSubsData2(numSubs,subsData,path,&mixData[i]);
+        mixData[i].numSubs=numSubs;
         mixData[i].thModelActEos=1;
         mixData[i].refVpEos=1;
         mixData[i].refT=0.0;
         mixData[i].refP=101325.0;
-        mixData[i].eosType=FF_CubicPRtype;
+        mixData[i].eosType=FF_CubicPRtype;//EOS type by default
         if (strcmp(eosType,"SRK")==0) mixData[i].eosType=FF_CubicSRKtype;
         else if(strcmp(eosType,"PCSAFT")==0) mixData[i].eosType=FF_SAFTtype;
 
         if((mixData[i].eosType==FF_CubicPRtype)||(mixData[i].eosType==FF_CubicSRKtype)){
-            mixData[i].mixRule=FF_LCVM;
-            if(strcmp(cubicMixRule,"VdW")==0) mixData[i].mixRule=FF_VdWnoInt;
+            mixData[i].actModel=FF_UNIFACDort;
+            if(strcmp(activityModel,"None")==0) mixData[i].actModel=FF_NoModel;
+            else if(strcmp(activityModel,"UNIFACstd")==0) mixData[i].actModel=FF_UNIFACStd;
+            else if(strcmp(activityModel,"UNIFACpsrk")==0) mixData[i].actModel=FF_UNIFACPSRK;
+            else if(strcmp(activityModel,"UNIQUAC")==0) mixData[i].actModel=FF_UNIQUAC;
+            else if(strcmp(activityModel,"NRTL")==0) mixData[i].actModel=FF_NRTL;
+
+            mixData[i].mixRule=FF_LCVM;//default mixing rule
+            if(strcmp(cubicMixRule,"VdWnoInt")==0) mixData[i].mixRule=FF_VdWnoInt;
+            else if(strcmp(cubicMixRule,"VdW")==0) mixData[i].mixRule=FF_VdW;
             else if (strcmp(cubicMixRule,"HV")==0) mixData[i].mixRule=FF_HV;
             else if (strcmp(cubicMixRule,"MHV1")==0) mixData[i].mixRule=FF_MHV1;
             else if (strcmp(cubicMixRule,"MHV2")==0) mixData[i].mixRule=FF_MHV2;
             else if (strcmp(cubicMixRule,"UMR")==0) mixData[i].mixRule=FF_UMR;
-            mixData[i].actModel=FF_UNIFACDort;
-            if(strcmp(activityModel,"UNIFACstd")==0) mixData[i].actModel=FF_UNIFACStd;
-            else if(strcmp(activityModel,"UNIFACpsrk")==0) mixData[i].actModel=FF_UNIFACPSRK;
-            else if(strcmp(activityModel,"UNIQUAC")==0) mixData[i].actModel=FF_UNIQUAC;
-            else if(strcmp(activityModel,"NRTL")==0) mixData[i].actModel=FF_NRTL;
+            else if (strcmp(cubicMixRule,"PSRK")==0) mixData[i].mixRule=FF_PSRK;
         }
+        //load of intraction parameters
+        char path2[FILENAME_MAX]="";
+        char cas1[22],cas2[22],form[20];
+        float a,b,c,d,e,f,ai,bi,ci,di,ei,fi;
+        strcat(path2,resDir);
+        if (mixData[i].eosType==FF_SAFTtype){
+            strcat(path2,"/Interactions/PCSAFT.txt");
+            FILE * file= fopen(path2, "rb");
+            if (file != NULL) {
+              count=0;
+              while (fscanf(file,"%s %s %f %f %f",cas1,cas2,&a,&b,&c)==5){
+                  for (j=0;j<numSubs;j++){
+                      for (k=0;k<numSubs;k++){
+                          if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                              count++;
+                              mixData[i].intParam[j][k][0]=mixData[i].intParam[k][j][0]=a;
+                              mixData[i].intParam[j][k][1]=mixData[i].intParam[k][j][1]=b;
+                              mixData[i].intParam[j][k][2]=mixData[i].intParam[k][j][2]=c;
+                          }
+                      }
+
+                  }
+                  //if (count==(numSubs*(numSubs-1)/2)) break;//problematic if there are duplicate values
+              }
+              //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+              fclose(file);
+            }
+            else printf("unable to charge the interaction parameters\n");
+        }
+        else if (mixData[i].mixRule==FF_VdWnoInt);
+        else if (mixData[i].mixRule==FF_VdW){
+            if (mixData[i].eosType==FF_CubicPRtype) strcat(path2,"/Interactions/VdWPR.txt");
+            if (mixData[i].eosType==FF_CubicSRKtype) strcat(path2,"/Interactions/VdWSRK.txt");
+            FILE * file= fopen(path2, "rb");
+            if (file != NULL) {
+              count=0;
+              while (fscanf(file,"%s %s %f %f %f %f",cas1,cas2,&a,&b,&c,&d)==6){
+                  for (j=0;j<numSubs;j++){
+                      for (k=0;k<numSubs;k++){
+                          if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                              count++;
+                              mixData[i].intParam[j][k][0]=mixData[i].intParam[k][j][0]=a;
+                              mixData[i].intParam[j][k][1]=mixData[i].intParam[k][j][1]=b;
+                              mixData[i].intParam[j][k][2]=mixData[i].intParam[k][j][2]=c;
+                              mixData[i].intParam[j][k][3]=mixData[i].intParam[k][j][3]=d;
+                          }
+                      }
+
+                  }
+              }
+              //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+              fclose(file);
+            }
+            else printf("unable to charge the interaction parameters\n");
+        }
+        else if (mixData[i].actModel==FF_UNIQUAC){
+            strcat(path2,"/Interactions/UNIQUAC.txt");
+            FILE * file= fopen(path2, "rb");
+            if (file != NULL) {
+              count=0;
+              while (fscanf(file,"%s %s %s %f %f %f %f %f %f %f %f %f %f %f %f",cas1,cas2,form,&a,&b,&c,&d,&e,&f,&ai,&bi,&ci,&di,&ei,&fi)==15){
+                  for (j=0;j<numSubs;j++){
+                      for (k=0;k<numSubs;k++){
+                          if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                              count++;
+                              if (mixData[i].intParam[j][k][0]==0){
+                                  if (strcmp(form,"Pol1K")==0) mixData[i].intForm=FF_Pol1K;
+                                  else if (strcmp(form,"Pol1J")==0) mixData[i].intForm=FF_Pol1J;
+                                  else if (strcmp(form,"Pol1C")==0) mixData[i].intForm=FF_Pol1C;
+                                  mixData[i].intParam[j][k][0]=a;
+                                  mixData[i].intParam[j][k][1]=b;
+                                  mixData[i].intParam[j][k][2]=c;
+                                  mixData[i].intParam[j][k][3]=d;
+                                  mixData[i].intParam[j][k][4]=e;
+                                  mixData[i].intParam[j][k][5]=f;
+
+                                  mixData[i].intParam[k][j][0]=ai;
+                                  mixData[i].intParam[k][j][1]=bi;
+                                  mixData[i].intParam[k][j][2]=ci;
+                                  mixData[i].intParam[k][j][3]=di;
+                                  mixData[i].intParam[k][j][4]=ei;
+                                  mixData[i].intParam[k][j][5]=fi;
+                              }
+                          }
+                      }
+
+                  }
+              }
+
+              //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+              fclose(file);
+            }
+            else printf("unable to charge the interaction parameters\n");
+        }
+        else if (mixData[i].actModel==FF_NRTL){
+            strcat(path2,"/Interactions/NRTL.txt");
+            FILE * file= fopen(path2, "rb");
+            if (file != NULL) {
+              count=0;
+              while (fscanf(file,"%s %s %s %f %f %f %f %f %f %f %f %f %f %f %f",cas1,cas2,form,&a,&b,&c,&d,&e,&f,&ai,&bi,&ci,&di,&ei,&fi)==15){
+                  for (j=0;j<numSubs;j++){
+                      for (k=0;k<numSubs;k++){
+                          if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                              count++;
+                              if (mixData[i].intParam[j][k][0]==0){
+                                  if (strcmp(form,"Pol1K")==0) mixData[i].intForm=FF_Pol1K;
+                                  else if (strcmp(form,"Pol1J")==0) mixData[i].intForm=FF_Pol1J;
+                                  else if (strcmp(form,"Pol1C")==0) mixData[i].intForm=FF_Pol1C;
+                                  mixData[i].intParam[j][k][0]=a;
+                                  mixData[i].intParam[j][k][1]=b;
+                                  mixData[i].intParam[j][k][2]=c;
+                                  mixData[i].intParam[j][k][3]=d;
+                                  mixData[i].intParam[j][k][4]=e;
+                                  mixData[i].intParam[j][k][5]=f;
+
+                                  mixData[i].intParam[k][j][0]=ai;
+                                  mixData[i].intParam[k][j][1]=bi;
+                                  mixData[i].intParam[k][j][2]=ci;
+                                  mixData[i].intParam[k][j][3]=di;
+                                  mixData[i].intParam[k][j][4]=ei;
+                                  mixData[i].intParam[k][j][5]=fi;
+                              }
+                          }
+                      }
+
+                  }
+              }
+
+              //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+              fclose(file);
+            }
+            else printf("unable to charge the interaction parameters\n");
+        }
+
+
+
     }
     return &mixData[i];
 }
@@ -545,7 +686,6 @@ void FF_molarMassesM(const char *name, int numSubs, char *subsNames, const char 
 void FF_pressure_dTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double D, double T, double zMass[15], double *p, double *MW){
 
   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
-
   double nMols=0;
   *MW=0;
   double z[numSubs];
@@ -570,7 +710,7 @@ void FF_density_pTXM(const char *name, int numSubs, char *subsNames, const char 
 
   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
 
-  double nMols=0;
+  double nMols=0;//number of moles in 1 gr
   *MW=0;
   double z[numSubs];
   for(int i=0;i<numSubs;i++){
@@ -578,10 +718,11 @@ void FF_density_pTXM(const char *name, int numSubs, char *subsNames, const char 
   }
   for(int i=0;i<numSubs;i++){
       z[i]=zMass[i]/(mix->baseProp[i].MW*nMols);
-      *MW=*MW+z[i]*mix->baseProp[i].MW;
+      //*MW=*MW+z[i]*mix->baseProp[i].MW;
       //printf("z[%i]:%f\n",i,z[i]);
   }
-  *MW=*MW*0.001;
+  //*MW=*MW*0.001;
+  *MW=0.001/nMols;
   //printf("MW in kgr/mol:%f\n",MW);
 
   char state;
@@ -780,7 +921,6 @@ void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const
     double lMW=0,gMW=0;
     double gf=0.33;//gas molar fraction
     double z[numSubs],x[numSubs],y[numSubs],phiL[numSubs],phiG[numSubs];
-    double guess=0,bP=0,dP=0, pAux;
     int i;
     for(int i=0;i<numSubs;i++){
         nMols=nMols+zMass[i]/mix->baseProp[i].MW;
@@ -789,47 +929,36 @@ void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const
         z[i]=zMass[i]/(mix->baseProp[i].MW*nMols);
     }
 
-    FF_BubbleP(mix,&T,z,&guess,&bP,y,phiL,phiG);
-    FF_DewP(mix,&T,z,&guess,&dP,x,phiL,phiG);
-    if (dP>bP){
-        pAux=bP;
-        bP=dP;
-        dP=pAux;
-    }
-
-    if ((p>=bP)&&(bP>0)){
+    FF_TwoPhasesPreFlashPT(mix,&T,&p,z,x,y,phiL,phiG,&gf);
+    if (gf==0){
         *gfMass=0;
         for(i=0;i<numSubs;i++){
             xMass[i]=zMass[i];
             yMass[i]=0.0;
         }
     }
-    else{
-        if ((p<=dP)||(bP==0)||(dP==0)){
-            *gfMass=1;
-            for(i=0;i<numSubs;i++){
-                yMass[i]=zMass[i];
-                xMass[i]=0.0;
-            }
-        }
-        else{
-            double kInit[numSubs];
-            int numRep=15;
-            for(i=0;i<numSubs;i++){
-                kInit[i]=(p-dP)*(y[i]/z[i]-z[i]/x[i])/(bP-dP)+z[i]/x[i];
-            }
-            FF_RachfordRiceSolver(mix,&T,&p,z,kInit,&numRep,x,y,phiL,phiG,&gf); //with a good guess we go directly for solving Rachfor-Rice
-            for(int i=0;i<numSubs;i++){
-                lMW=lMW+x[i]*mix->baseProp[i].MW;
-                gMW=gMW+y[i]*mix->baseProp[i].MW;
-            }
-            for(int i=0;i<numSubs;i++){
-                xMass[i]=x[i]*mix->baseProp[i].MW/lMW;
-                yMass[i]=y[i]*mix->baseProp[i].MW/lMW;
-            }
-            *gfMass=gf*gMW/(gf*gMW+(1-gf)*lMW);
+    else if (gf==1){
+        *gfMass=1;
+        for(i=0;i<numSubs;i++){
+            yMass[i]=zMass[i];
+            xMass[i]=0.0;
         }
     }
+    else{
+        for(int i=0;i<numSubs;i++){
+            lMW=lMW+x[i]*mix->baseProp[i].MW;
+            gMW=gMW+y[i]*mix->baseProp[i].MW;
+        }
+        for(int i=0;i<numSubs;i++){
+            xMass[i]=x[i]*mix->baseProp[i].MW/lMW;
+            yMass[i]=y[i]*mix->baseProp[i].MW/gMW;
+            //xMass[i]=x[i];
+            //yMass[i]=y[i];
+
+        }
+        *gfMass=gf*gMW/(gf*gMW+(1-gf)*lMW);
+    }
+
 }
 
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
@@ -859,6 +988,57 @@ void FF_TwoPhasesFlashPTM(const char *name, int numSubs, char *subsNames, const 
         yMass[i]=y[i]*mix->baseProp[i].MW/lMW;
     }
     *gfMass=gf*gMW/(gf*gMW+(1-gf)*lMW);
+}
+
+//VL flash calculation, given T, P, feed composition, eos and mixing rule
+void FF_TwoPhasesFlashPHXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double h, double *T, double zMass[],
+                           double xMass[],double yMass[],double *gfMass){
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+
+    double nMols=0;//number of moles in 1 gr
+    double lMW=0,gMW=0;
+    double gf=0.33;//gas molar fraction
+    double z[numSubs],x[numSubs],y[numSubs],phiL[numSubs],phiG[numSubs];
+    int i;
+    double hMolar;
+    for(int i=0;i<numSubs;i++){
+        nMols=nMols+zMass[i]/mix->baseProp[i].MW;
+    }
+    for(i=0;i<numSubs;i++){
+        z[i]=zMass[i]/(mix->baseProp[i].MW*nMols);
+    }
+    hMolar=h/(1000*nMols);
+    //printf("z molar 0:%f hMolar:%f \n",z[0],hMolar);
+
+
+
+    FF_TwoPhasesPreFlashPH(mix,&hMolar,&p,z,T,x,y,phiL,phiG,&gf);
+    if (gf==0){
+        *gfMass=0;
+        for(i=0;i<numSubs;i++){
+            xMass[i]=zMass[i];
+            yMass[i]=0.0;
+        }
+    }
+    else if (gf==1){
+        *gfMass=1;
+        for(i=0;i<numSubs;i++){
+            yMass[i]=zMass[i];
+            xMass[i]=0.0;
+        }
+    }
+    else{
+        for(int i=0;i<numSubs;i++){
+            lMW=lMW+x[i]*mix->baseProp[i].MW;
+            gMW=gMW+y[i]*mix->baseProp[i].MW;
+        }
+        for(int i=0;i<numSubs;i++){
+            xMass[i]=x[i]*mix->baseProp[i].MW/lMW;
+            yMass[i]=y[i]*mix->baseProp[i].MW/gMW;
+        }
+        *gfMass=gf*gMW/(gf*gMW+(1-gf)*lMW);
+    }
+
 }
 
 //VL flash calculation, given T, P, feed composition, eos and mixing rule

@@ -72,6 +72,10 @@ EXP_IMP void CALLCONV FF_DewP(FF_MixData *mix,const double *T, const double y[],
 //Pressure envelope of a binary mixture
 EXP_IMP void CALLCONV FF_PressureEnvelope(FF_MixData *mix,const double *T, const int *nPoints, double c[], double bP[],double y[],double dP[],double x[]);
 
+//VL flash calculation, given T, P, feed composition, eos and mixing rule, using bubble and dew pressure as help
+EXP_IMP void CALLCONV FF_TwoPhasesPreFlashPT(FF_MixData *mix,const double *T,const double *P,const double f[],
+                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
+
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
 EXP_IMP void CALLCONV FF_TwoPhasesFlashPT(FF_MixData *mix,const double *T,const double *P,const double f[],
                                    double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
@@ -79,6 +83,10 @@ EXP_IMP void CALLCONV FF_TwoPhasesFlashPT(FF_MixData *mix,const double *T,const 
 EXP_IMP void CALLCONV FF_TwoPhasesFlashPTSA(FF_FeedData *data, double x[],double y[],double substPhiL[],double substPhiG[],double *beta,double *Gr);
 //Mixture 2 phases flash, given P,T, composition, and thermo model to use. By differential evolution global minimization of the reduced Gibbs energy
 void CALLCONV FF_TwoPhasesFlashPTDE(FF_FeedData *data, double x[],double y[],double substPhiB[],double substPhiA[],double *beta,double *Gr);
+
+//VL flash calculation, given h, P, feed composition, eos and mixing rule, using bubble and dew pressure as help
+EXP_IMP void CALLCONV FF_TwoPhasesPreFlashPH(FF_MixData *mix, const double *H,const double *P,const double f[], double *T,
+                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
 
 //Mixture VL flash, given P,T, composition, and thermo model to use. By simulated annealing global optimization of the reduced Gibbs energy
 EXP_IMP void CALLCONV FF_ThreePhasesFlashPTSA(FF_FeedData *data, double x[],double y[],double z[],double substPhiA[],double substPhiB[],double substPhiC[],
