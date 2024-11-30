@@ -635,6 +635,7 @@ void CALLCONV FF_ArrZfromTVSAFT(double T,double V,const  FF_SaftEOSdata *data,do
         }
         else if (data->nPos==1 && data->nNeg==1){//2B
             X[0]=X[1]=(-1 + pow((1 + 4 * rhoM * DeltaAB),0.5)) / (2 * rhoM * DeltaAB);
+            //printf("X[0]:%f rhoM:%e DeltaAB:%e\n",X[0],rhoM,DeltaAB);
         }
         else if (data->nPos==2 && data->nNeg==2)//4C
         {

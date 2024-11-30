@@ -533,7 +533,12 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             else if (strcmp(cubicMixRule,"UMR")==0) mixData[i].mixRule=FF_UMR;
             else if (strcmp(cubicMixRule,"PSRK")==0) mixData[i].mixRule=FF_PSRK;
         }
-        //load of intraction parameters
+        else {
+            if(strcmp(cubicMixRule,"IndAssoc")==0) mixData[i].mixRule=FF_IndAssoc;
+            //printf("mixrule:%i \n",mixData[i].mixRule);
+        }
+
+        //load of interaction parameters
         char path2[FILENAME_MAX]="";
         char cas1[22],cas2[22],form[20];
         float a,b,c,d,e,f,ai,bi,ci,di,ei,fi;
@@ -784,8 +789,9 @@ void FF_activity_TXM(const char *name, int numSubs, char *subsNames, const char 
    *gE=0;
    for(int i=0;i<numSubs;i++){
        gamma[i]=actData[i].gamma;
-       *gE=*gE+x[i]*log(gamma[i]);
+       *gE=*gE+x[i]*log(gamma[i]); //(J/mol)
    }
+   *gE=*gE*1000*nMols;//(J/kg)
 
 }
 
@@ -1071,3 +1077,34 @@ void FF_RachfordRiceSolverPTXM(const char *name, int numSubs, char *subsNames, c
     *gfMass=gf*gMW/(gf*gMW+(1-gf)*lMW);
 }
 
+//Liquid mix viscosity from p,T,X by Teja-Rice method
+void FF_mixLiquidViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double xMass[], double *eta){
+
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  double nMols=0;
+  double x[numSubs]; //liquid molar fractions
+  for(int i=0;i<numSubs;i++){
+      nMols=nMols+xMass[i]/mix->baseProp[i].MW;
+  }
+  for(int i=0;i<numSubs;i++){
+      x[i]=xMass[i]/(mix->baseProp[i].MW*nMols);
+  }
+
+  FF_MixLiqViscTeja(mix,&T,&p,x,eta);
+}
+
+//Gas mix viscosity from p,T,X by Lucas method
+void FF_mixGasViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double yMass[], double *eta){
+
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  double nMols=0;
+  double y[numSubs]; //liquid molar fractions
+  for(int i=0;i<numSubs;i++){
+      nMols=nMols+yMass[i]/mix->baseProp[i].MW;
+  }
+  for(int i=0;i<numSubs;i++){
+      y[i]=yMass[i]/(mix->baseProp[i].MW*nMols);
+  }
+
+  FF_MixGasViscTPcpLucas(mix,T,p,y,eta);
+}
