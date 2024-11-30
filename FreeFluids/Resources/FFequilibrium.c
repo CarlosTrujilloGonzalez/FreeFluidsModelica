@@ -2376,6 +2376,32 @@ void CALLCONV FF_TwoPhasesPreFlashPT(FF_MixData *mix, const double *T,const doub
     double guess=0,bP=0,dP=0, pAux;
     FF_BubbleP(mix,T,f,&guess,&bP,y,substPhiL,substPhiG);
     FF_DewP(mix,T,f,&guess,&dP,x,substPhiL,substPhiG);
+    /*
+    if ((mix->eosType!=FF_SAFTtype)&&((bP==0)||(dP==0))){
+        FF_FeedData data;
+        double Gr;
+        data.mix=mix;
+        data.P=*P;
+        data.T=*T;
+        for(i=0;i<mix->numSubs;i++) data.z[i]=f[i];
+        FF_TwoPhasesFlashPTSA(&data,x,y,substPhiL,substPhiG,beta,&Gr);
+
+        char option,state;
+        double answerL[3],answerG[3],temp;
+        option='s';
+        FF_MixVfromTPeos(mix,T,P,x,&option,answerL,answerG,&state);
+        if((state=='G')||(state=='g')){
+            *beta=1-*beta;
+            for (i=0;i<mix->numSubs;i++){
+                temp=x[i];
+                x[i]=y[i];
+                y[i]=temp;
+            }
+        }
+
+        return;
+    }*/
+
     if (dP>bP){
         pAux=bP;
         bP=dP;

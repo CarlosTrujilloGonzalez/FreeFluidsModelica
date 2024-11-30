@@ -211,6 +211,14 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData s
         mixData->unifNistData.FV[i]=mixData->baseProp[i].numMono*subsData[i].baseProp.FV;
         mixData->cubicData[i]=subsData[i].cubicData;
         mixData->saftData[i]=subsData[i].saftData;
+
+        //Now preparation for using induced association
+        if ((subsData[i].saftData.epsilonAB==0)&&(subsData[i].baseProp.mu>0.8)){
+            mixData->saftData[i].nPos=1;
+            mixData->saftData[i].nNeg=2;
+            //printf("nPos:%i \n",mixData->saftData[i].nPos);
+        }
+
         mixData->cp0[i]=subsData[i].cp0;
         mixData->vp[i]=subsData[i].vp;
         mixData->hVsat[i]=subsData[i].hVsat;
@@ -1607,7 +1615,18 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
             //pairEpsilon[i][j]=pow((data[i].epsilon*data[j].epsilon),0.5);
             pairEpsilon[i][j]=(1-pintParam[i][j][0]-pintParam[i][j][1]* *T -pintParam[i][j][2]/ *T)*pow((data[i].epsilon*data[j].epsilon),0.5);
             pairD[i][j]=(d[i]+d[j])/2;
-            switch (combRul)
+
+            if ((*rule==FF_IndAssoc)&&(data[i].nPos==1)&&(data[i].kAB==0)) data[i].kAB=data[j].kAB;
+            else if ((*rule==FF_IndAssoc)&&(data[j].nPos==1)&&(data[j].kAB==0)) data[j].kAB=data[i].kAB;
+            //printf("kAB:%f \n",data[i].kAB);
+
+            //if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
+            //else if (data[j].kAB==0) pairKAB[i][j]=data[i].kAB;
+            pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
+            pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
+
+
+            /*switch (combRul)
             {
             case 1://CR-1 combining rule: (epsilonAB+epsilonAB)/2, kAB=(kAB*kAB)^0.5
                 if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
@@ -1616,20 +1635,20 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
                 pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
                 break;
             case 2://CR-1 modified by Wolbach and Sandler
-                if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
-                else if (data[j].kAB==0) pairKAB[i][j]=data[i].kAB;
-                else pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
+                //if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
+                //else if (data[j].kAB==0) pairKAB[i][j]=data[i].kAB;
+                pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
                 pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
                 break;
 
-            /*case 2://CR-1 modified by Wolbach and Sandler, to use with cross-association. How to detect? perhaps dipole and non assoc. dipole moment is not in the information received
-                if ((data[i].kAB==0)&&(data[i].base)){
+            case 6://CR-1 modified by Wolbach and Sandler, to use with cross-association.
+                if ((data[i].kAB==0)&&(1==1)){
                     data[i].kAB=data[j].kAB;
                     data[i].epsilonAB=data[j].epsilonAB;
                 }
                 pairKAB[i][j]=pow((data[i].kAB*data[j].kAB),0.5)*pow(2*pow(data[i].sigma*data[j].sigma,0.5)/(data[i].sigma+data[j].sigma),3);
                 pairEpsilonAB[i][j]=(data[i].epsilonAB+data[j].epsilonAB)/2;
-                break;*/
+                break;
 
             case 3://Gross and Sadowski
                 if (data[i].kAB==0) pairKAB[i][j]=data[j].kAB;//if only one substance is associating, we use its kAB
@@ -1645,7 +1664,7 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
                 pairEpsilonAB[i][j]=pow((data[i].epsilonAB*data[j].epsilonAB),0.5);
                 break;
 
-            }
+            }*/
         }
     //Contribution by hard sphere
     double dseta[4],auxDseta,Zhs,Ahs;
@@ -1666,7 +1685,7 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
         {
             pairGhs[i][j]=1/(1-dseta[3])+(d[i]*d[j]/(d[i]+d[j]))*3*dseta[2]/pow((1-dseta[3]),2)+
             pow((d[i]*d[j]/(d[i]+d[j])),2)*2*pow(dseta[2],2)/pow((1-dseta[3]),3);
-            pairDelta[i][j]=pow(pairD[i][j],3)*pairGhs[i][j]*pairKAB[i][j]*(exp(pairEpsilonAB[i][j]/ *T)-1);//This will be used in contribution by molecular association
+            pairDelta[i][j]=pow(pairSigma[i][j],3)*pairGhs[i][j]*pairKAB[i][j]*(exp(pairEpsilonAB[i][j]/ *T)-1);//This will be used in contribution by molecular association
         }
         //Now we calculate d(ln(ghs(di))/d(rhoM) for each substance
         dLghs_drho[i] =(dseta[3]/pow((1-dseta[3]),2)+3*d[i]*dseta[2]/2/pow((1-dseta[3]),2)+3*d[i]*dseta[2]*dseta[3]/pow((1-dseta[3]),3)+
@@ -1705,10 +1724,8 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
         if (data[i].nPos>0) xPos[i]=xNeg[i]=0.5; else xPos[i]=xNeg[i]=1.0;
         if (data[i].nAcid>0) xAcid[i]=0.5; else xAcid[i]=1.0;
     }
-    for (k=0;k<13;k++) //This is a iteration to approximate non associated fraction
-        for (i=0;i<*numSubs;i++)
-        {
-            //if (data[i].nPos==0) data[i].nPos=1;//to use with cross-association. How to detect? perhaps dipole and non assoc.
+    for (k=0;k<13;k++){ //This is a iteration to approximate non associated fraction
+        for (i=0;i<*numSubs;i++){
             if (data[i].nPos>0)
             {
                 xPos[i]=0.0;
@@ -1731,12 +1748,18 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
                 xAcid[i]=1/(1+xAcid[i]);
 
             }
+            //printf("K:%i xPos[%i]:%f xNeg[%i]:%f \n",k,i,xPos[i],i,xNeg[i]);
         }
-    for (i=0;i<*numSubs;i++)
-    {
+    }
+    //printf("xPos[0]:%f xNeg[0]:%f substRho[0]:%e pairDelta[0][0]:%e \n",xPos[0],xNeg[0],substRho[0],pairDelta[0][0]);
+    for (i=0;i<*numSubs;i++){
+
         Aassoc=Aassoc+x[i]*(((data[i].nPos+data[i].nNeg+data[i].nAcid)/2)+data[i].nPos*(log(xPos[i])-xPos[i]/2)+data[i].nNeg*(log(xNeg[i])-xNeg[i]/2)+
                             data[i].nAcid*(log(xAcid[i])-xAcid[i]/2));
+        //Aassoc=Aassoc+x[i]*(((data[i].nPos+data[i].nNeg+data[i].nAcid)/2)+(log(xPos[i])-xPos[i]/2)+(log(xNeg[i])-xNeg[i]/2)+
+                            //data[i].nAcid*(log(xAcid[i])-xAcid[i]/2));
         Zassoc=Zassoc+x[i]*(data[i].nPos*(1-xPos[i])+data[i].nNeg*(1-xNeg[i])+data[i].nAcid*(1-xAcid[i]));
+        //Zassoc=Zassoc+x[i]*((1-xPos[i])+(1-xNeg[i])+data[i].nAcid*(1-xAcid[i]));
     }
         Zassoc=-0.5*(1+rhoM*dLghsM_drho)*Zassoc;
 

@@ -25,9 +25,8 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     constant Integer subsNum = Modelica.Utilities.Strings.count(subsNames,",")+1;
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant String eosType = "PR" "alternatives are SRK and PCSAFT";
-    constant String cubicMixRule = "LCVM" "alternatives are VdW VdWnoInt HV MHV1 MHV2 UMR PSRK";
+    constant String mixRule = "LCVM" "alternatives are VdW VdWnoInt HV MHV1 MHV2 UMR PSRK IndAssoc";
     constant String activityModel = "UNIFACdort" "alternatives are: None, UNIFACstd, UNIFACpsrk, UNIQUAC, NRTL";
-    //constant String kk=Modelica.Utilities.Strings.
 
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
@@ -62,7 +61,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     pure function molarMasses "return molar masses in kg/mol of the medium substances"
       output Real MM[subsNum];
     
-      external "C" FF_molarMassesM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, MM) annotation(
+      external "C" FF_molarMassesM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, MM) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end molarMasses;
@@ -74,7 +73,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output AbsolutePressure p;
       output MolarMass MW;
     
-      external "C" FF_pressure_dTXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, d, T, z, p, MW) annotation(
+      external "C" FF_pressure_dTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, d, T, z, p, MW) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end pressureEOS_dTX;
@@ -89,7 +88,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Density gd;
       output MolarMass MW;
     
-      external "C" FF_density_pTXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, var, p, T, z, ld, gd, MW) annotation(
+      external "C" FF_density_pTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, var, p, T, z, ld, gd, MW) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end density_pTX;
@@ -100,7 +99,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       input Real z[subsNum];
       output Real p, h, s, Cv, Cp, Dvp, DvT;
     
-      external "C" FF_thermo_dTXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, d, T, z, p, h, s, Cv, Cp, Dvp, DvT) annotation(
+      external "C" FF_thermo_dTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, d, T, z, p, h, s, Cv, Cp, Dvp, DvT) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end thermo_dTX;
@@ -111,7 +110,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real actCoef[subsNum];
       output Modelica.Units.SI.MolarEnergy gE;
     
-      external "C" FF_activity_TXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, T, z, actCoef, gE) annotation(
+      external "C" FF_activity_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, z, actCoef, gE) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end activityCoefficients_TX;
@@ -124,7 +123,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real fugCoefG[subsNum];
       output Real kWilson[subsNum];
     
-      external "C" FF_fugacity_pTXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, T, z, fugCoefL, fugCoefG, kWilson) annotation(
+      external "C" FF_fugacity_pTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, fugCoefL, fugCoefG, kWilson) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end fugacityCoefficients_pTX;
@@ -135,7 +134,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output AbsolutePressure p;
       output Real y[subsNum];
     
-      external "C" FF_bubble_TXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, T, x, p, y) annotation(
+      external "C" FF_bubble_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, x, p, y) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end bubble_TX;
@@ -146,7 +145,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Temperature T;
       output Real y[subsNum] "gas phase composition at equilibrium";
     
-      external "C" FF_bubble_pXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, x, T, y) annotation(
+      external "C" FF_bubble_pXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, x, T, y) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end bubble_pX;
@@ -157,7 +156,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real p;
       output Real x[subsNum];
     
-      external "C" FF_dew_TXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, T, y, p, x) annotation(
+      external "C" FF_dew_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, y, p, x) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end dew_TX;
@@ -168,7 +167,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Temperature T;
       output Real x[subsNum];
     
-      external "C" FF_dew_pXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, y, T, x) annotation(
+      external "C" FF_dew_pXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, y, T, x) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end dew_pX;
@@ -181,7 +180,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real y[subsNum];
       output Real gf;
     
-      external "C" FF_TwoPhasesFlashPTM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, T, z, x, y, gf) annotation(
+      external "C" FF_TwoPhasesFlashPTM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, x, y, gf) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end twoPhasesFlash_pTXalt;
@@ -194,7 +193,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real y[subsNum];
       output Real gf;
     
-      external "C" FF_TwoPhasesFlashPTXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, T, z, x, y, gf) annotation(
+      external "C" FF_TwoPhasesFlashPTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, x, y, gf) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end twoPhasesFlash_pTX;
@@ -208,11 +207,33 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     output Real y[subsNum];
     output Real gf;
   
-    external "C" FF_TwoPhasesFlashPHXM(mediumName, subsNum, subsNames, resDir, eosType, cubicMixRule, activityModel, p, h, T, z, x, y, gf) annotation(
+    external "C" FF_TwoPhasesFlashPHXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, h, T, z, x, y, gf) annotation(
       IncludeDirectory = "modelica://FreeFluids/Resources",
       Include = "#include \"FFmodelicaMedium.c\"");
   end twoPhasesFlash_phX;
 
+    function liquidDynamicViscosityAux "Return liquid dynamic viscosity from a ThermodynamicState record"
+    input Real p;
+    input Real T;
+    input Real x[:];
+    output DynamicViscosity eta "Dynamic viscosity";
+  
+    external "C" FF_mixLiquidViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, x, eta) annotation(
+    IncludeDirectory = "modelica://FreeFluids/Resources",
+    Include = "#include \"FFmodelicaMedium.c\"");
+    end liquidDynamicViscosityAux;
+  
+    function gasDynamicViscosityAux "Return liquid dynamic viscosity from a ThermodynamicState record"
+    input Real p;
+    input Real T;
+    input Real y[:];
+    output DynamicViscosity eta "Dynamic viscosity";
+  
+    external "C" FF_mixGasViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, y, eta) annotation(
+    IncludeDirectory = "modelica://FreeFluids/Resources",
+    Include = "#include \"FFmodelicaMedium.c\"");
+    end gasDynamicViscosityAux;
+  
     function massToMoleFractions "Return mole fractions from mass fractions X"
       extends Modelica.Icons.Function;
       input SI.MassFraction X[subsNum] "Mass fractions of mixture";
@@ -261,7 +282,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       extends Modelica.Icons.Function;
       input AbsolutePressure p "Pressure";
       input Temperature T "Temperature";
-      input MassFraction X[subsNum] "Mass fractions";
+      input MassFraction X[subsNum]  "Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     algorithm
       state.phase := 0 "phase has not been checked";
@@ -417,81 +438,6 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.p := p;
     end setDewState_pX;
 
-    /*
-        //Alternative using bubble and dew P as ancillaries and with a direct flash
-        function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X"
-          extends Modelica.Icons.Function;
-          input AbsolutePressure p "Pressure";
-          input Temperature T "Temperature";
-          input MassFraction X[:]=reference_X "Mass fractions";
-          output ThermodynamicState state "Thermodynamic state record";
-        protected
-          Real pBub,pDew, pAux;
-          Real yBub[subsNum];
-          Real xDew[subsNum];
-          Real dl,dg;
-        algorithm
-          state.T:=T;
-          state.p:=p;
-          state.z:=X;
-          (pBub,yBub):=bubble_TX(T,X);
-          if noEvent(p>=pBub) then
-            state.phase:=1 "only liquid phase";
-            state.gf:=0;
-            state.x:=X;
-            state.y:=fill(0.0,subsNum);
-            (state.ld,dg,state.lMW):=density_pTX(p,T,X,"l");
-            state.d := state.ld;
-            state.gd:=0;
-            state.MW:=state.lMW;
-            state.gMW:=0;
-            (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT):=thermo_dTX(state.ld,state.T,state.x);
-            state.h:=state.lh;
-            state.gh:=0;
-            state.s:=state.ls;
-            state.gs:=0;
-            state.gCv:=0;
-            state.gCp:=0;
-            state.gDvp:=0;
-            state.gDvT:=0;
-          else
-            (pDew,xDew):=dew_TX(T,X);
-            if noEvent(p<=pDew) then
-              state.phase:=1 "only gas phase";
-              state.gf:=1;
-              state.y:=X;
-              state.x:=fill(0.0,subsNum);
-              (dl,state.gd,state.gMW):=density_pTX(p,T,X,"g");
-              state.d := state.gd;
-              state.ld:=0;
-              state.MW:=state.gMW;
-              state.lMW:=0;
-              (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT):=thermo_dTX(state.gd,state.T,state.y);
-              state.h:=state.gh;
-              state.lh:=0;
-              state.s:=state.gs;
-              state.ls:=0;
-              state.lCv:=0;
-              state.lCp:=0;
-              state.lDvp:=0;
-              state.lDvT:=0;
-            else
-              state.phase:=2 "liquid and gas phases";
-              (state.x,state.y,state.gf):=twoPhasesFlash_pTXalt(p,T,X);
-              (state.ld,dg,state.lMW):=density_pTX(p,T,state.x,"l");
-          (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT):=thermo_dTX(state.ld,state.T,state.x);
-          (dl,state.gd,state.gMW):=density_pTX(p,T,state.y,"g");
-          (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT):=thermo_dTX(state.gd,state.T,state.y);
-          state.d:=state.ld*(1-state.gf)+state.gd*state.gf;
-          state.h:=state.lh*(1-state.gf)+state.gh*state.gf;
-          state.s:=state.ls*(1-state.gf)+state.gs*state.gf;
-      
-            end if;
-          end if;
-        end setState_pTX;
-      */
-      
-    //Alternative with calculations in the C side
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X"
         extends Modelica.Icons.Function;
 
@@ -670,6 +616,13 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       algorithm
         cp := if state.gf == 0 then state.lCp else if state.gf == 1 then state.gCp else 0.0;
     end specificHeatCapacityCp;
+    
+    redeclare function extends specificHeatCapacityCv "Return specific heat capacity at constant pressure"
+        extends Modelica.Icons.Function;
+  
+      algorithm
+        cv := if state.gf == 0 then state.lCv else if state.gf == 1 then state.gCv else 0.0;
+    end specificHeatCapacityCv;
 
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
@@ -705,8 +658,41 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     algorithm
       MM := state.MW;
     end molarMass;
+  
+    function dynamicViscosity "Return dynamic viscosity from a ThermodynamicState record"
+      extends Modelica.Icons.Function;
+      input ThermodynamicState state "Thermodynamic state record";
+      output DynamicViscosity eta "Dynamic viscosity";
+    algorithm
+      if (state.gf==0) then eta:=liquidDynamicViscosityAux(state.p,state.T,state.x);
+      elseif (state.gf==1) then eta:=gasDynamicViscosityAux(state.p,state.T,state.y);
+      else eta:=0;
+      end if; 
+    annotation(
+        Documentation(info = "<html><head></head><body>Uses the Teja-Rice method for the liquid phase and the Lucas one for the gas phase. The viscosity is set to 0 in biphasic systems.</body></html>"));
+end dynamicViscosity;
+    
+    function liquidDynamicViscosity "Return liquid dynamic viscosity from a ThermodynamicState record"
+      input ThermodynamicState state "Thermodynamic state record";
+      output DynamicViscosity eta "Dynamic viscosity";
+    algorithm
+      eta:=liquidDynamicViscosityAux(state.p,state.T,state.x);
+    annotation(
+        Documentation(info = "<html><head></head><body>Is useful in obtaining the viscosity of the liquid phase in a biphasic system</body></html>"));
+end liquidDynamicViscosity;
+  
+    function gasDynamicViscosity "Return gas dynamic viscosity from a ThermodynamicState record"
+      input ThermodynamicState state "Thermodynamic state record";
+      output DynamicViscosity eta "Dynamic viscosity";
+    algorithm
+      eta:=gasDynamicViscosityAux(state.p,state.T,state.y);
+    annotation(
+        Documentation(info = "<html><head></head><body>Is useful in obtaining the viscosity of the gas phase in a biphasic system</body></html>"));
+end gasDynamicViscosity;annotation(
+      Documentation(info = "<html><head></head><body><br></body></html>"));
+    
   end ExternalMixMedium;
   
       annotation(
-    Documentation(info = "<html><head></head><body><div><b>Introduction</b></div><div><b><br></b></div>The medium is designed for substance mixtures in liquid, gas or biphasic (VL) state. It uses external C functions for the calculations, and it follows, where possible, the masterlines of Modelica. Media.Interfaces.PartialTwoPhaseMedium.<div>It is mandatory to switch to the gcc compilers, as the C code is incompatible with the clang compilers. The implementation is based in a static object created in the C code, as it has been impossible to make it work, at least in OpenModelica, using the Modelica external object feature.</div><div>The data for the pure, or pseudo pure, substances are in the Resources/Fluids directory.</div><div>At the moment the implementation is just beginning and few testing has been done, nevertheless bubble and dew calculations and the pTX and phX flashes are already working.</div><div>For the thermodynamic models, you can use cubic (Peng-Robinson or SRK) &nbsp;or PCSAFT EOS. For PCSAFT the Wolbach and Sandler mixing rule is always used. For cubics you can choose between Van der Waals, HV, MHV1, MHV2, LCVM, UMR and PSRK mixing rules. &nbsp;When using gE mixing rules you can choose between UNIFAC (standard, PSRK or Dortmund implementations), UNIQUAC, and NRTL, for the activity model.</div><div>For the future I plan the addition of pressure-entropy flash and transport properties calculation.</div><div><br></div><div><b>Media configuration</b></div><div><br></div><div>It is very easy. You extend the the ExternalMixMedium package and reconfigure it as follows:</div><div>mediumName: A string containing the medium name. In a simulation with more than one mediums you can't repeat the name.</div><div>subsNames: Is a string containing the names of the substances in the mix separated by ,. This names must match the name of files in the Resources/Fluids folder, but without the .sd extension. For the creation of these files with the aid of the FreeFluidsGui program look at the ExternalPure package information.</div><div>eosType: A string. You can use PR, SRK or PCSAFT.</div><div>cubicMixRule: A string. If a cubic EOS has been selected, you can use VdW, VdWnoInt, HV, MHV1, MHV2, LCVM, UMR, PSRK. Where VdWnoInt means Van der Waals without using BIPs.</div><div>activityModel: A string. If a gE mixing rule is used, you can use UNIFACstd, UNIFACpsrk UNIFACdort, NRTL or UNIQUAC</div><div><br></div><div><b>Binary interaction parameters</b></div><div><br></div><div>BIPs are read from text files (space delimited) placed in the Resources/Interactions folder. A lot of BIPs are supplied. Those for NRTL and UNIQUAC come mainly from the PychemQt open source program. For Van der Waals mixing rule, there are separate files for Peng-Robinson and SRK.</div><div>It is recommended that you create your own BIP files, containing only the needed parameters, because if a big file is used you loose speed and, as the program search all the file, you can finish using undesired BIPs. You can rename the supplied files and create new ones containing just the needed BIPs.</div><div>CAS numbers are used in order to seek the needed line inside the files.</div><div>For Van der Waals mixing rule there are 4 parameters, the first 3 are for the calculation of Kij in the form Kij=a+b*T+c/T. the last one is for Lij. As Kij=Kji and Lij=Lji just one entry for a substances pair is needed.</div><div>For PCSAFT we have the same situation, just without the Lij parameter. For this EOS it is very important to check that the BIPs are for the variation of the EOS used. They are not the same for a non-associating EOS that for a associating one, or a polar one.</div><div>For NRTL and UNIQUAC, prior to the BIPs there is the information of the equation that will be used with these parameters. The alternatives are Pol1K, Pol1J, Pol1C, Pol2K, Pol2J, Pol2C, Pol3K, Pol3J, Pol3K. &nbsp;the last letter identifies the units of energy used (K, J/mol or cal/mol). Pol1 will use the equation a+b*T+c*T^2, Pol2 a+b*T+c/T^2, and Pol3 a+b/T+c*T. As the BIPs are not simetrical the line contains both ij and ji parameters. In NRTL the fith BIP is for alphaij</div><div>&nbsp;</div><div>&nbsp;</div><div><br></div><div><br></div></body></html>"));
+    Documentation(info = "<html><head></head><body><div><b>Introduction</b></div><div><b><br></b></div>The medium is designed for substance mixtures in liquid, gas or biphasic (VL) state. It uses external C functions for the calculations, and it follows, when possible, the masterlines of Modelica. Media.Interfaces.PartialTwoPhaseMedium.<div>It is mandatory to switch to the gcc compilers, as the C code is incompatible with the clang compilers. The implementation is based in a static object created in the C code, as it has been impossible to make it work, at least in OpenModelica, using the Modelica external object feature.</div><div>The data for the pure, or pseudo pure, substances are in the Resources/Fluids directory.</div><div>At the moment the implementation is just beginning and few testing has been done, nevertheless bubble and dew calculations and the pTX and phX flashes are already working.</div><div>For the thermodynamic models, you can use cubic (Peng-Robinson or SRK) &nbsp;or PCSAFT EOS. For PCSAFT the Wolbach and Sandler mixing rule is always used, but you can choose to use induced association by selecting induced association as mixrule. For cubics you can choose between Van der Waals, HV, MHV1, MHV2, LCVM, UMR and PSRK mixing rules. &nbsp;When using gE mixing rules you can choose between UNIFAC (standard, PSRK, or Dortmund, implementations), UNIQUAC, and NRTL, for the activity model.</div><div>For the future I plan the addition of pressure-entropy flash and transport properties calculation.</div><div><br></div><div><b>Media configuration</b></div><div><br></div><div>It is very easy. You extend the the ExternalMixMedium package and reconfigure it as follows:</div><div>mediumName: A string containing the medium name. In a simulation with more than one mediums you can't repeat the name.</div><div>subsNames: Is a string containing the names of the substances in the mix separated by ,. This names must match the name of files in the Resources/Fluids folder, but without the .sd extension. For the creation of these files with the aid of the FreeFluidsGui program look at the ExternalPure package information.</div><div>eosType: A string. You can use PR, SRK or PCSAFT.</div><div>mixRule: A string. If a cubic EOS has been selected, you can use VdW, VdWnoInt, HV, MHV1, MHV2, LCVM, UMR, PSRK. Where VdWnoInt means Van der Waals without using BIPs. If PCSAFT is selected as EOS, the mixing rule used will be always that of Berthelot-Laurent modified by Wolbach and Sandler, but by selecting IndAssoc as mixing rule you will allow the use of induced association for not self associative polar molecules.</div><div>activityModel: A string. If a gE mixing rule is used, you can use UNIFACstd, UNIFACpsrk UNIFACdort, NRTL or UNIQUAC</div><div><br></div><div><b>Binary interaction parameters</b></div><div><br></div><div>BIPs are read from text files (space delimited) placed in the Resources/Interactions folder. A lot of BIPs are supplied. Those for NRTL and UNIQUAC come mainly from the PychemQt open source program. For Van der Waals mixing rule, there are separate files for Peng-Robinson and SRK.</div><div>It is recommended that you create your own BIP files, containing only the needed parameters, because if a big file is used you loose speed and, as the program search all the file, you can finish using undesired BIPs. You can rename the supplied files and create new ones containing just the needed BIPs.</div><div>CAS numbers are used in order to seek the needed line inside the files.</div><div>For Van der Waals mixing rule there are 4 parameters, the first 3 are for the calculation of Kij in the form Kij=a+b*T+c/T. the last one is for Lij. As Kij=Kji and Lij=Lji just one entry for a substances pair is needed.</div><div>For PCSAFT we have the same situation, just without the Lij parameter. For this EOS it is very important to check that the BIPs are for the variation of the EOS used. They are not the same for a non-associating EOS that for a associating one, or a polar one.</div><div>For NRTL and UNIQUAC, prior to the BIPs there is the information of the equation that will be used with these parameters. The alternatives are Pol1K, Pol1J, Pol1C, Pol2K, Pol2J, Pol2C, Pol3K, Pol3J, Pol3K. &nbsp;the last letter identifies the units of energy used (K, J/mol or cal/mol). Pol1 will use the equation a+b*T+c*T^2, Pol2 a+b*T+c/T^2, and Pol3 a+b/T+c*T. As the BIPs are not simetrical the line contains both ij and ji parameters. In NRTL the fith BIP is for alphaij</div><div>&nbsp;</div><div>&nbsp;</div><div><br></div><div><br></div></body></html>"));
 end ExternalMix;

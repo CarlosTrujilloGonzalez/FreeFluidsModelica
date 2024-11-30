@@ -1,3 +1,10 @@
+Version 4.2.0
+- Added the calculation of viscosity for mixtures. For now without the possibility of using interaction parameters.
+- Solved a bug in the association term of PCSAFT for mixtures, that was giving a somewhat higher non associated fraction of molecules.
+- Added the possibility of using inductive association in PCSAFT.
+- Added more tests for the ExternalMixMedium package.
+- Some improvements in the ExternalMixMedium package.
+
 Version 4.1.0
 - Solved bug in the p,T flash code.
 - Added p,h flash.
