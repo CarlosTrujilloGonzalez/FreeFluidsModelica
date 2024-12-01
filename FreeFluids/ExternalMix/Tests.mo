@@ -146,14 +146,7 @@ package Tests
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
       __OpenModelica_simulationFlags(lv = "LOG_STDOUT,LOG_ASSERT,LOG_STATS", s = "dassl", variableFilter = ".*"));
   end BenzeneHeptane_nCubic;
-  
-  model AcetoneEthanolWaterCubic
-  extends TestModelBase(Medium(subsNames = "Acetone,Ethanol,WaterRef", eosType = "PR", mixRule = "VdWnoInt", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 1.9e5, finalP = 1.5e5, Z={0.5,0.25,0.25});
-    annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
-      __OpenModelica_simulationFlags(lv = "LOG_STDOUT,LOG_ASSERT,LOG_STATS", s = "dassl", variableFilter = ".*"));
-  end AcetoneEthanolWaterCubic;
-  
+    
   model MethanolPentane_nCubic
   extends TestModel2(Medium(subsNames = "Methanol,Pentane_n", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 397.7, finalT = 397.7, initialP = 14e5, finalP = 14e5, initialZ1=0.001, finalZ1=0.999);
     annotation(
@@ -165,7 +158,7 @@ package Tests
   end MethanolPentane_nPCSAFT;
 
   model MethanolCyclohexaneCubic
-  extends TestModel2(Medium(subsNames = "Methanol,cyclohexane", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 323.15, finalT = 323.15, initialP = 1e5, finalP = 1e5, initialZ1=0.001, finalZ1=0.999);
+  extends TestModel2(Medium(subsNames = "Methanol,Cyclohexane", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 323.15, finalT = 323.15, initialP = 1e5, finalP = 1e5, initialZ1=0.001, finalZ1=0.999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
   Documentation);
@@ -176,6 +169,23 @@ package Tests
   annotation(
       Documentation(info = "<html><head></head><body>If you use Methanol2, you will see the the improvement that polar PCSAFT was doing in Methanol.</body></html>"));
   end MethanolCyclohexanePCSAFT;
+  
+  model CyclohexaneAceticAcidCubic
+  extends TestModel2(Medium(subsNames = "Cyclohexane,AceticAcid", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 323.15, finalT = 323.15, initialP = 1e5, finalP = 1e5, initialZ1=0.001, finalZ1=0.999);
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
+  Documentation);
+  end CyclohexaneAceticAcidCubic;
+  
+  model CyclohexaneAceticAcidPCSAFT
+  extends CyclohexaneAceticAcidCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
+  end CyclohexaneAceticAcidPCSAFT;
+
+  model AcetoneEthanolWaterCubic
+  extends TestModelBase(Medium(subsNames = "Acetone,Ethanol,WaterRef", eosType = "PR", mixRule = "VdWnoInt", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 1.9e5, finalP = 1.5e5, Z={0.5,0.25,0.25});
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
+  end AcetoneEthanolWaterCubic;
 
   model TestLiquidStateCubic
    package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EG,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort");

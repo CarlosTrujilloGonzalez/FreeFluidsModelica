@@ -1605,7 +1605,7 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
         d[i] = data[i].sigma * (1 - 0.12 * exp(-3 * data[i].epsilon / *T))*1e-10;//Diameter of each segment of the chain in m
     }
     //************
-    int combRul=2;
+    //int combRul=2;
     //************
 
     for (i=0;i<*numSubs;i++)
@@ -1722,7 +1722,9 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
     for (i=0;i<*numSubs;i++)
     {
         if (data[i].nPos>0) xPos[i]=xNeg[i]=0.5; else xPos[i]=xNeg[i]=1.0;
-        if (data[i].nAcid>0) xAcid[i]=0.5; else xAcid[i]=1.0;
+        if (data[i].nAcid==0) xAcid[i]=1.0;
+        else if (data[i].nAcid==1) xAcid[i]=(-1 + pow((1 + 4 * substRho[i] * pairDelta[i][i]),0.5)) / (2 * substRho[i] * pairDelta[i][i]);
+        else if (data[i].nAcid==2) xAcid[i]=(-1 + pow((1 + 8 * substRho[i] * pairDelta[i][i]),0.5)) / (4 * substRho[i] * pairDelta[i][i]);
     }
     for (k=0;k<13;k++){ //This is a iteration to approximate non associated fraction
         for (i=0;i<*numSubs;i++){
@@ -1730,36 +1732,32 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
             {
                 xPos[i]=0.0;
                 for (j=0;j<*numSubs;j++)
-                    xPos[i]=xPos[i]+substRho[j]*(data[j].nNeg*xNeg[j]+data[j].nAcid*xAcid[j])*pairDelta[i][j];
+                    xPos[i]=xPos[i]+substRho[j]*(data[j].nNeg*xNeg[j])*pairDelta[i][j];
                 xPos[i]=1/(1+xPos[i]);
             }
             if (data[i].nNeg>0)
             {
                 xNeg[i]=0.0;
                 for (j=0;j<*numSubs;j++)
-                    xNeg[i]=xNeg[i]+substRho[j]*(data[j].nPos*xPos[j]+data[j].nAcid*xAcid[j])*pairDelta[i][j];
+                    xNeg[i]=xNeg[i]+substRho[j]*(data[j].nPos*xPos[j])*pairDelta[i][j];
                 xNeg[i]=1/(1+xNeg[i]);
             }
-            if (data[i].nAcid>0)
+            /*if (data[i].nAcid>0)
             {
-                xAcid[i]=0.0;
                 for (j=0;j<*numSubs;j++)
-                    xAcid[i]=xAcid[i]+substRho[j]*(data[j].nNeg*xNeg[j]+data[j].nPos*xPos[j])*pairDelta[i][j];
-                xAcid[i]=1/(1+xAcid[i]);
-
+                    //xAcid[i]=xAcid[i]+substRho[j]*(data[j].nNeg*xNeg[j]+data[j].nPos*xPos[j])*pairDelta[i][j];
+                    xAcid[i]=xAcid[i]+substRho[j]*data[j].nAcid*xAcid[j]*pairDelta[i][j];
+                    xAcid[i]=1/(1+xAcid[i]);
             }
-            //printf("K:%i xPos[%i]:%f xNeg[%i]:%f \n",k,i,xPos[i],i,xNeg[i]);
+            //printf("K:%i xPos[%i]:%f xNeg[%i]:%f xAcid:%f \n",k,i,xPos[i],i,xNeg[i],xAcid[i]);*/
         }
     }
-    //printf("xPos[0]:%f xNeg[0]:%f substRho[0]:%e pairDelta[0][0]:%e \n",xPos[0],xNeg[0],substRho[0],pairDelta[0][0]);
+    //printf("xPos[1]:%f xNeg[1]:%f xAcid[1]:%f substRho[1]:%e pairDelta[1][1]:%e \n",xPos[1],xNeg[1],xAcid[1],substRho[1],pairDelta[1][1]);
     for (i=0;i<*numSubs;i++){
 
         Aassoc=Aassoc+x[i]*(((data[i].nPos+data[i].nNeg+data[i].nAcid)/2)+data[i].nPos*(log(xPos[i])-xPos[i]/2)+data[i].nNeg*(log(xNeg[i])-xNeg[i]/2)+
                             data[i].nAcid*(log(xAcid[i])-xAcid[i]/2));
-        //Aassoc=Aassoc+x[i]*(((data[i].nPos+data[i].nNeg+data[i].nAcid)/2)+(log(xPos[i])-xPos[i]/2)+(log(xNeg[i])-xNeg[i]/2)+
-                            //data[i].nAcid*(log(xAcid[i])-xAcid[i]/2));
         Zassoc=Zassoc+x[i]*(data[i].nPos*(1-xPos[i])+data[i].nNeg*(1-xNeg[i])+data[i].nAcid*(1-xAcid[i]));
-        //Zassoc=Zassoc+x[i]*((1-xPos[i])+(1-xNeg[i])+data[i].nAcid*(1-xAcid[i]));
     }
         Zassoc=-0.5*(1+rhoM*dLghsM_drho)*Zassoc;
 
