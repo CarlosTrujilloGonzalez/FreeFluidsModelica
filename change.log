@@ -1,3 +1,7 @@
+Version 4.2.1
+- Acid association was not working for PCSAFT mixtures. The treatment has been changed and now works, but only with one acid in the mixture. To be improved.
+- Added test with cyclohexane-acetic acid.
+
 Version 4.2.0
 - Added the calculation of viscosity for mixtures. For now without the possibility of using interaction parameters.
 - Solved a bug in the association term of PCSAFT for mixtures, that was giving a somewhat higher non associated fraction of molecules.
