@@ -173,6 +173,21 @@ within FreeFluids.MediaCommon;
     gViscCorr = 110, gViscCoef = {4.742200e-08, 9.041600e-01, -4.748400e+00, 4.785700e+02, 0.000000e+00, 0.000000e+00}, gViscLimI = 8.547000e+01, gViscLimS = 1.000000e+03,
     gThCondCorr = 120, gThCondCoef = {-1.120000e+00, 1.097200e-01, -9.834600e+03, -7.535800e+06, 0.000000e+00, 0.000000e+00}, gThCondLimI = 2.311100e+02, gThCondLimS = 1.000000e+03); 
 
+  constant FreeFluids.MediaCommon.DataRecord PropyleneGlycol(
+    name = "PropyleneGlycol", description = "Gas saturated density from PCSAFT", CAS = "57-55-6", family = 8, MW = 7.609600e+01, molarMass = 7.609600e-02, Tc = 6.260000e+02, criticalPressure = 6.070000e+06, Vc = 2.370000e-04, Zc = 2.768000e-01, w = 1.110000e+00, Tb = 4.611500e+02, mu = 3.600000e+00, lnuA = 8.679970e-03, lnuB = -4.788982e+00,
+    Cp0Corr = 2, Cp0Coef = {6.322000e-01, 4.212000e-01, -2.981000e-04, 8.951000e-08, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 2.000000e+02, Cp0LimS = 8.000000e+02,
+    VpCorr = 20, VpCoef = {2.128000e+02, -1.542000e+04, -2.810900e+01, 2.156400e-05, 2.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, VpLimI = 2.131500e+02, VpLimS = 6.260000e+02,
+    HvCorr = 90, HvCoef = {8.070000e+07, 2.950000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 6.260000e+02}, HvLimI = 2.131500e+02, HvLimS = 6.260000e+02,
+    lDensCorr = 41, lDensCoef = {1.092300e+00, 2.610600e-01, 6.260000e+02, 2.045900e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lDensLimI = 2.131500e+02, lDensLimS = 6.260000e+02,
+    lCpCorr = 16, lCpCoef = {5.808000e+04, 4.452000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lCpLimI = 2.131500e+02, lCpLimS = 5.400000e+02,
+    lViscCorr = 30, lViscCoef = {-8.045400e+02, 3.048700e+04, 1.307900e+02, -1.544900e-01, 1.000000e+00, 0.000000e+00}, lViscLimI = 2.131500e+02, lViscLimS = 5.008000e+02,
+    lThCondCorr = 50, lThCondCoef = {2.152000e-01, -4.970000e-05, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, lThCondLimI = 2.131500e+02, lThCondLimS = 4.607500e+02,
+    lSurfTensCorr = 61, lSurfTensCoef = {6.427000e-02, 9.190000e-01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 6.260000e+02}, lSurfTensLimI = 2.131500e+02, lSurfTensLimS = 6.260000e+02,
+    lBulkModRCorr = 150, lBulkModRCoef = {-1.290870e+02, 5.542810e-01, -8.974590e-04, 6.555410e-07, -1.793760e-10, 0.000000e+00}, lBulkModRLimI = 2.830000e+02, lBulkModRLimS = 5.030000e+02,
+    gSatDensCorr = 101, gSatDensCoef = {3.210800e+02, -5.902850e+00, 0.000000e+00, -2.493990e+01, -8.778230e+01, 6.260000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gSatDensLimI = 2.830000e+02, gSatDensLimS = 5.030000e+02,
+    gViscCorr = 110, gViscCoef = {4.543000e-08, 9.173000e-01, 6.100000e+01, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gViscLimI = 2.131500e+02, gViscLimS = 1.000000e+03,
+    gThCondCorr = 120, gThCondCoef = {1.666000e-04, 9.765000e-01, 7.060000e+02, 0.000000e+00, 0.000000e+00, 0.000000e+00}, gThCondLimI = 4.607500e+02, gThCondLimS = 1.000000e+03); 
+
   constant FreeFluids.MediaCommon.DataRecord R134A(
     name = "R134A", description = "1,1,1,2-Tetrafluorethane", CAS = "811-97-2", family = 17, MW = 1.020310e+02, molarMass = 1.020310e-01, Tc = 3.7400e+02, criticalPressure=4.056000e+06, Vc = 1.988000e-04, Zc = 2.591786e-01, w = 3.270000e-01, Tb = 2.470500e+02, lnuA = 5.787034e-03, lnuB = -5.099898e+00,
     Cp0Corr = 5, Cp0Coef = {4.000000e+00, 1.340000e+05, 2.300000e+02, 2.188600e+01, -3.694000e+00, -2.840000e+06, 1.560000e+02, 7.000000e+01, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00}, Cp0LimI = 5.000000e+01, Cp0LimS = 3.000000e+03,
@@ -277,7 +292,7 @@ within FreeFluids.MediaCommon;
   <p>N2 (Nitrogen)</p>
   <p>O2 (Oxygen)</p><p>Octane_n</p>
   <p>Pentane_n</p><p>PhthalicAnhydride</p>
-  <p>Propane</p>
+  <p>Propane</p><p>Propylene glycol(1,2-)</p>
   <p>R134A (1,1,1,2-Tetrafluorethane)</p>
   <p>R410A</p> 
   <p>ShellS2</p><p>Styrene</p> 

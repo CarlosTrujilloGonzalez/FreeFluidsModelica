@@ -1,3 +1,7 @@
+Version 4.2.2
+- Association term of PCSAFT now working with acid mixtures.
+- Important enlargement of the supplied databases.
+
 Version 4.2.1
 - Acid association was not working for PCSAFT mixtures. The treatment has been changed and now works, but only with one acid in the mixture. To be improved.
 - Added test with cyclohexane-acetic acid.

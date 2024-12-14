@@ -631,11 +631,11 @@ void CALLCONV FF_ArrZfromTVSAFT(double T,double V,const  FF_SaftEOSdata *data,do
         //Calculation taking account of number of association sites of the molecule(1=acids,2=alcohol,4=water or diols)
         if (data->nAcid==1){//1A
             X[0]=(-1 + pow((1 + 4 * rhoM * DeltaAB),0.5)) / (2 * rhoM * DeltaAB);
-            //printf("Delta:%f\n",DeltaAB);
+            //printf("X[0]:%f rhoM:%e DeltaAB:%e\n",X[0],rhoM,DeltaAB);
         }
         else if (data->nPos==1 && data->nNeg==1){//2B
             X[0]=X[1]=(-1 + pow((1 + 4 * rhoM * DeltaAB),0.5)) / (2 * rhoM * DeltaAB);
-            //printf("X[0]:%f rhoM:%e DeltaAB:%e\n",X[0],rhoM,DeltaAB);
+
         }
         else if (data->nPos==2 && data->nNeg==2)//4C
         {

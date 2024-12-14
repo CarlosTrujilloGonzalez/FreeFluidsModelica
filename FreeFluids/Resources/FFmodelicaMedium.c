@@ -5,7 +5,7 @@
  *      Author: Carlos Trujillo
  *
  *This file is part of the "Free Fluids" application
- *Copyright (C) 2008-2023  Carlos Trujillo Gonzalez
+ *Copyright (C) 2008-2024  Carlos Trujillo Gonzalez
 
  *This program is free software; you can redistribute it and/or
  *modify it under the terms of the GNU General Public License version 2
@@ -40,7 +40,7 @@
 #include "FFeosMix.c"
 #include "FFactivity.c"
 #include "FFequilibrium.c"
-
+//#include "FFdistillation.c"
 
 
 
@@ -1108,3 +1108,5 @@ void FF_mixGasViscosityM(const char *name, int numSubs, char *subsNames, const c
 
   FF_MixGasViscTPcpLucas(mix,T,p,y,eta);
 }
+
+
