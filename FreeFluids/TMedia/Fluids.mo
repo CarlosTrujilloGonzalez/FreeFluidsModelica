@@ -1,8 +1,16 @@
 within FreeFluids.TMedia;
   package Fluids
+    package AceticAcid
+      extends FreeFluids.TMedia.TMedium(final mediumName = "AceticAcid", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.AceticAcid}, refState="IIR", reference_T=273.15);
+    end AceticAcid;
+  
     package Acetone
       extends FreeFluids.TMedia.TMedium(final mediumName = "Acetone", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Acetone}, refState = "IIR");
     end Acetone;
+
+  package AcrylicAcid
+    extends FreeFluids.TMedia.TMedium(final mediumName = "AcrylicAcid", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.AcrylicAcid}, refState="IIR", reference_T=273.15);
+  end AcrylicAcid;
 
     package Ammonia
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ammonia", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ammonia}, reference_T = 273.15);
@@ -24,6 +32,10 @@ within FreeFluids.TMedia;
       extends FreeFluids.TMedia.TMedium(final mediumName = "Carbon dioxide", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.CO2});
     end CO2;
 
+  package Cyclohexane
+    extends FreeFluids.TMedia.TMedium(final mediumName = "Cyclohexane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Cyclohexane}, refState="IIR", reference_T=273.15);
+  end Cyclohexane;
+
   package D4
     extends FreeFluids.TMedia.TMedium(final mediumName = "D4", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.D4}, refState="IIR", reference_T=273.15);
   end D4;
@@ -39,6 +51,10 @@ within FreeFluids.TMedia;
     package Dichlorodifluormethane
       extends FreeFluids.TMedia.TMedium(final mediumName = "Dichlorodifluormethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Dichlorodifluormethane}, reference_T = 273.15, refState = "ASHRAE");
     end Dichlorodifluormethane;
+
+  package Dioxane_1_4
+    extends FreeFluids.TMedia.TMedium(final mediumName = "Dioxane_1_4", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Dioxane_1_4}, refState="IIR", reference_T=273.15);
+  end Dioxane_1_4;
 
     package EG
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
@@ -100,9 +116,18 @@ within FreeFluids.TMedia;
       extends TMedium(final mediumName = "Pentane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Pentane_n}, refState = "IIR", reference_T = 273.15);
     end Pentane_n;
 
+  package PhthalicAnhydride
+    extends FreeFluids.TMedia.TMedium(final mediumName = "PhthalicAnhydride", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.PhthalicAnhydride}, refState="IIR", reference_T=273.15);
+  end PhthalicAnhydride;
+  
+
     package Propane
       extends TMedium(final mediumName = "Propane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Propane}, refState = "NBP");
     end Propane;
+
+  package PropyleneGlycol
+    extends FreeFluids.TMedia.TMedium(final mediumName = "PropyleneGlycol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.PropyleneGlycol}, refState="IIR", reference_T=273.15);
+  end PropyleneGlycol;
 
     package R134A
       extends TMedium(final mediumName = "R134A", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.R134A}, refState = "ASHRAE", reference_T = 273.15);

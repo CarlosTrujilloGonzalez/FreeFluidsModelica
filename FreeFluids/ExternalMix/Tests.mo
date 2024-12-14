@@ -109,14 +109,14 @@ package Tests
   end EthaneHeptanePCSAFT;
 
   model EGWaterCubic
-  extends TestModel2(Medium(subsNames = "EG,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 440, finalT = 440, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
+  extends TestModel2(Medium(subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 440, finalT = 440, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
     
   end EGWaterCubic;
 
   model EGWaterPCSAFT
-    extends EGWaterCubic(Medium(eosType="PCSAFT"));
+    extends EGWaterCubic(Medium(subsNames = "EthyleneGlycolSRK,WaterSRK", eosType="PCSAFT"));
   end EGWaterPCSAFT;
 
   model AcetoneChloroformCubic
@@ -131,7 +131,7 @@ package Tests
   end AcetoneChloroformPCSAFT;
 
   model EthaneButaneCubic
-    extends TestModel2(Medium(subsNames = "Ethane,Butane_n", eosType = "PR", mixRule = "VdW", activityModel = "UNIFACpsrk"), initialT = 250, finalT = 250, initialP = 2e5, finalP = 2e5, initialZ1 = 0.0001, finalZ1 = 0.9999);
+    extends TestModel2(Medium(subsNames = "Ethane,Butane_n", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort"), initialT = 250, finalT = 250, initialP = 2e5, finalP = 2e5, initialZ1 = 0.0001, finalZ1 = 0.9999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
   end EthaneButaneCubic;
@@ -180,12 +180,42 @@ package Tests
   model CyclohexaneAceticAcidPCSAFT
   extends CyclohexaneAceticAcidCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
   end CyclohexaneAceticAcidPCSAFT;
+  
+  model WaterAceticAcidCubic
+  extends TestModel2(Medium(subsNames = "WaterRef,AceticAcid", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 400, finalT = 400, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1=0.001, finalZ1=0.999);
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
+  Documentation);
+  end WaterAceticAcidCubic;
+  
+  model WaterAceticAcidPCSAFT
+  extends WaterAceticAcidCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
+  end WaterAceticAcidPCSAFT;
+
+  model AcrylicAceticAcidCubic
+  extends TestModel2(Medium(subsNames = "AcrylicAcid,AceticAcid", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACstd"), initialT = 400, finalT = 400, initialP = 1.0044e5, finalP = 1.0044e5, initialZ1=0.001, finalZ1=0.999);
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
+  Documentation);
+  end AcrylicAceticAcidCubic;
+  
+  model AcrylicAceticAcidPCSAFT
+  extends AcrylicAceticAcidCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
+  end AcrylicAceticAcidPCSAFT;
 
   model AcetoneEthanolWaterCubic
   extends TestModelBase(Medium(subsNames = "Acetone,Ethanol,WaterRef", eosType = "PR", mixRule = "VdWnoInt", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 1.9e5, finalP = 1.5e5, Z={0.5,0.25,0.25});
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
   end AcetoneEthanolWaterCubic;
+  
+  model n3i4n4i5n5
+  extends TestModelBase(Medium(subsNames = "Propane,Isobutane,Butane_n,Isopentane,Pentane_n", eosType = "PR", mixRule = "VdW", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 8.5e5, finalP = 8.5e5, Z={0.05,0.15,0.25,0.2,0.35});
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 1));
+  end n3i4n4i5n5;
+  
+  
 
   model TestLiquidStateCubic
    package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EG,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort");

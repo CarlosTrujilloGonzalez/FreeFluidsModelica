@@ -20,8 +20,8 @@ package ExternalMix "ExternalMix by Carlos Trujillo
   //*********************************
 
   package ExternalMixMedium
-    extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, reference_p = 101325.0, mediumName = "None");
-    constant String subsNames = "None,None";
+    extends Modelica.Media.Interfaces.PartialTwoPhaseMedium(onePhase = false, ThermoStates = Modelica.Media.Interfaces.Choices.IndependentVariables.ph, reference_T = 298.15, reference_p = 101325.0, mediumName = "None",nX=subsNum);
+    constant String subsNames = "None";
     constant Integer subsNum = Modelica.Utilities.Strings.count(subsNames,",")+1;
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant String eosType = "PR" "alternatives are SRK and PCSAFT";
@@ -233,6 +233,22 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     IncludeDirectory = "modelica://FreeFluids/Resources",
     Include = "#include \"FFmodelicaMedium.c\"");
     end gasDynamicViscosityAux;
+  
+    pure function minimumStages_pX "Return the minimum stages required for a column, and composition at top and bottom"
+      input AbsolutePressure p;
+      input Real z[subsNum];
+      input Real minTop[subsNum];
+      input Real maxTop[subsNum];
+      input Real minBottom[subsNum];
+      input Real maxBottom[subsNum];
+      output Integer nTop;
+      output Integer nBottom;
+      output Real top[subsNum] "top composition";
+      output Real bottom[subsNum] "top composition";
+      external "C" FF_MinimumStagesM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, z, minTop, maxTop, minBottom, maxBottom, nTop, nBottom, top, bottom)     annotation(
+      IncludeDirectory = "modelica://FreeFluids/Resources",
+      Include = "#include \"FFmodelicaMedium.c\"");
+    end minimumStages_pX;
   
     function massToMoleFractions "Return mole fractions from mass fractions X"
       extends Modelica.Icons.Function;

@@ -1595,7 +1595,8 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
     int i,j,k;
     double Vmolecular,rhoM,mM=0.0,substRho[*numSubs],d[*numSubs],pairSigma[*numSubs][*numSubs],pairEpsilon[*numSubs][*numSubs],
             pairD[*numSubs][*numSubs],pairKAB[*numSubs][*numSubs],pairEpsilonAB[*numSubs][*numSubs];
-    double Add=0,Zdd=0;//New declarations
+    double Add=0,Zdd=0;
+    double acidAux;
     Vmolecular = *V / Av;
     rhoM = 1 / Vmolecular;
     for (i=0;i<*numSubs;i++)
@@ -1719,12 +1720,15 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
 
     //contribution by molecular association
     double xPos[*numSubs],xNeg[*numSubs],xAcid[*numSubs],Aassoc=0.0,Zassoc=0.0;//Fraction of non associated sites in each molecule
-    for (i=0;i<*numSubs;i++)
+    for (i=0;i<*numSubs;i++) //initial values for the non-associated fraction
     {
         if (data[i].nPos>0) xPos[i]=xNeg[i]=0.5; else xPos[i]=xNeg[i]=1.0;
         if (data[i].nAcid==0) xAcid[i]=1.0;
         else if (data[i].nAcid==1) xAcid[i]=(-1 + pow((1 + 4 * substRho[i] * pairDelta[i][i]),0.5)) / (2 * substRho[i] * pairDelta[i][i]);
         else if (data[i].nAcid==2) xAcid[i]=(-1 + pow((1 + 8 * substRho[i] * pairDelta[i][i]),0.5)) / (4 * substRho[i] * pairDelta[i][i]);
+        else if (data[i].nAcid==3) xAcid[i]=(-1 + pow((1 + 12 * substRho[i] * pairDelta[i][i]),0.5)) / (6 * substRho[i] * pairDelta[i][i]);
+        else if (data[i].nAcid==4) xAcid[i]=(-1 + pow((1 + 16 * substRho[i] * pairDelta[i][i]),0.5)) / (8 * substRho[i] * pairDelta[i][i]);
+        //printf("xAcid[%i]:%f \n",i,xAcid[i]);
     }
     for (k=0;k<13;k++){ //This is a iteration to approximate non associated fraction
         for (i=0;i<*numSubs;i++){
@@ -1742,17 +1746,18 @@ void CALLCONV FF_MixArrZfromTVSAFT(const enum FF_MixingRule *rule,const double *
                     xNeg[i]=xNeg[i]+substRho[j]*(data[j].nPos*xPos[j])*pairDelta[i][j];
                 xNeg[i]=1/(1+xNeg[i]);
             }
-            /*if (data[i].nAcid>0)
+
+            if (data[i].nAcid>0)
             {
+                acidAux=0;
                 for (j=0;j<*numSubs;j++)
-                    //xAcid[i]=xAcid[i]+substRho[j]*(data[j].nNeg*xNeg[j]+data[j].nPos*xPos[j])*pairDelta[i][j];
-                    xAcid[i]=xAcid[i]+substRho[j]*data[j].nAcid*xAcid[j]*pairDelta[i][j];
-                    xAcid[i]=1/(1+xAcid[i]);
-            }
-            //printf("K:%i xPos[%i]:%f xNeg[%i]:%f xAcid:%f \n",k,i,xPos[i],i,xNeg[i],xAcid[i]);*/
+                    acidAux=acidAux+substRho[j]*data[j].nAcid*xAcid[j]*pairDelta[i][j];
+                    xAcid[i]=1/(1+acidAux);
+                                }
+            //printf("K:%i xPos[%i]:%f xNeg[%i]:%f xAcid:%f \n",k,i,xPos[i],i,xNeg[i],xAcid[i]);
         }
     }
-    //printf("xPos[1]:%f xNeg[1]:%f xAcid[1]:%f substRho[1]:%e pairDelta[1][1]:%e \n",xPos[1],xNeg[1],xAcid[1],substRho[1],pairDelta[1][1]);
+    //for (i=0;i<*numSubs;i++) printf("xPos[%i]:%f xNeg[%i]:%f xAcid[%i]:%f substRho[%i]:%e pairDelta[%i][%i]:%e \n",i,xPos[i],i,xNeg[i],i,xAcid[i],i,substRho[i],i,i,pairDelta[1][1]);
     for (i=0;i<*numSubs;i++){
 
         Aassoc=Aassoc+x[i]*(((data[i].nPos+data[i].nNeg+data[i].nAcid)/2)+data[i].nPos*(log(xPos[i])-xPos[i]/2)+data[i].nNeg*(log(xNeg[i])-xNeg[i]/2)+

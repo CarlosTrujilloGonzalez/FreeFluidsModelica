@@ -823,6 +823,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
       protected
         Real ds;
         Real Tb;
+        Real cpl,cpg;//liquid and gas Cp
 
       algorithm
         if state.gf == 0.0 then
@@ -836,7 +837,16 @@ package TMedia "TMedia.mo by Carlos Trujillo
           Tb := saturationTemperature(state.p);
           cp := cp * (1 + 1.2e-7 * state.p * (fluidConstants[1].Tc / state.T) ^ 3) - 3 * 1.2e-7 * state.p * fluidConstants[1].Tc ^ 3 / state.T ^ 4 * (SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, state.T) - SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, Tb)) "derivative of enthalpy";
         else
-          cp := Modelica.Constants.small;
+//cp := Modelica.Constants.small;
+          cpl := PhysPropCorr(fluidConstants[1].lCpCorr, fluidConstants[1].lCpCoef, fluidConstants[1].MW, state.T);
+//if highPressure == true then
+//ds := PhysPropCorr(fluidConstants[1].lDensCorr, fluidConstants[1].lDensCoef, fluidConstants[1].MW, state.T);
+//cpl := if fluidConstants[1].family == 17 then cpl * exp(-5.0 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5)) else cpl * exp(-2.8 * (state.d - ds) ^ 0.5 / (ds * (1 - state.T / fluidConstants[1].Tc) ^ 0.5));
+//end if;
+          cpg := PhysPropCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, state.T);
+          Tb := saturationTemperature(state.p);
+          cpg := cpg * (1 + 1.2e-7 * state.p * (fluidConstants[1].Tc / state.T) ^ 3) - 3 * 1.2e-7 * state.p * fluidConstants[1].Tc ^ 3 / state.T ^ 4 * (SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, state.T) - SpecificEnthalpyCorr(fluidConstants[1].Cp0Corr, fluidConstants[1].Cp0Coef, fluidConstants[1].MW, Tb)) "derivative of enthalpy";
+          cp:=cpg*state.gf+cpl*(1-state.gf);
         end if;
 //cp := cp * (1 + 3.0e-7 * state.p ^ 1.001 * (1 - (state.T - Tb) / (fluidConstants[1].Tc - Tb))^2);
 //cp:=cp*(1+1.5e-7*state.p) "alternative equivalent to enthalpy calculation";
@@ -935,8 +945,8 @@ package TMedia "TMedia.mo by Carlos Trujillo
         Real rhoRed1 "reduced density - 1";
         Real vp "vapor pressure at T";
         Real tb "boiling temperature at p";
-        Real dgi;
-        Real dgs;
+        Real dgi "ideal gas density at p and T";
+        Real dgs "saturated gas density at T";
         Real dgsMinus;
         Real dDgs;
         Real dTb;
@@ -1144,7 +1154,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
       algorithm
 //dhvdp := (SpecificEnthalpyCorr(sat.Tsat) + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) - SpecificEnthalpyCorr(sat.Tsat-0.01)-PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat-0.01))/(sat.psat-saturationPressure(sat.Tsat-0.01))"bad precision";
         dhvdp := ((-PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat)) + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat - 0.01)) / (sat.psat - saturationPressure(sat.Tsat - 0.01));
-//dhvdp:= (-PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, saturationTemperature(0.9*sat.psat)))/(0.1*sat.psat)"needs a high pressure range. As correlations are T functions better not to use.";
+        //dhvdp:= (-PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, sat.Tsat) + PhysPropCorr(fluidConstants[1].HvCorr, fluidConstants[1].HvCoef, fluidConstants[1].MW, saturationTemperature(0.9*sat.psat)))/(0.1*sat.psat)"needs a high pressure range. As correlations are T functions better not to use.";
     end dDewEnthalpy_dPressure;
 
     redeclare function extends bubbleEntropy "Return bubble point specific entropy"
@@ -1483,7 +1493,7 @@ package TMedia "TMedia.mo by Carlos Trujillo
     <p>As a resume: The medium is for fast calculation of liquid phase, condensation, evaporation, and gas phase below the critical point. In the liquid and saturated phases, the results are quite good. In the gas phase, the results are better than the ideal gas approach in density and enthalpy. The medium is compatible with OpenModelica 1.17 old and new frontends. The medium is also compatible, since the addition of derivative functions calculation, with the ThermoPower library and with Modelica.Fluid.</p>
     <b><p>Liquid phase properties</p></b>                
     <p>The saturated density is calculated using a dedicated correlation. This density is corrected for pressure influence. If the coefficients for the reduced bulk modulus calculation, as function of density, are available, the correction is done using a very accurate Tait like equation. In other case, a substance specific isothermal compressibility factor (with a default value of 6.667 e-10) is used. The parameters for the reduced bulk modulus correlation (with liquid density as independent variable) are normally not available, but can be calculated from a good equation of state of the multiparameter or SAFT types. This can be done easily with the FreeFluids GUI: you make the calculation with the EOS, transfer the results (density and the natural logarithm of the reduced bulk modulus) to the correlations tab, make the regression of the coefficients, and store the result in the database. It is good to calculate the reduced bulk modulus at a pressure close to 50 bars but, if necessary in order to have liquid phase at the temperature of interest, it can be done at higher pressure. Check that all density data used correspond to the liquid state.</p>
-    <p>A dedicated correlation is used also for the saturated heat capacity. The use of the saturated liquid Cp correlation, instead of ideal Cp correlation plus vaporization enthalpy, makes possible the use of the medium with substances for which we do not have Cp0 data, and improves the liquid phase thermal properties calculation. This correlation can be also a problem, as many times we only find it with a temperature limit of the normal boiling point. This can be solved using a Cp correlation constructed from a good EOS, using the FreeFluids GUI. It is important not to use data too close to the Tc for the regression (use data till 10 K below the Tc). The best equation for the regression of the liquid heat capacity is the PPDS15 equation. Do not use the ChemSep equations as they are not integrated by the medium to obtain enthalpy or entropy. If highPressure has been made equal to true, a density dependent correction is applied to the Cp.</p>
+    <p>A dedicated correlation is used also for the saturated heat capacity. The use of the saturated liquid Cp correlation, instead of ideal Cp correlation plus vaporization enthalpy, makes possible the use of the medium with substances for which we do not have Cp0 data, and improves the liquid phase thermal properties calculation. This correlation can be also a problem, as many times we only find it with a temperature limit of the normal boiling point. This can be solved using a Cp correlation constructed from a good EOS, using the FreeFluids GUI. If a SAFT type EOS is used, it is important not to use data too close to the Tc for the regression (use data till 10 K below the Tc). Normally cubic EOS are as good as PCSAFT for the calculation of saturated liquid Cp and vaporization enthalpy at low temperature, and much better close to the critical temperature. The best equation for the regression of the liquid heat capacity is the PPDS15 equation. Do not use the ChemSep equations as they are not integrated by the medium to obtain enthalpy or entropy. If highPressure has been made equal to true, a density dependent correction is applied to the Cp.</p>
     <p>The liquid enthalpy is calculated from the liquid Cp correlation at saturation. If highPressure has been made equal to true, PV correction is applied. The correction interpolates linearly from full correction below 0.45Tc to none at 0.85Tc.</p>
     <p>When going back from liquid enthalpy, or entropy, to temperature, we have two ways: One of them is to fit a correlation that makes this calculation, that can again be made with FreeFluidsGui. The second, that will be used if we left the value of lTfromHsatCorr=0, will calculate in situ the temperature using a solving function, as is done in the IdealGasMedia package.</p>
     <p>For water, viscosity is calculated, independent of the phase, using the reference equation as function of temperature and density. For other substances, the saturated liquid viscosity is calculated using a dedicated temperature dependent correlation. Pressure correction, according to Lucas, is applied if highPressure is set to true.</p> 
