@@ -1,3 +1,10 @@
+Version 4.3.0
+- Thermal conductivity calculation added to ExternalMixMedium package
+- Surface tension calculation added to ExternalMixMedium package
+- setState_psX function added to ExternalMixMedium package
+- setState_pThetaX function added to ExternalMixMedium package. It calculates a saturated state from pressure, global composition and gas fraction.
+- Solved a bug in setDewState_pX that was producing a bad calculation of density and later of all thermodynamic properties.
+
 Version 4.2.2
 - Association term of PCSAFT now working with acid mixtures.
 - Important enlargement of the supplied databases.

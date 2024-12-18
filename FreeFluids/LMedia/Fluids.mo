@@ -36,10 +36,6 @@ within FreeFluids.LMedia;
       extends FreeFluids.LMedia.LMedium(final mediumName = "Dichlorodifluormethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Dichlorodifluormethane}, reference_T = 273.15, refState = "ASHRAE");
     end Dichlorodifluormethane;
 
-    package EG
-      extends FreeFluids.LMedia.LMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
-    end EG;
-
     package Ethane
       extends FreeFluids.LMedia.LMedium(final mediumName = "Ethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethane}, refState = "IIR", reference_T = 273.15);
     end Ethane;
@@ -47,6 +43,10 @@ within FreeFluids.LMedia;
     package Ethanol
       extends FreeFluids.LMedia.LMedium(final mediumName = "Ethanol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethanol}, reference_T = 273.15);
     end Ethanol;
+
+    package EthyleneGlycol
+      extends FreeFluids.LMedia.LMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
+    end EthyleneGlycol;
 
     package Heptane_n
       extends FreeFluids.LMedia.LMedium(final mediumName = "n-Heptane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Heptane_n}, refState = "IIR", reference_T = 273.15);
@@ -61,7 +61,7 @@ within FreeFluids.LMedia;
     end Isobutane;
 
     package MarlothermSH
-      extends FreeFluids.LMedia.LMedium(final mediumName = "Marlotherm SH", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.MarlothermSH});
+      extends FreeFluids.LMedia.LMedium(final mediumName = "Marlotherm SH", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.MarlothermSH}, Temperature(min = 0 + 273.15, max = 300 + 273.15, nominal = 260 + 273.15));
     end MarlothermSH;
 
     package Methane
@@ -93,7 +93,7 @@ within FreeFluids.LMedia;
     end R410A;
 
     package ShellS2
-      extends FreeFluids.LMedia.LMedium(final mediumName = "Shell S2", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.ShellS2});
+      extends FreeFluids.LMedia.LMedium(final mediumName = "Shell S2", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.ShellS2}, Temperature(min = 0 + 273.15, max = 300 + 273.15, nominal = 260 + 273.15));
     end ShellS2;
 
     package Toluene
@@ -101,7 +101,7 @@ within FreeFluids.LMedia;
     end Toluene;
 
     package Water
-      extends FreeFluids.LMedia.LMedium(final mediumName = "Water", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Water}, reference_T = 273.16, refState = "User", p_default = 5.0e5, T_default = 393.15);
+      extends FreeFluids.LMedia.LMedium(final mediumName = "Water", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Water}, reference_T = 273.16, refState = "User", p_default = 5.0e5, T_default = 393.15, Temperature(min = 0 + 273.15, max = 600 + 273.15, nominal = 50 + 273.15));
     end Water;
 
     package Xylene_m

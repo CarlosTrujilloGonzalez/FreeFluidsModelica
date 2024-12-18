@@ -56,10 +56,6 @@ within FreeFluids.TMedia;
     extends FreeFluids.TMedia.TMedium(final mediumName = "Dioxane_1_4", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Dioxane_1_4}, refState="IIR", reference_T=273.15);
   end Dioxane_1_4;
 
-    package EG
-      extends FreeFluids.TMedia.TMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
-    end EG;
-
     package Ethane
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ethane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethane}, refState = "IIR", reference_T = 273.15);
     end Ethane;
@@ -68,6 +64,10 @@ within FreeFluids.TMedia;
       extends FreeFluids.TMedia.TMedium(final mediumName = "Ethanol", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Ethanol}, reference_T = 273.15);
     end Ethanol;
 
+    package EthyleneGlycol
+      extends FreeFluids.TMedia.TMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
+    end EthyleneGlycol;
+    
     package Heptane_n
       extends FreeFluids.TMedia.TMedium(final mediumName = "n-Heptane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.Heptane_n}, refState = "IIR", reference_T = 273.15);
     end Heptane_n;

@@ -132,6 +132,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end FluidTestingA;
 
   model TestA1A
+    extends Modelica.Icons.Example;
     extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true, inputChoice = "pT"), p = 50e5, initialT = 0.1 + 273.15, fract = 0.1, finalT = 380 + 273.15);
   end TestA1A;
 
@@ -140,6 +141,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end TestA1B;
 
   model TestA2A
+    extends Modelica.Icons.Example;
     extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.R134A(highPressure = true, refState = "IIR", reference_T = 100.0, inputChoice = "pT"), p = 20.0e5, initialT = (-50.0) + 273.15, finalT = 110.0 + 273.15, fract = 0.5);
   end TestA2A;
 
@@ -165,7 +167,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
     //BaseProperties
     Medium.BaseProperties BaseProp;
   algorithm
-//Construction of StateP and calculation of properties
+  //Construction of StateP and calculation of properties
     StateP := Medium.setState_pTX(p, T, fill(0, 0));
     H := Medium.specificEnthalpy(StateP);
     D := Medium.density(StateP);
@@ -178,12 +180,12 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
     Kappa := Medium.isothermalCompressibility(StateP);
     Mu := Medium.dynamicViscosity(StateP);
     Th := Medium.thermalConductivity(StateP);
-//Reconstruction of states from properties
-//StateD := Medium.setState_dTX(D, T, fill(0, 0));
-//StateH := Medium.setState_phX(p, H, fill(0, 0));
-//StateS := Medium.setState_psX(p, S, fill(0, 0));
+  //Reconstruction of states from properties
+  //StateD := Medium.setState_dTX(D, T, fill(0, 0));
+  //StateH := Medium.setState_phX(p, H, fill(0, 0));
+  //StateS := Medium.setState_psX(p, S, fill(0, 0));
   equation
-//Construction of BaseProperties
+  //Construction of BaseProperties
     BaseProp.p = p;
     BaseProp.h = H;
     der(p) = finalP - initialP;
@@ -196,6 +198,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end FluidTestingB;
 
   model TestB1A
+    extends Modelica.Icons.Example;
     extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.CO2(refState = "IIR", reference_T = 273.15, highPressure = true, inputChoice = "ph"), T = 50 + 273.15, initialP = 30.0e5, finalP = 5e5);
   end TestB1A;
 
@@ -204,6 +207,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end TestB1C;
 
   model TestModel
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = FreeFluids.TMedia.Fluids.Water(inputChoice = "pT"));
   equation
 
@@ -214,6 +218,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end TestModel;
 
   model TestModel2
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = FreeFluids.TMedia.Fluids.Water(inputChoice = "pT"));
   equation
 
@@ -242,6 +247,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end HeatingSystem;
 
   model TestModelS
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = Modelica.Media.Water.StandardWater);
   equation
 
@@ -250,6 +256,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
       __OpenModelica_commandLineOptions = "--matchingAlgorithm=PFPlusExt --indexReductionMethod=dynamicStateSelection -d=initialization,NLSanalyticJacobian");end TestModelS;
 
   model TestModel2S
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = Modelica.Media.Water.StandardWater);
   equation
 
@@ -274,6 +281,7 @@ In Tests Bxx a comparison of the gas phase only also with ideal gas."
   end HeatingSystemS;
 
   model TestB2A
+    extends Modelica.Icons.Example;
     extends FluidTestingB(redeclare replaceable package Medium = FreeFluids.TMedia.Fluids.Propane(refState = "IIR", reference_T = 273.15, highPressure = true, inputChoice = "ph"), T = 100 + 273.15, initialP = 30.0e5, finalP = 0.1e5);
   end TestB2A;
 

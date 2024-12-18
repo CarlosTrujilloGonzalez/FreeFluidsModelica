@@ -16,6 +16,12 @@ package Fluids
  final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
   end AcetoneSRK;
 
+  package AcrylicAcid
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "AcrylicAcid",
+ fluidK(casRegistryNumber = "79-10-7", description = "PCSAFT 1A C.Trujillo 2024, PRMC C.Trujillo 2024, Cp0: Polynomial ", molarMass = 7.207000e-02, criticalTemperature = 6.150000e+02, criticalPressure = 5.670000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
+  end AcrylicAcid;
+
   package Air
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Air",
  fluidK(casRegistryNumber = "132259-10-0", description = "SW: Lemmon 200, PR M.C. C.Trujillo 2023, Cp0: Perry", molarMass = 2.896546e-02, criticalTemperature = 1.326312e+02, criticalPressure = 3.785020e+06),
@@ -147,15 +153,17 @@ package Fluids
  final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end DimethylEther;
 
+  package Dioxane_1_4
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Dioxane_1_4",
+ fluidK(casRegistryNumber = "123-91-1", description = "PPCSAFT GV 2B: C.Trujillo 2024. Cubic: PRMC. Cp0:Wilhoit", molarMass = 8.811000e-02, criticalTemperature = 5.870000e+02, criticalPressure = 5.210000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=0);
+  end Dioxane_1_4;
+
   package Dodecane_n
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Dodecane_n",
  fluidK(casRegistryNumber = "112-40-3", description = "SW: Lemmon 2004, PCSAFT nonassoc. C.Trujillo 2023, Cubic: PR M.C. 2023,Cp0: Cooper", molarMass = 1.703400e-01, criticalTemperature = 6.581000e+02, criticalPressure = 1.817000e+06),
  final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
   end Dodecane_n;
-
-  package EG
-    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EG", fluidK(casRegistryNumber = "107-21-1", description = "Multiparameter: none. PPCSAFT_GV: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: Wilhoit", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06), final onePhase = false, thermoModel = 2, refState = 2);
-  end EG;
 
   package Eicosane_n
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Eicosane_n", fluidK(casRegistryNumber = "112-95-8", description = "SW: none. PCSAFT: Gross. Cubic: PR. Cp0: Wilhoit ", molarMass = 2.825520e-01, criticalTemperature = 7.680000e+02, criticalPressure = 1.070000e+06), final onePhase = false, thermoModel = 2, refState = 2);
@@ -190,6 +198,17 @@ package Fluids
  fluidK(casRegistryNumber = "74-85-1", description = "SW: Smukala 2000, PCSAFT non assoc.C.Trujillo 2023, Cubic PR M.C. 2023, Cp0: Cooper 2023", molarMass = 2.805400e-02, criticalTemperature = 2.823500e+02, criticalPressure = 5.041800e+06),
  final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
   end Ethylene;
+
+
+  package EthyleneGlycol
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EthyleneGlycol", fluidK(casRegistryNumber = "107-21-1", description = "Multiparameter: none. PPCSAFT_GV: 2B C.Trujillo 2019. Cubic: PRMC. Cp0: Wilhoit", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06), final onePhase = false, thermoModel = 2, refState = 2);
+  end EthyleneGlycol;
+
+  package EthyleneGlycolSRK
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EthyleneGlycolSRK",
+ fluidK(casRegistryNumber = "107-21-1", description = "PCSAFT: 4C Grenner 2006, Cubic: SRKMC, Cp0:Wilhoit", molarMass = 6.207000e-02, criticalTemperature = 7.200000e+02, criticalPressure = 8.200000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=0);
+  end EthyleneGlycolSRK;
 
   package EthyleneOxide
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EthyleneOxide",
@@ -404,6 +423,12 @@ package Fluids
  final onePhase=false, thermoModel=2, refState=2, ancillaries=2);
   end PhthalicAnhydride;
 
+  package Propane
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propane",
+ fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: GERG2004, PCSAFT: C.Trujillo 2018, PRMC, Cp0: Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=0);
+  end Propane;
+
   package PropaneSRK
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "PropaneSRK", fluidK(casRegistryNumber = "74-98-6", description = "Multiparameter: Lemmon 2009. PCSAFT: Gross-Sadowski 2001. Cubic: SRKMC Chemsep. Cp0:Cooper", molarMass = 4.409562e-02, criticalTemperature = 3.698900e+02, criticalPressure = 4.251200e+06), T_min=85.6, final onePhase = false, thermoModel = 3, refState = 2);
   end PropaneSRK;
@@ -418,6 +443,12 @@ package Fluids
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propylene",
  fluidK(casRegistryNumber = "115-07-1", description = "SW: Lemmon 2013, PCSAFT: Gross and Sadowski 2001, Cubic: PR M.C. 2023, Cp0: Cooper, Viscosity: Nist coeff. ref. propane", molarMass = 4.208040e-02, criticalTemperature = 3.642110e+02, criticalPressure = 4.555000e+06), T_min=87.953, final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end Propylene;
+
+  package PropyleneGlycol
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "PropyleneGlycol",
+ fluidK(casRegistryNumber = "57-55-6", description = "PCSAFT 4C Grenner 2006, PRTWU91 C.Trujillo 2024, Cp0 Cheric 2010", molarMass = 7.609600e-02, criticalTemperature = 6.260000e+02, criticalPressure = 6.070000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=0);
+  end PropyleneGlycol;
 
   package R134A
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "R134A", fluidK(casRegistryNumber = "811-97-2", description = "Multiparameter:Tillner 1994. PCSAFT: non assoc.C.Trujillo 2019. Cubic:PRMC, C.Trujillo 2019. Cp0: Wilhoit", molarMass = 1.020310e-01, criticalTemperature = 3.741800e+02, criticalPressure = 4.901200e+06), final onePhase = false, thermoModel = 3, refState = 1);
@@ -438,6 +469,12 @@ package Fluids
  fluidK(casRegistryNumber = "100-42-5", description = "SW: none, PCSAFT: C.Trujillo 2023. Cubic: PRMC 2023. Cp0: C.Trujillo 2020", molarMass = 1.041600e-01, criticalTemperature = 6.470000e+02, criticalPressure = 3.990000e+06),
  final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
   end Styrene;
+
+  package Toluene
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Toluene",
+ fluidK(casRegistryNumber = "108-88-3", description = "SW: Lemmon 2006, PCSAFT non-assoc. C.Trujillo 2024, cubic: PRMC, Cp0: Wilhoit", molarMass = 9.214020e-02, criticalTemperature = 5.917500e+02, criticalPressure = 4.126000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Toluene;
 
   package TolueneSRK
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "TolueneSRK", fluidK(casRegistryNumber = "108-88-3", description = "Multiparameter: Lemmon 2006. PCSAFT: Gross 2001. Cubic: SRKMC. Cp0: Wilhoit", molarMass = 9.214020e-02, criticalTemperature = 5.917500e+02, criticalPressure = 4.126000e+06), final onePhase = false, thermoModel = 3, refState = 2);
