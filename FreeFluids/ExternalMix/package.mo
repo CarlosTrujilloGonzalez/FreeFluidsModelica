@@ -27,7 +27,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     constant String eosType = "PR" "alternatives are SRK and PCSAFT";
     constant String mixRule = "LCVM" "alternatives are VdW VdWnoInt HV MHV1 MHV2 UMR PSRK IndAssoc";
     constant String activityModel = "UNIFACdort" "alternatives are: None, UNIFACstd, UNIFACpsrk, UNIQUAC, NRTL";
-
+  
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         AbsolutePressure p(displayUnit = "bar") "Pressure in Pa";
@@ -57,7 +57,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
         Real gDvp "gas phase derivative of 1/density regarding pressure";
         Real gDvT "gas phase derivative of 1/density regarding temperature";
     end ThermodynamicState;
-
+  
     pure function molarMasses "return molar masses in kg/mol of the medium substances"
       output Real MM[subsNum];
     
@@ -65,19 +65,18 @@ package ExternalMix "ExternalMix by Carlos Trujillo
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end molarMasses;
-
+  
     pure function pressureEOS_dTX "Return pressure given temperature and density, by EOS"
       input Density d;
       input Temperature T;
       input Real z[subsNum];
       output AbsolutePressure p;
       output MolarMass MW;
-    
       external "C" FF_pressure_dTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, d, T, z, p, MW) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end pressureEOS_dTX;
-
+  
     pure function density_pTX "Return density at give temperature and pressure, by EOS"
       input AbsolutePressure p;
       input Temperature T;
@@ -87,34 +86,31 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Density ld;
       output Density gd;
       output MolarMass MW;
-    
       external "C" FF_density_pTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, var, p, T, z, ld, gd, MW) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end density_pTX;
-
+  
     pure function thermo_dTX "Return thermodynamic properties at given temperature, density and composition, by EOS"
       input Density d;
       input Temperature T;
       input Real z[subsNum];
       output Real p, h, s, Cv, Cp, Dvp, DvT;
-    
-      external "C" FF_thermo_dTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, d, T, z, p, h, s, Cv, Cp, Dvp, DvT) annotation(
+      external "C" FF_thermo_dTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, d, T, z, p, h, s, Cv, Cp, Dvp, DvT)  annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end thermo_dTX;
-
+  
     pure function activityCoefficients_TX "Return activity coefficients and excess Gibbs energy at given temperature and composition"
       input Temperature T;
       input Real z[subsNum];
       output Real actCoef[subsNum];
       output Modelica.Units.SI.MolarEnergy gE;
-    
       external "C" FF_activity_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, z, actCoef, gE) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end activityCoefficients_TX;
-
+  
     pure function fugacityCoefficients_pTX "Return fugacity coefficients, calculated from liquid and gas extremes, and Wilson k value, at given pressure, temperature and composition"
       input AbsolutePressure p;
       input Temperature T;
@@ -122,69 +118,51 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real fugCoefL[subsNum];
       output Real fugCoefG[subsNum];
       output Real kWilson[subsNum];
-    
       external "C" FF_fugacity_pTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, fugCoefL, fugCoefG, kWilson) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end fugacityCoefficients_pTX;
-
+  
     pure function bubble_TX "Return bubble pressure and gas composition at equilibrium"
       input Temperature T;
       input Real x[subsNum];
       output AbsolutePressure p;
       output Real y[subsNum];
-    
       external "C" FF_bubble_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, x, p, y) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end bubble_TX;
-
+  
     pure function bubble_pX "Return bubble pressure and gas composition at equilibrium"
       input AbsolutePressure p;
       input Real x[subsNum];
       output Temperature T;
       output Real y[subsNum] "gas phase composition at equilibrium";
-    
       external "C" FF_bubble_pXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, x, T, y) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end bubble_pX;
-
+  
     pure function dew_TX "Return dew pressure and liquid composition at equilibrium"
       input Temperature T;
       input Real y[subsNum];
       output Real p;
       output Real x[subsNum];
-    
       external "C" FF_dew_TXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, T, y, p, x) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end dew_TX;
-
+  
     pure function dew_pX "Return dew temperature and liquid composition at equilibrium"
       input AbsolutePressure p;
       input Real y[subsNum];
       output Temperature T;
       output Real x[subsNum];
-    
       external "C" FF_dew_pXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, y, T, x) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end dew_pX;
-
-    pure function twoPhasesFlash_pTXalt "Return liquid and gas composition at equilibrium, plus the gas fraction"
-      input AbsolutePressure p;
-      input Temperature T;
-      input Real z[subsNum];
-      output Real x[subsNum];
-      output Real y[subsNum];
-      output Real gf;
-    
-      external "C" FF_TwoPhasesFlashPTM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, x, y, gf) annotation(
-        IncludeDirectory = "modelica://FreeFluids/Resources",
-        Include = "#include \"FFmodelicaMedium.c\"");
-    end twoPhasesFlash_pTXalt;
-
+  
     pure function twoPhasesFlash_pTX "Return liquid and gas composition at equilibrium, plus the gas fraction"
       input AbsolutePressure p;
       input Temperature T;
@@ -192,63 +170,88 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       output Real x[subsNum];
       output Real y[subsNum];
       output Real gf;
-    
       external "C" FF_TwoPhasesFlashPTXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, z, x, y, gf) annotation(
         IncludeDirectory = "modelica://FreeFluids/Resources",
         Include = "#include \"FFmodelicaMedium.c\"");
     end twoPhasesFlash_pTX;
     
-    pure function twoPhasesFlash_phX "Return liquid and gas composition at equilibrium, plus temperature and gas fraction"
-    input AbsolutePressure p;
-    input SpecificEnthalpy h;
-    input Real z[subsNum];
-    output Temperature T;
-    output Real x[subsNum];
-    output Real y[subsNum];
-    output Real gf;
-  
-    external "C" FF_TwoPhasesFlashPHXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, h, T, z, x, y, gf) annotation(
+    pure function twoPhasesFlash_phsX "Return liquid and gas composition at equilibrium, plus temperature and gas fraction"
+      input String opt "indicates if e is enthalpy (h) or entropy(s)";
+      input AbsolutePressure p;
+      input Real e;
+      input Real z[subsNum];
+      output Temperature T;
+      output Real x[subsNum];
+      output Real y[subsNum];
+      output Real gf;
+      external "C" FF_TwoPhasesFlashP_HS_XM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, opt, p, e, T, z, x, y, gf) annotation(
       IncludeDirectory = "modelica://FreeFluids/Resources",
       Include = "#include \"FFmodelicaMedium.c\"");
-  end twoPhasesFlash_phX;
-
-    function liquidDynamicViscosityAux "Return liquid dynamic viscosity from a ThermodynamicState record"
-    input Real p;
-    input Real T;
-    input Real x[:];
-    output DynamicViscosity eta "Dynamic viscosity";
+    end twoPhasesFlash_phsX;
   
-    external "C" FF_mixLiquidViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, x, eta) annotation(
+    pure function twoPhasesFlash_pThetaX "Return liquid and gas composition at equilibrium, plus temperature and gas fraction"
+      input String opt "indicates if theta is in molar or mas basis";
+      input AbsolutePressure p;
+      input SpecificEnthalpy theta;
+      input Real z[subsNum];
+      output Temperature T;
+      output Real x[subsNum];
+      output Real y[subsNum];
+  
+      external "C" FF_TwoPhasesFlashPThetaXM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, opt, p, theta, T, z, x, y) annotation(
+      IncludeDirectory = "modelica://FreeFluids/Resources",
+      Include = "#include \"FFmodelicaMedium.c\"");
+    end twoPhasesFlash_pThetaX;
+  
+    pure function liquidDynamicViscosityAux "Return liquid dynamic viscosity from p,T,X"
+      input Real p;
+      input Real T;
+      input Real x[:];
+      output DynamicViscosity eta "Dynamic viscosity";
+      external "C" FF_mixLiquidViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, x, eta) annotation(
     IncludeDirectory = "modelica://FreeFluids/Resources",
     Include = "#include \"FFmodelicaMedium.c\"");
     end liquidDynamicViscosityAux;
   
-    function gasDynamicViscosityAux "Return liquid dynamic viscosity from a ThermodynamicState record"
-    input Real p;
-    input Real T;
-    input Real y[:];
-    output DynamicViscosity eta "Dynamic viscosity";
-  
-    external "C" FF_mixGasViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, y, eta) annotation(
+    pure function gasDynamicViscosityAux "Return gas dynamic viscosity from a p,T,X"
+      input Real p;
+      input Real T;
+      input Real y[:];
+      output DynamicViscosity eta "Dynamic viscosity";
+      external "C" FF_mixGasViscosityM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, y, eta) annotation(
     IncludeDirectory = "modelica://FreeFluids/Resources",
     Include = "#include \"FFmodelicaMedium.c\"");
     end gasDynamicViscosityAux;
+   
+    pure function liquidThermalConductivityAux "Return liquid thermal conductivity from a p,T,X"
+      input Real p;
+      input Real T;
+      input Real x[:];
+      output ThermalConductivity lambda "Thermal conductivity";
+      external "C" FF_mixLiquidThCondM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, x, lambda) annotation(
+    IncludeDirectory = "modelica://FreeFluids/Resources",
+    Include = "#include \"FFmodelicaMedium.c\"");
+    end liquidThermalConductivityAux;
   
-    pure function minimumStages_pX "Return the minimum stages required for a column, and composition at top and bottom"
-      input AbsolutePressure p;
-      input Real z[subsNum];
-      input Real minTop[subsNum];
-      input Real maxTop[subsNum];
-      input Real minBottom[subsNum];
-      input Real maxBottom[subsNum];
-      output Integer nTop;
-      output Integer nBottom;
-      output Real top[subsNum] "top composition";
-      output Real bottom[subsNum] "top composition";
-      external "C" FF_MinimumStagesM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, z, minTop, maxTop, minBottom, maxBottom, nTop, nBottom, top, bottom)     annotation(
-      IncludeDirectory = "modelica://FreeFluids/Resources",
-      Include = "#include \"FFmodelicaMedium.c\"");
-    end minimumStages_pX;
+    pure function gasThermalConductivityAux "Return liquid thermal conductivity from a p,T,X"
+      input Real p;
+      input Real T;
+      input Real y[:];
+      output ThermalConductivity lambda "Thermal conductivity";
+      external "C" FF_mixGasThCondM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, y, lambda) annotation(
+    IncludeDirectory = "modelica://FreeFluids/Resources",
+    Include = "#include \"FFmodelicaMedium.c\"");
+    end gasThermalConductivityAux;
+  
+    pure function surfaceTensionAux "Return liquid thermal conductivity from a p,T,X"
+      input Real p;
+      input Real T;
+      input Real x[:];
+      output SurfaceTension sigma "surface tension";
+      external "C" FF_mixSurfaceTensionM(mediumName, subsNum, subsNames, resDir, eosType, mixRule, activityModel, p, T, x, sigma) annotation(
+    IncludeDirectory = "modelica://FreeFluids/Resources",
+    Include = "#include \"FFmodelicaMedium.c\"");
+    end surfaceTensionAux;
   
     function massToMoleFractions "Return mole fractions from mass fractions X"
       extends Modelica.Icons.Function;
@@ -261,12 +264,12 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       Real nMoles;
     algorithm
       nMoles:=0;
-//for i in 1:size(X, 1) loop
+  //for i in 1:size(X, 1) loop
       for i in 1:subsNum loop
         invMMX[i] := 1/MMX[i];
         nMoles:=nMoles+X[i]/MMX[i];
       end for;
-//Mmix := 1/(X*invMMX);
+  //Mmix := 1/(X*invMMX);
       if (nMoles>0)then
         Mmix:=1/nMoles;
         for i in 1:size(X, 1) loop
@@ -279,7 +282,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
         end for;
       end if;
     end massToMoleFractions;
-
+  
     function moleToMassFractions "Return mole fractions from mass fractions X"
       extends Modelica.Icons.Function;
       input SI.MoleFraction moleFractions[subsNum] "Mole fractions of mixture";
@@ -293,7 +296,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
         X[i] := moleFractions[i]*MMX[i]/Mmix;
       end for;
     end moleToMassFractions;
-
+  
     function setLiquidState_pTX "Return ThermodynamicState record as function of p,T and composition X with only liquid"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "Pressure";
@@ -323,7 +326,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.gDvp := 0;
       state.gDvT := 0;
     end setLiquidState_pTX;
-
+  
     function setGasState_pTX "Return ThermodynamicState record as function of p,T and composition X with only liquid"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "Pressure";
@@ -353,7 +356,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.lDvp := 0;
       state.lDvT := 0;
     end setGasState_pTX;
-
+  
     function setBubbleState_TX "Return bubble state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input Temperature T "Temperature";
@@ -378,7 +381,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       (dl, state.gd, state.gMW) := density_pTX(p, T, state.y, "g");
       (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
     end setBubbleState_TX;
-
+  
     function setBubbleState_pX "Return bubble state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "pressure";
@@ -403,7 +406,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
       state.p := p;
     end setBubbleState_pX;
-
+  
     function setDewState_TX "Return dew state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input Temperature T "Temperature";
@@ -428,7 +431,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.h := state.gh;
       state.s := state.gs;
     end setDewState_TX;
-
+  
     function setDewState_pX "Return dew state ThermodynamicState record as function of p and composition X"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "pressure";
@@ -445,7 +448,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       (state.T, state.x) := dew_pX(p, y);
       (state.ld, dg, state.lMW) := density_pTX(p, state.T, state.x, "l");
       (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
-      (state.gd, dl, state.gMW) := density_pTX(p, state.T, state.y, "g");
+      (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
       state.d := state.gd;
       state.MW := state.gMW;
       (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
@@ -453,13 +456,13 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.s := state.gs;
       state.p := p;
     end setDewState_pX;
-
+  
     redeclare function extends setState_pTX "Return ThermodynamicState record as function of p,T and composition X"
         extends Modelica.Icons.Function;
-
+  
       protected
         Real dl, dg;
-
+  
       algorithm
         state.T := T;
         state.p := p;
@@ -504,13 +507,13 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         end if;
     end setState_pTX;
-
+  
     redeclare function extends setState_phX "Return ThermodynamicState record as function of p,h and composition X"
         extends Modelica.Icons.Function;
   
@@ -521,7 +524,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
         state.p := p;
         state.h := h;
         state.z := X;
-        (state.T,state.x, state.y, state.gf) := twoPhasesFlash_phX(p, h, X);
+        (state.T,state.x, state.y, state.gf) := twoPhasesFlash_phsX("h",p, h, X);
         if (state.gf == 0) then
           state.phase := 1 "only liquid phase";
           (state.ld, dg, state.lMW) := density_pTX(p, state.T, X, "l");
@@ -530,7 +533,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.lMW;
           state.gMW := 0;
           (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
-//state.h := state.lh;
+  //state.h := state.lh;
           state.gh := 0;
           state.s := state.ls;
           state.gs := 0;
@@ -546,7 +549,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.gMW;
           state.lMW := 0;
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
-//state.h := state.gh;
+  //state.h := state.gh;
           state.lh := 0;
           state.s := state.gs;
           state.ls := 0;
@@ -561,86 +564,162 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
         end if;
     end setState_phX;
   
+    redeclare function extends setState_psX "Return ThermodynamicState record as function of p,s and composition X"
+        extends Modelica.Icons.Function;
+  
+      protected
+        Real dl, dg;
+  
+      algorithm
+        state.p := p;
+        state.s := s;
+        state.z := X;
+        (state.T,state.x, state.y, state.gf) := twoPhasesFlash_phsX("s",p, s, X);
+        if (state.gf == 0) then
+          state.phase := 1 "only liquid phase";
+          (state.ld, dg, state.lMW) := density_pTX(p, state.T, X, "l");
+          state.d := state.ld;
+          state.gd := 0;
+          state.MW := state.lMW;
+          state.gMW := 0;
+          (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+  //state.h := state.lh;
+          state.gs := 0;
+          state.h := state.lh;
+          state.gh := 0;
+          state.gCv := 0;
+          state.gCp := 0;
+          state.gDvp := 0;
+          state.gDvT := 0;
+        elseif (state.gf == 1) then
+          state.phase := 1 "only gas phase";
+          (dl, state.gd, state.gMW) := density_pTX(p, state.T, X, "g");
+          state.d := state.gd;
+          state.ld := 0;
+          state.MW := state.gMW;
+          state.lMW := 0;
+          (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+  //state.h := state.gh;
+          state.ls := 0;
+          state.h := state.gh;
+          state.lh := 0;
+          state.lCv := 0;
+          state.lCp := 0;
+          state.lDvp := 0;
+          state.lDvT := 0;
+        else
+          state.phase := 2 "liquid and gas phases";
+          (state.ld, dg, state.lMW) := density_pTX(p, state.T, state.x, "l");
+          (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+          (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
+          (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+          state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
+  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+          state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
+          state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
+          state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
+        end if;
+    end setState_psX;
+  
+    function setState_pThetaX "Return saturated ThermodynamicState record as function of p,gas fraction and composition X"
+      extends Modelica.Icons.Function;
+      input AbsolutePressure p "Pressure";
+      input MassFraction theta "gas mass fraction";
+      input MassFraction X[:]=reference_X "Mass fractions of components";
+      output ThermodynamicState state "Thermodynamic state record";
+  
+      protected
+        Real dl, dg;
+      algorithm
+        if (theta==1.0) then state:=setDewState_pX(p,X);
+        elseif (theta==0.0) then state:=setBubbleState_pX(p,X);
+        else
+          state.p := p;
+          state.z := X;
+          state.gf:=theta;
+          (state.T, state.x, state.y):=twoPhasesFlash_pThetaX("mass",p,theta,X);
+          state.phase := 2 "liquid and gas phases";
+          (state.ld, dg, state.lMW) := density_pTX(p, state.T, state.x, "l");
+          (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+          (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
+          (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+          state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
+  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+          state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
+          state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
+          state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
+        end if;
+    end setState_pThetaX;
+  
     redeclare function extends pressure "Return pressure"
         extends Modelica.Icons.Function;
-
       algorithm
         p := state.p;
     end pressure;
-
+  
     redeclare function extends temperature "Return temperature"
         extends Modelica.Icons.Function;
-
       algorithm
         T := state.T;
     end temperature;
-
+  
     redeclare function extends density "Return density"
         extends Modelica.Icons.Function;
-
       algorithm
         d := state.d;
     end density;
-
+  
     redeclare function extends specificEnthalpy "Return specific enthalpy"
         extends Modelica.Icons.Function;
-
       algorithm
         h := state.h;
     end specificEnthalpy;
-
+  
     redeclare function extends specificInternalEnergy "Return specific internal energy"
         extends Modelica.Icons.Function;
-
       algorithm
         u := state.h - state.p/state.d;
     end specificInternalEnergy;
-
+  
     redeclare function extends specificEntropy "Return specific entropy"
         extends Modelica.Icons.Function;
-
       algorithm
         s := state.s;
     end specificEntropy;
-
+  
     redeclare function extends specificGibbsEnergy "Return specific Gibbs energy"
         extends Modelica.Icons.Function;
-
       algorithm
         g := state.h - state.T*state.s;
     end specificGibbsEnergy;
-
+  
     redeclare function extends specificHelmholtzEnergy "Return specific Helmholtz energy"
         extends Modelica.Icons.Function;
-
       algorithm
         f := state.h - state.p/state.d - state.T*state.s;
     end specificHelmholtzEnergy;
-
+  
     redeclare function extends specificHeatCapacityCp "Return specific heat capacity at constant pressure"
         extends Modelica.Icons.Function;
-
       algorithm
         cp := if state.gf == 0 then state.lCp else if state.gf == 1 then state.gCp else 0.0;
     end specificHeatCapacityCp;
     
     redeclare function extends specificHeatCapacityCv "Return specific heat capacity at constant pressure"
         extends Modelica.Icons.Function;
-  
       algorithm
         cv := if state.gf == 0 then state.lCv else if state.gf == 1 then state.gCv else 0.0;
     end specificHeatCapacityCv;
-
+  
     redeclare function extends velocityOfSound "Return velocity of sound"
         extends Modelica.Icons.Function;
-
       algorithm
         a := if state.gf == 0.0 then (-state.lCp/(state.lDvp*state.lCv))^0.5/state.ld else if state.gf == 1.0 then (-state.gCp/(state.gDvp*state.gCv))^0.5/state.gd else 0.0;
     end velocityOfSound;
@@ -656,7 +735,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     algorithm
         kappa := if state.gf ==0 then -state.lDvp*state.ld else if state.gf ==1 then -state.gDvp*state.gd else Modelica.Constants.inf;
     end isothermalCompressibility;
-
+  
     function specificVaporizationHeat "Return bubble state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input ThermodynamicState state;
@@ -664,7 +743,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     algorithm
       hv := state.gh - state.lh;
     end specificVaporizationHeat;
-
+  
     redeclare function molarMass "Return the molar mass of the medium"
       extends Modelica.Icons.Function;
       input ThermodynamicState state;
@@ -684,7 +763,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       end if; 
     annotation(
         Documentation(info = "<html><head></head><body>Uses the Teja-Rice method for the liquid phase and the Lucas one for the gas phase. The viscosity is set to 0 in biphasic systems.</body></html>"));
-end dynamicViscosity;
+    end dynamicViscosity;
     
     function liquidDynamicViscosity "Return liquid dynamic viscosity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
@@ -693,7 +772,7 @@ end dynamicViscosity;
       eta:=liquidDynamicViscosityAux(state.p,state.T,state.x);
     annotation(
         Documentation(info = "<html><head></head><body>Is useful in obtaining the viscosity of the liquid phase in a biphasic system</body></html>"));
-end liquidDynamicViscosity;
+    end liquidDynamicViscosity;
   
     function gasDynamicViscosity "Return gas dynamic viscosity from a ThermodynamicState record"
       input ThermodynamicState state "Thermodynamic state record";
@@ -702,9 +781,53 @@ end liquidDynamicViscosity;
       eta:=gasDynamicViscosityAux(state.p,state.T,state.y);
     annotation(
         Documentation(info = "<html><head></head><body>Is useful in obtaining the viscosity of the gas phase in a biphasic system</body></html>"));
-end gasDynamicViscosity;annotation(
-      Documentation(info = "<html><head></head><body><br></body></html>"));
+    end gasDynamicViscosity;
+  
+    function thermalConductivity "Return thermal conductivity from a ThermodynamicState record"
+      extends Modelica.Icons.Function;
+      input ThermodynamicState state "Thermodynamic state record";
+      output DynamicViscosity lambda "Thermal conductivity";
+    algorithm
+      if (state.gf==0) then lambda:=liquidThermalConductivityAux(state.p,state.T,state.x);
+      elseif (state.gf==1) then lambda:=gasThermalConductivityAux(state.p,state.T,state.y);
+      else lambda:=0;
+      end if; 
+    annotation(
+        Documentation(info = "<html><head></head><body>Uses the Li method for the liquid phase and the Mason one for the gas phase. The viscosity is set to 0 in biphasic systems.</body></html>"));
+    end thermalConductivity;
+  
+    function liquidThermalConductivity "Return liquid thermal conductivity from a ThermodynamicState record"
+      input ThermodynamicState state "Thermodynamic state record";
+      output ThermalConductivity lambda "Thermal conductivity";
+    algorithm
+      lambda := liquidThermalConductivityAux(state.p, state.T, state.x);
+      annotation(
+        Documentation(info = "<html><head></head><body>Is useful in obtaining the thermal conductivity of the liquid phase in a biphasic system</body></html>"));
+    end liquidThermalConductivity;
     
+    function gasThermalConductivity "Return liquid thermal conductivity from a ThermodynamicState record"
+      input ThermodynamicState state "Thermodynamic state record";
+      output ThermalConductivity lambda "Thermal conductivity";
+    algorithm
+      lambda := gasThermalConductivityAux(state.p, state.T, state.y);
+      annotation(
+        Documentation(info = "<html><head></head><body>Is useful in obtaining the thermal conductivity of the gas phase in a biphasic system</body></html>"));
+    end gasThermalConductivity;
+    
+    function surfaceTension "Return liquid surface tension from a ThermodynamicState record"
+      extends Modelica.Icons.Function;
+      input ThermodynamicState state "Thermodynamic state record";
+      output SurfaceTension sigma "Thermal conductivity";
+    algorithm
+      if (state.gf==0) then sigma := surfaceTensionAux(state.p, state.T, state.x);
+      else sigma:=0;
+      end if;
+      annotation(
+        Documentation(info = "<html><head></head><body>Uses the Winterfeld method.</body></html>"));
+    end surfaceTension; 
+    
+    annotation(
+      Documentation(info = "<html><head></head><body><br></body></html>"));
   end ExternalMixMedium;
   
       annotation(

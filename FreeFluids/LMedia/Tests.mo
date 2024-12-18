@@ -72,6 +72,7 @@ package Tests
   end FluidTestingA;
 
   model TestA1A
+    extends Modelica.Icons.Example;
     extends FluidTestingA(redeclare replaceable package Medium = FreeFluids.LMedia.Fluids.Water(refState = "User", reference_T = 273.15, highPressure = true, inputChoice = "pT"), p = 50e5, initialT = 0.1 + 273.15, fract = 0.1, finalT = 260 + 273.15);
   end TestA1A;
 
@@ -84,6 +85,7 @@ package Tests
   end TestA1C;
 
   model TestA2A
+    extends Modelica.Icons.Example;
     extends FluidTestingA(redeclare replaceable package Medium = LMedia.Fluids.R134A(highPressure = true, refState = "IIR", reference_T = 100.0, inputChoice = "pT"), p = 20.0e5, initialT = (-50.0) + 273.15, finalT = 65.0 + 273.15, fract = 0.5);
   end TestA2A;
 
@@ -92,6 +94,7 @@ package Tests
   end TestA2B;
 
   model TestModel
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
   equation
 
@@ -102,6 +105,7 @@ package Tests
   end TestModel;
 
   model TestModel2
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = FreeFluids.LMedia.Fluids.Water(inputChoice = "pT"));
   equation
 
@@ -129,12 +133,14 @@ package Tests
   end HeatingSystem;
 
   model TestModelS
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel(redeclare package Medium = Modelica.Media.Water.StandardWater);
   equation
 
   end TestModelS;
 
   model TestModel2S
+    extends Modelica.Icons.Example;
     extends Modelica.Media.Examples.Utilities.PartialTestModel2(redeclare package Medium = Modelica.Media.Water.StandardWater);
   equation
 

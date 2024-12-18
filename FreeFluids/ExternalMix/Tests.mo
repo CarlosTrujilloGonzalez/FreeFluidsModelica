@@ -18,7 +18,9 @@ package Tests
    Medium.ThermodynamicState stateDewP;
    Medium.ThermodynamicState stateDewT;
    Medium.ThermodynamicState stateP "state at given p,T,Z";
-   Medium.ThermodynamicState stateH "state at given p,h,Z. It shoud be a match or stateP";
+   Medium.ThermodynamicState stateH "state at given p,h,Z. It shoud be a match of stateP";
+   Medium.ThermodynamicState stateS "state at given p,s,Z. It shoud be a match of stateP";
+   Medium.ThermodynamicState stateTheta "state at given p,gas fraction,Z. It shoud be a match of stateP";
    Real x[Medium.subsNum] "molar fractions of the liquid phase of stateP";
    Real y[Medium.subsNum] "molar fractions of the gas phase of stateP";
    Real gamma[Medium.subsNum];
@@ -26,11 +28,14 @@ package Tests
    Medium.SpecificEnergy Hv;
    Medium.Density D(displayUnit = "kg/m3") "of stateP";
    Medium.SpecificEnthalpy H "of stateP";
+   Medium.SpecificEntropy S "of stateP";
    Medium.SpecificHeatCapacity Cp "of stateP";
    Real SS "speed of sound of stateP";
    Real Beta "isobaric expansion coefficient of stateP";
    Real Kappa "isothermal compressibility of stateP";
    Medium.DynamicViscosity Eta;
+   Medium.ThermalConductivity Lambda;
+   Medium.SurfaceTension Sigma;
    
   algorithm
     MM := Medium.molarMasses();
@@ -42,7 +47,10 @@ package Tests
     stateDewT := Medium.setDewState_pX(p, Zmass);
     stateP := Medium.setState_pTX(p, T, Zmass);
     H:=Medium.specificEnthalpy(stateP);
+    S:=Medium.specificEntropy(stateP);
     stateH:=Medium.setState_phX(p,H,Zmass);
+    stateS:=Medium.setState_psX(p,S,Zmass);
+    stateTheta:=Medium.setState_pThetaX(p,stateP.gf,Zmass); 
     x:=Medium.massToMoleFractions(stateP.x,MM);
     y:=Medium.massToMoleFractions(stateP.y,MM);
     (gamma, gE) := Medium.activityCoefficients_TX(T, Zmass);
@@ -54,6 +62,8 @@ package Tests
     Beta:=Medium.isobaricExpansionCoefficient(stateP);
     Kappa:=Medium.isothermalCompressibility(stateP);
     Eta:=Medium.dynamicViscosity(stateP);
+    Lambda:=Medium.thermalConductivity(stateP);
+    Sigma:=Medium.surfaceTension(stateP);
    
   equation
     der(T) = finalT - initialT;
@@ -76,7 +86,7 @@ package Tests
   end TestModel2;
     
   model EthanolWaterCubic
-    extends TestModel2(Medium(subsNames = "Ethanol,WaterSRK", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 370, finalT = 370, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
+    extends TestModel2(Medium(subsNames = "Ethanol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 370, finalT = 370, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
   
     annotation(
      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
