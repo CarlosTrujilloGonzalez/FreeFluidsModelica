@@ -212,7 +212,7 @@ package Fluids
 
   package EthyleneOxide
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "EthyleneOxide",
- fluidK(casRegistryNumber = "75-21-8", description = "SW: thol 2015, PPCSAFT G.V. C.Trujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 4.405260e-02, criticalTemperature = 4.689200e+02, criticalPressure = 7.304686e+06),
+ fluidK(casRegistryNumber = "75-21-8", description = "SW: Thol 2015, PPCSAFT G.V. C.Trujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: Nist coefficients", molarMass = 4.405260e-02, criticalTemperature = 4.689200e+02, criticalPressure = 7.304686e+06),
  final onePhase=false, thermoModel=3, refState=2, refName="Propane", ancillaries=3);
   end EthyleneOxide;
 
@@ -395,6 +395,12 @@ package Fluids
  final onePhase=false, thermoModel=3, refState=2, refName="N2", ancillaries=3);
   end NitrousOxide;
 
+  package Nonane_n
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Nonane_n",
+ fluidK(casRegistryNumber = "111-84-2", description = "SW:Lemmon 2006, PCSAFT non-assoc. Gross&Sadowski 2001, cubic: PRMC C.Trujillo 2024, cp0: Cooper", molarMass = 1.282580e-01, criticalTemperature = 5.945500e+02, criticalPressure = 2.281000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Nonane_n;
+
   package Novec649
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Novec649",
  fluidK(casRegistryNumber = "756-13-8", description = "SW: McLinden 2015, PCSAFT non assoc. C.Trujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper, Transport: from 3M", molarMass = 3.160438e-01, criticalTemperature = 4.418100e+02, criticalPressure = 1.869027e+06), T_min=165,
@@ -422,6 +428,12 @@ package Fluids
  fluidK(casRegistryNumber = "85-44-9", description = "PCSAFT 3B: C.Trujillo 2023-2, Cubic: PR M.C. 2023, Cp0: Cheric", molarMass = 1.481100e-01, criticalTemperature = 7.910000e+02, criticalPressure = 4.760000e+06),
  final onePhase=false, thermoModel=2, refState=2, ancillaries=2);
   end PhthalicAnhydride;
+
+  package Propanal
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propanal",
+ fluidK(casRegistryNumber = "123-38-6", description = "PPCSAFT GV 2B: C.Trujillo 2024, Cubic: PRMC, Cp0: wilhoit", molarMass = 5.807980e-02, criticalTemperature = 5.044000e+02, criticalPressure = 5.270000e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=0);
+  end Propanal;
 
   package Propane
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Propane",
@@ -470,6 +482,12 @@ package Fluids
  final onePhase=false, thermoModel=1, refState=2, ancillaries=2);
   end Styrene;
 
+  package SulfurDioxide
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "SulfurDioxide",
+ fluidK(casRegistryNumber = "7446-09-5", description = "SW: GAo 2016, PCSAFT 2B c.Trujillo 2024, cubic: PRMC, Cp0: Cooper", molarMass = 6.406500e-02, criticalTemperature = 4.306400e+02, criticalPressure = 7.886588e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end SulfurDioxide;
+
   package Toluene
     extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Toluene",
  fluidK(casRegistryNumber = "108-88-3", description = "SW: Lemmon 2006, PCSAFT non-assoc. C.Trujillo 2024, cubic: PRMC, Cp0: Wilhoit", molarMass = 9.214020e-02, criticalTemperature = 5.917500e+02, criticalPressure = 4.126000e+06),
@@ -503,4 +521,10 @@ package Fluids
  fluidK(casRegistryNumber = "95-47-6", description = "SW: Zhou 2018, PCSAFT non assoc. CTrujillo 2023, Cubic: PR M.C. 2023, Cp0: Cooper", molarMass = 1.061670e-01, criticalTemperature = 6.302590e+02, criticalPressure = 3.737500e+06), T_min=247.985,
  final onePhase=false, thermoModel=3, refState=2, ancillaries=3);
   end Xylene_o;
+  
+  package Xylene_p
+    extends FreeFluids.ExternalPure.ExternalMedium(final mediumName = "Xylene_p",
+ fluidK(casRegistryNumber = "106-42-3", description = "S.W.: Zhou 2012, PCSAFT non-assoc. C.Trujillo 2024, cubic: PRMC, Cp0:Cooper", molarMass = 1.061670e-01, criticalTemperature = 6.161680e+02, criticalPressure = 3.531500e+06),
+ final onePhase=false, thermoModel=1, refState=2, ancillaries=3);
+  end Xylene_p;
 end Fluids;

@@ -301,7 +301,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       extends Modelica.Icons.Function;
       input AbsolutePressure p "Pressure";
       input Temperature T "Temperature";
-      input MassFraction X[subsNum]  "Mass fractions";
+      input MassFraction X[nX]  "Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     algorithm
       state.phase := 0 "phase has not been checked";
@@ -331,7 +331,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       extends Modelica.Icons.Function;
       input AbsolutePressure p "Pressure";
       input Temperature T "Temperature";
-      input MassFraction X[subsNum] "Mass fractions";
+      input MassFraction X[nX] "Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     algorithm
       state.phase := 0 "phase has not been checked";
@@ -360,7 +360,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     function setBubbleState_TX "Return bubble state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input Temperature T "Temperature";
-      input MassFraction X[subsNum] "Mass fractions";
+      input MassFraction X[nX] "Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
       Real p, dl, dg;
@@ -372,20 +372,20 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.x := X;
       (state.p, state.y) := bubble_TX(T, X);
       p := state.p;
-      (state.ld, dg, state.lMW) := density_pTX(p, T, X, "l");
+      (state.ld, dg, state.lMW) := density_pTX(state.p, T, X, "l");
       state.d := state.ld;
       state.MW := state.lMW;
       (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
       state.h := state.lh;
       state.s := state.ls;
-      (dl, state.gd, state.gMW) := density_pTX(p, T, state.y, "g");
+      (dl, state.gd, state.gMW) := density_pTX(state.p, T, state.y, "g");
       (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
     end setBubbleState_TX;
   
     function setBubbleState_pX "Return bubble state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "pressure";
-      input MassFraction X[subsNum] "liquid phase Mass fractions";
+      input MassFraction X[nX] "liquid phase Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
       Real dl, dg;
@@ -410,7 +410,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     function setDewState_TX "Return dew state ThermodynamicState record as function of T and composition X"
       extends Modelica.Icons.Function;
       input Temperature T "Temperature";
-      input MassFraction y[subsNum] "Mass fractions";
+      input MassFraction y[nX] "Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
       Real p, dl, dg;
@@ -435,7 +435,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     function setDewState_pX "Return dew state ThermodynamicState record as function of p and composition X"
       extends Modelica.Icons.Function;
       input AbsolutePressure p "pressure";
-      input MassFraction y[subsNum] "gas mass fractions";
+      input MassFraction y[nX] "gas mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
       Real dl, dg;
