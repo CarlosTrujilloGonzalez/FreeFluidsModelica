@@ -75,10 +75,12 @@ EXP_IMP void CALLCONV FF_PressureEnvelope(FF_MixData *mix,const double *T, const
 //VL flash calculation, given T, P, feed composition, eos and mixing rule, using bubble and dew pressure as help
 EXP_IMP void CALLCONV FF_TwoPhasesPreFlashPT(FF_MixData *mix,const double *T,const double *P,const double f[],
                                      double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
-
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
 EXP_IMP void CALLCONV FF_TwoPhasesFlashPT(FF_MixData *mix,const double *T,const double *P,const double f[],
                                    double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
+//VL flash calculation, given T, P, feed composition, eos and mixing rule, by sucesive substitution using Newton method, without too much checks
+EXP_IMP void CALLCONV FF_TwoPhasesFlashPTn(FF_MixData *mix, const double *T,const double *P,const double f[],
+                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
 //Mixture VL flash, given P,T, composition, and thermo model to use. By global optimization simulated annealing of residual Gibbs energy
 EXP_IMP void CALLCONV FF_TwoPhasesFlashPTSA(FF_FeedData *data, double x[],double y[],double substPhiL[],double substPhiG[],double *beta,double *Gr);
 //Mixture 2 phases flash, given P,T, composition, and thermo model to use. By differential evolution global minimization of the reduced Gibbs energy
@@ -86,7 +88,7 @@ void CALLCONV FF_TwoPhasesFlashPTDE(FF_FeedData *data, double x[],double y[],dou
 
 //VL flash calculation, given h, P, feed composition, eos and mixing rule, using bubble and dew temperature as help
 EXP_IMP void CALLCONV FF_TwoPhasesPreFlashP_HS(FF_MixData *mix, char election, const double *E,const double *P,const double f[], double *T,
-                                     double x[],double y[],double substPhiL[],double substPhiG[],double *beta);
+                                     double x[],double y[],double *beta);
 //VL flash calculation, given gas fraction, P, feed composition, eos and mixing rule, using bubble and dew temperature as help
 EXP_IMP void CALLCONV FF_TwoPhasesPreFlashPTheta(FF_MixData *mix, const char *opt, const double *Theta,const double *P,const double f[], double *T,
                                      double x[],double y[],double substPhiL[],double substPhiG[]);

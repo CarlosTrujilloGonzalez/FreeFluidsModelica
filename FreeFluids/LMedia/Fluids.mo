@@ -72,6 +72,9 @@ within FreeFluids.LMedia;
       extends FreeFluids.LMedia.LMedium(final mediumName = "Nitrogen", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.N2});
     end N2;
 
+  package Nonane_n
+    extends FreeFluids.TMedia.TMedium(final mediumName = "Nonane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Nonane_n}, refState="IIR", reference_T=273.15);
+  end Nonane_n;
     package O2
       extends FreeFluids.LMedia.LMedium(final mediumName = "Oxygen", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.O2});
     end O2;
@@ -79,6 +82,10 @@ within FreeFluids.LMedia;
     package Pentane_n
       extends LMedium(final mediumName = "Pentane_n", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Pentane_n}, refState = "IIR", reference_T = 273.15);
     end Pentane_n;
+
+  package Propanal
+    extends FreeFluids.TMedia.TMedium(final mediumName = "Propanal", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Propanal}, refState="IIR", reference_T=273.15);
+  end Propanal;
 
     package Propane
       extends LMedium(final mediumName = "Propane", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Propane}, refState = "NBP");
@@ -96,6 +103,10 @@ within FreeFluids.LMedia;
       extends FreeFluids.LMedia.LMedium(final mediumName = "Shell S2", final singleState = false, p_default = 3.0e5, T_default = 473.15, reference_T = 273.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.ShellS2}, Temperature(min = 0 + 273.15, max = 300 + 273.15, nominal = 260 + 273.15));
     end ShellS2;
 
+  package SulfurDioxide
+    extends FreeFluids.TMedia.TMedium(final mediumName = "SulfurDioxide", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.SulfurDioxide}, refState="IIR", reference_T=273.15);
+  end SulfurDioxide;
+  
     package Toluene
       extends FreeFluids.LMedia.LMedium(final mediumName = "Toluene", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Toluene}, reference_T = 273.15, p_default = 5.0e5, T_default = 393.15);
     end Toluene;
@@ -107,4 +118,8 @@ within FreeFluids.LMedia;
     package Xylene_m
       extends FreeFluids.LMedia.LMedium(final mediumName = "Xylene_m", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Xylene_m}, refState = "NBP", reference_T = 273.15);
     end Xylene_m;
+    
+  package Xylene_p
+    extends FreeFluids.TMedia.TMedium(final mediumName = "Xylene_p", final singleState = false, fluidConstants = {FreeFluids.MediaCommon.MediaDataMZ.Xylene_p}, refState="IIR", reference_T=273.15);
+  end Xylene_p;
   end Fluids;

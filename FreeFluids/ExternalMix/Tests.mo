@@ -7,10 +7,10 @@ package Tests
    parameter Real finalT = 373.15;
    parameter Real initialP = 1e5;
    parameter Real finalP = 1e5;
-   Real Z[Medium.subsNum] "mole fraction of substances";
+   Real Z[Medium.nX] "mole fraction of substances";
    Medium.Temperature T(start = initialT);
    Medium.AbsolutePressure p(start = initialP);
-   Medium.MolarMass MM[Medium.subsNum];
+   Medium.MolarMass MM[Medium.nX];
    Medium.MolarMass MW "mix molecular weight in kg/mol)";
    Real Zmass[Medium.subsNum] "mass fraction of substances";
    Medium.ThermodynamicState stateBubbleP "bubble state from T and X";
@@ -86,7 +86,7 @@ package Tests
   end TestModel2;
     
   model EthanolWaterCubic
-    extends TestModel2(Medium(subsNames = "Ethanol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 370, finalT = 370, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
+    extends TestModel2(Medium(subsNames = "Ethanol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 350, finalT = 360, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.5, finalZ1 = 0.5);
   
     annotation(
      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
@@ -99,7 +99,7 @@ package Tests
   end EthanolWaterPCSAFT;
 
   model EthanolWaterHighPCubic
-    extends TestModel2(Medium(mediumName = "Test", subsNames = "Ethanol,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 523, finalT = 523, initialP = 72.2e5, finalP = 72.2e5, initialZ1 = 0.0001, finalZ1 = 0.9999);
+    extends TestModel2(Medium(mediumName = "Test", subsNames = "Ethanol,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 503, finalT = 523, initialP = 50e5, finalP = 50e5, initialZ1 = 0.0001, finalZ1 = 0.9999);
     annotation(
      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
   end EthanolWaterHighPCubic;
@@ -108,7 +108,7 @@ package Tests
     extends EthanolWaterHighPCubic(Medium(eosType="PCSAFT"));
   end EthanolWaterHighPPCSAFT;
 
-  model EthaneHeptaneCubic  extends TestModel2(Medium(subsNames = "Ethane,Heptane_n", eosType = "PR", mixRule = "VdW", activityModel = "UNIFACpsrk"), initialT = 403.15, finalT = 403.15, initialP = 29.2e5, finalP = 29.2e5, initialZ1 = 0.0, finalZ1 = 1.0);
+  model EthaneHeptaneCubic  extends TestModel2(Medium(subsNames = "Ethane,Heptane_n", eosType = "PR", mixRule = "VdW", activityModel = "UNIFACpsrk"), initialT = 403.15, finalT = 403.15, initialP = 70e5, finalP = 70e5, initialZ1 = 0.0, finalZ1 = 1.0);
     annotation(
      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
   Documentation(info = "<html><head></head><body>Here you can see the limitations of the equilibrium constants inizialization using the Wilson equation.</body></html>"));
@@ -118,11 +118,16 @@ package Tests
     extends EthaneHeptaneCubic(Medium(eosType="PCSAFT"));
   end EthaneHeptanePCSAFT;
 
+  model EthaneDecaneCubic  extends TestModel2(Medium(subsNames = "Ethane,Decane_n", eosType = "PR", mixRule = "VdWnoInt", activityModel = "UNIFACpsrk"), initialT = 413.15, finalT = 413.15, initialP = 80e5, finalP = 80e5, initialZ1 = 0.0, finalZ1 = 1.0);
+    annotation(
+     experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
+  Documentation(info = "<html><head></head><body>Here you can see the limitations of the equilibrium constants inizialization using the Wilson equation.</body></html>"));
+  end EthaneDecaneCubic;
+
   model EGWaterCubic
   extends TestModel2(Medium(subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 440, finalT = 440, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
     annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
-    
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));  
   end EGWaterCubic;
 
   model EGWaterPCSAFT
@@ -168,14 +173,14 @@ package Tests
   end MethanolPentane_nPCSAFT;
 
   model MethanolCyclohexaneCubic
-  extends TestModel2(Medium(subsNames = "Methanol,Cyclohexane", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 323.15, finalT = 323.15, initialP = 1e5, finalP = 1e5, initialZ1=0.001, finalZ1=0.999);
+  extends TestModel2(Medium(subsNames = "Methanol,Cyclohexane", eosType = "PR", mixRule = "MHV2", activityModel = "NRTL"), initialT = 323.15, finalT = 323.15, initialP = 0.65e5, finalP = 0.65e5, initialZ1=0.001, finalZ1=0.999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01),
   Documentation);
   end MethanolCyclohexaneCubic;
 
   model MethanolCyclohexanePCSAFT
-  extends MethanolCyclohexaneCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
+  extends MethanolCyclohexaneCubic(Medium(eosType = "PCSAFT", mixRule = "IndAssoc", activityModel = "None"));
   annotation(
       Documentation(info = "<html><head></head><body>If you use Methanol2, you will see the the improvement that polar PCSAFT was doing in Methanol.</body></html>"));
   end MethanolCyclohexanePCSAFT;
@@ -222,13 +227,13 @@ package Tests
   model n3i4n4i5n5
   extends TestModelBase(Medium(subsNames = "Propane,Isobutane,Butane_n,Isopentane,Pentane_n", eosType = "PR", mixRule = "VdW", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 8.5e5, finalP = 8.5e5, Z={0.05,0.15,0.25,0.2,0.35});
     annotation(
-      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 1));
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
   end n3i4n4i5n5;
   
   
 
   model TestLiquidStateCubic
-   package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EG,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort");
+   package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort");
    parameter Real initialT = 273.15+10;   //93.33;
     //403
    parameter Real finalT = 273.15+10;//93.33;
@@ -244,7 +249,9 @@ package Tests
    Medium.MolarMass MM[2];
    Real Zmass[2](start = {initialZ1mass, 1 - initialZ1mass}) "mass fraction of substances";
    Medium.ThermodynamicState stateL;
+   Medium.ThermodynamicState stateH;
    Medium.Density D(displayUnit="kg/m3");
+   Medium.SpecificEnthalpy H;
    Real SS;
    Medium.SpecificHeatCapacity Cp;
    Medium.DynamicViscosity Eta;
@@ -253,9 +260,11 @@ package Tests
    Z := Medium.massToMoleFractions(Zmass, MM);
    stateL := Medium.setLiquidState_pTX(p, T, Zmass);
    D:=Medium.density(stateL);
+   H:=Medium.specificEnthalpy(stateL);
    SS := Medium.velocityOfSound(stateL);
    Cp := Medium.specificHeatCapacityCp(stateL);
    Eta := Medium.dynamicViscosity(stateL);
+   stateH:=Medium.setState_phX(p,H,Zmass);
   equation
    der(T) = finalT - initialT;
    der(p) = finalP - initialP;

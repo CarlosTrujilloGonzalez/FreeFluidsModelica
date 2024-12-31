@@ -917,7 +917,7 @@ void FF_dew_pXM(const char *name, int numSubs, char *subsNames, const char *resD
   }
 }
 
-//VL flash calculation, given T, P, feed composition, eos and mixing rule
+//VL flash calculation, given T, P, feed composition, eos and mixing rule.
 void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double zMass[],
                            double xMass[],double yMass[],double *gfMass){
     FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
@@ -934,7 +934,7 @@ void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const
         z[i]=zMass[i]/(mix->baseProp[i].MW*nMols);
     }
 
-    FF_TwoPhasesPreFlashPT(mix,&T,&p,z,x,y,phiL,phiG,&gf);
+    FF_TwoPhasesFlashPTn(mix,&T,&p,z,x,y,phiL,phiG,&gf);
     if (gf==0){
         *gfMass=0;
         for(i=0;i<numSubs;i++){
@@ -1017,7 +1017,8 @@ void FF_TwoPhasesFlashP_HS_XM(const char *name, int numSubs, char *subsNames, co
 
 
 
-    FF_TwoPhasesPreFlashP_HS(mix,*election,&eMolar,&p,z,T,x,y,phiL,phiG,&gf);
+    if(mix->eosType==FF_SAFTtype) FF_TwoPhasesPreFlashP_HS(mix,*election,&eMolar,&p,z,T,x,y,&gf);
+    else FF_TwoPhasesFlashP_HS(mix,*election,&eMolar,&p,z,T,x,y,&gf);
     if (gf==0){
         *gfMass=0;
         for(i=0;i<numSubs;i++){

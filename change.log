@@ -1,3 +1,8 @@
+Version 4.4.0
+- The p,T flash has been changed in order to avoid the use of bubble and dew states. It is not the final version but the result is faster and more reliable.
+- p,h and p,s flashes has been also changed for the same reason, but the new version is working correctly only with cubic EOS, so the old version (aided by bubble and dew states) has been retained for PCSAFT EOS.
+- The following fluids have been added: sulfur dioxide, n-nonane, propanal and p-xylene.
+
 Version 4.3.0
 - Thermal conductivity calculation added to ExternalMixMedium package
 - Surface tension calculation added to ExternalMixMedium package
