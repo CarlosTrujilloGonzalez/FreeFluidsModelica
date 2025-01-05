@@ -704,7 +704,7 @@ void CALLCONV FF_ActivityUNIFAC(FF_UnifacData *data, const double *T, const doub
 }
 
 //Calculates activity coefficents according any of the defined models from a FF_MixData structure
-EXP_IMP void CALLCONV FF_Activity(FF_MixData *mix,double *T,double x[],FF_SubsActivityData actData[]){
+EXP_IMP void CALLCONV FF_Activity(FF_MixData *mix,const double *T,double x[],FF_SubsActivityData actData[]){
     int i;
     switch(mix->actModel){
     case FF_Wilson:
@@ -983,7 +983,7 @@ void CALLCONV FF_UNIFACDerivatives(FF_UnifacData *data, const double *T, const d
 
 
 //Calculates ln of activities and the derivatives of gE
-void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const int *form,
+void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const enum FF_IntParamForm *form,
                                         const double *T,const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData){
     int i,j;
     excData->gEC=0;excData->gESG=0;excData->gER=0;//Excess data for reduced G
@@ -992,12 +992,16 @@ void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,cons
     double Tplus=*T+0.01;//Values after increment of T
     double hE;
     FF_SubsActivityData actDataPlus[*numSubs];//Where to store the activity coeff. after incrementing x[i] or T
-    void (*ActCalc)(int *,FF_BaseProp *,double *,int *,double *,double *,FF_SubsActivityData *);
-    if (*actModel==FF_UNIQUAC) ActCalc=&FF_ActivityUNIQUAC;
+    /*void (*ActCalc)(int *,FF_BaseProp *,double *,int *,double *,double *,FF_SubsActivityData *);
+    if (*actModel==FF_UNIQUAC) ActCalc=FF_ActivityUNIQUAC;
     else if (*actModel==FF_NRTL) ActCalc=&FF_ActivityNRTL;
-    else if (*actModel==FF_Wilson) ActCalc=&FF_ActivityWilson;
+    else if (*actModel==FF_Wilson) ActCalc=&FF_ActivityWilson;*/
+
     //Calculation of the ln of activity coefficients combinatorial, SG and residual
-    ActCalc(numSubs,baseProp,pintParam,form,T,x,actData);
+    //ActCalc(numSubs,baseProp,pintParam,form,T,x,actData);
+    if (*actModel==FF_UNIQUAC) FF_ActivityUNIQUAC(numSubs,baseProp,pintParam,form,T,x,actData);
+    else if (*actModel==FF_NRTL) FF_ActivityNRTL(numSubs,baseProp,pintParam,form,T,x,actData);
+    else if (*actModel==FF_Wilson)FF_ActivityWilson(numSubs,baseProp,pintParam,form,T,x,actData);
     //Calculation of excess g for combinatorial, Sg and residual parts
     for(i=0;i<*numSubs;i++){
         excData->gEC=excData->gEC+x[i]*actData[i].lnGammaC;
@@ -1011,7 +1015,10 @@ void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,cons
     for (i=0;i<*numSubs;i++){
         gECplus=gESGplus=gERplus=0;
         xPlus[i]=x[i]*1.001;
-        ActCalc(numSubs,baseProp,pintParam,form,T,xPlus,actDataPlus);
+        //ActCalc(numSubs,baseProp,pintParam,form,T,xPlus,actDataPlus);
+        if (*actModel==FF_UNIQUAC) FF_ActivityUNIQUAC(numSubs,baseProp,pintParam,form,T,xPlus,actDataPlus);
+        else if (*actModel==FF_NRTL) FF_ActivityNRTL(numSubs,baseProp,pintParam,form,T,xPlus,actDataPlus);
+        else if (*actModel==FF_Wilson)FF_ActivityWilson(numSubs,baseProp,pintParam,form,T,xPlus,actDataPlus);
         for (j=0;j<*numSubs;j++){
             gECplus=gECplus+xPlus[j]*actDataPlus[j].lnGammaC;
             gESGplus=gESGplus+xPlus[j]*actDataPlus[j].lnGammaSG;
@@ -1023,7 +1030,10 @@ void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,cons
         xPlus[i]=x[i];
     }
     //Calculation of act. coef. a somewhat higher temp.
-    ActCalc(numSubs,baseProp,pintParam,form,&Tplus,x,actDataPlus);
+    //ActCalc(numSubs,baseProp,pintParam,form,&Tplus,x,actDataPlus);
+    if (*actModel==FF_UNIQUAC) FF_ActivityUNIQUAC(numSubs,baseProp,pintParam,form,&Tplus,x,actDataPlus);
+    else if (*actModel==FF_NRTL) FF_ActivityNRTL(numSubs,baseProp,pintParam,form,&Tplus,x,actDataPlus);
+    else if (*actModel==FF_Wilson)FF_ActivityWilson(numSubs,baseProp,pintParam,form,&Tplus,x,actDataPlus);
     gEplus=0;
     for (i=0;i<*numSubs;i++) gEplus=gEplus+x[i]*(actDataPlus[i].lnGammaC+actDataPlus[i].lnGammaSG+actDataPlus[i].lnGammaR);
     excData->dgE_dT=((gEplus)-(excData->gE))/(Tplus- *T);

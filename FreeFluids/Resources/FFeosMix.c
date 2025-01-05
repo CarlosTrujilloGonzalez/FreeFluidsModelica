@@ -173,7 +173,7 @@ EXP_IMP FF_MixData * CALLCONV FF_MixDataFromSubsData(int numSubs,const FF_Substa
 }
 
 //Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData){
+EXP_IMP void CALLCONV FF_MixFillDataWithSubsData(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData){
     int ver=0;
     if (numSubs>15) numSubs=15;
     int h,i,j=0,k=0,l=0,m=0,n=0;
@@ -300,124 +300,6 @@ EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData s
     if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,path,&mixData->unifDortData);
     if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,path,&mixData->unifNistData);
     //return;
-}
-
-//Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData(int *numSubs,FF_SubstanceData *subsData[],FF_MixData *mixData){
-    if (*numSubs>15) *numSubs=15;
-    int h,i,j=0,k=0,l=0,m=0,n=0;
-    int unifacCompStd[*numSubs*10][3];//To contain the Unifac description for all substances:substance,subgroup,number
-    int unifacCompPSRK[*numSubs*10][3];
-    int unifacCompDort[*numSubs*10][3];
-    int unifacCompNist[*numSubs*10][3];
-    int useUnifacStd=1,useUnifacPSRK=1,useUnifacDort=1,useUnifacNist=1;//Indicates that can be used in the mix. If not, we will put to 0
-    for(i=0;i<*numSubs*10;i++){
-        unifacCompStd[i][0]=unifacCompStd[i][1]=unifacCompStd[i][2]=0;
-    }
-    for(h=0;h<*numSubs*10;h++) for(i=0;i<3;i++) {
-        unifacCompStd[h][i]=0;
-        unifacCompPSRK[h][i]=0;
-        unifacCompDort[h][i]=0;
-        unifacCompNist[h][i]=0;
-    }
-
-    mixData->numSubs=*numSubs;
-
-    for (i=0;i<*numSubs;i++){
-        mixData->id[i]=subsData[i]->id;
-        strcpy(mixData->subsName[i],subsData[i]->name);
-        mixData->baseProp[i]=subsData[i]->baseProp;
-        if((mixData->baseProp[i].MWmono>0)&&(mixData->baseProp[i].MW>0)) mixData->baseProp[i].numMono=557;//mixData->baseProp[i].numMono=mixData->baseProp[i].MW/mixData->baseProp[i].MWmono;
-        else mixData->baseProp[i].numMono=1;
-        //In FF_UnifacData we will have the FV of the polymer and in baseProp that of the monomer
-
-        mixData->unifStdData.FV[i]=mixData->baseProp[i].numMono*subsData[i]->baseProp.FV;
-        mixData->unifPSRKData.FV[i]=mixData->baseProp[i].numMono*subsData[i]->baseProp.FV;
-        mixData->unifDortData.FV[i]=mixData->baseProp[i].numMono*subsData[i]->baseProp.FV;
-        mixData->unifNistData.FV[i]=mixData->baseProp[i].numMono*subsData[i]->baseProp.FV;
-        mixData->cubicData[i]=subsData[i]->cubicData;
-        mixData->saftData[i]=subsData[i]->saftData;
-        mixData->cp0[i]=subsData[i]->cp0;
-        mixData->vp[i]=subsData[i]->vp;
-        mixData->hVsat[i]=subsData[i]->hVsat;
-        mixData->lCp[i]=subsData[i]->lCp;
-        mixData->lDens[i]=subsData[i]->lDens;
-        mixData->lVisc[i]=subsData[i]->lVisc;
-        mixData->lThC[i]=subsData[i]->lThC;
-        mixData->lSurfT[i]=subsData[i]->lSurfT;
-        mixData->cp0Corr[i]=subsData[i]->cp0Corr;
-        mixData->vpCorr[i]=subsData[i]->vpCorr;
-        mixData->btCorr[i]=subsData[i]->btCorr;
-        mixData->hVsatCorr[i]=subsData[i]->hVsatCorr;
-        mixData->lCpCorr[i]=subsData[i]->lCpCorr;
-        mixData->lDensCorr[i]=subsData[i]->lDensCorr;
-        mixData->lViscCorr[i]=subsData[i]->lViscCorr;
-        mixData->lThCCorr[i]=subsData[i]->lThCCorr;
-        mixData->lSurfTCorr[i]=subsData[i]->lSurfTCorr;
-        mixData->gDensCorr[i]=subsData[i]->gDensCorr;
-        mixData->gViscCorr[i]=subsData[i]->gViscCorr;
-        mixData->gThCCorr[i]=subsData[i]->gThCCorr;
-
-        mixData->unifStdData.model=FF_UNIFACStd;
-        mixData->unifPSRKData.model=FF_UNIFACPSRK;
-        mixData->unifDortData.model=FF_UNIFACDort;
-        mixData->unifNistData.model=FF_UNIFACNist;
-
-        j=0;
-        if(subsData[i]->UnifStdSubg[j][1]<=0) useUnifacStd=0;
-        while(subsData[i]->UnifStdSubg[j][1]>0){//Put the subgroups description of all substances in a single array
-            unifacCompStd[k][0]=i;
-            unifacCompStd[k][1]=subsData[i]->UnifStdSubg[j][0];
-            if(mixData->baseProp[i].MWmono>1) unifacCompStd[k][2]=mixData->baseProp[i].numMono*subsData[i]->UnifStdSubg[j][1];
-            else unifacCompStd[k][2]=subsData[i]->UnifStdSubg[j][1];
-            //printf("%i %i %i\n",unifacCompStd[k][0],unifacCompStd[k][1],unifacCompStd[k][2]);
-            j++;
-            k++;
-        }
-
-        j=0;
-        if(subsData[i]->UnifPSRKSubg[j][1]<=0) useUnifacPSRK=0;
-        while(subsData[i]->UnifPSRKSubg[j][1]>0){
-            unifacCompPSRK[l][0]=i;
-            unifacCompPSRK[l][1]=subsData[i]->UnifPSRKSubg[j][0];
-            if(mixData->baseProp[i].MWmono>1) unifacCompPSRK[l][2]=mixData->baseProp[i].numMono*subsData[i]->UnifPSRKSubg[j][1];
-            else unifacCompPSRK[l][2]=subsData[i]->UnifPSRKSubg[j][1];
-            //printf("%i %i %i\n",unifacCompPSRK[l][0],unifacCompPSRK[l][1],unifacCompPSRK[l][2]);
-            j++;
-            l++;
-        }
-        j=0;
-        if(subsData[i]->UnifDortSubg[j][0]<=0) useUnifacDort=0;
-        while(subsData[i]->UnifDortSubg[j][0]>0){
-            unifacCompDort[m][0]=i;
-            unifacCompDort[m][1]=subsData[i]->UnifDortSubg[j][0];
-            if(mixData->baseProp[i].MWmono>1) unifacCompDort[m][2]=mixData->baseProp[i].numMono*subsData[i]->UnifDortSubg[j][1];
-            else unifacCompDort[m][2]=subsData[i]->UnifDortSubg[j][1];
-            //printf("%i %i %i\n",unifacCompDort[m][0],unifacCompDort[m][1],unifacCompDort[m][2]);
-            j++;
-            m++;
-        }
-
-        j=0;
-        if(subsData[i]->UnifNistSubg[j][0]<=0)useUnifacNist=0;
-        while(subsData[i]->UnifNistSubg[j][0]>0){
-            unifacCompNist[n][0]=i;
-            unifacCompNist[n][1]=subsData[i]->UnifNistSubg[j][0];
-            if(mixData->baseProp[i].MWmono>1) unifacCompNist[n][2]=mixData->baseProp[i].numMono*subsData[i]->UnifNistSubg[j][1];
-            else unifacCompNist[n][2]=subsData[i]->UnifNistSubg[j][1];
-            //printf("%i %i %i\n",unifacCompNist[n][0],unifacCompNist[n][1],unifacCompNist[n][2]);
-            j++;
-            n++;
-        }
-    }
-
-    //printf(" %i %i %i %i\n",k,unifacCompStd[k][0],unifacCompStd[k][1],unifacCompStd[k][2]);
-    char path[FILENAME_MAX]="";
-    if(useUnifacStd==1)FF_UNIFACParams(k,unifacCompStd,path,&mixData->unifStdData);
-    if(useUnifacPSRK==1)FF_UNIFACParams(l,unifacCompPSRK,path,&mixData->unifPSRKData);
-    if(useUnifacDort==1)FF_UNIFACParams(m,unifacCompDort,path,&mixData->unifDortData);
-    if(useUnifacNist==1)FF_UNIFACParams(n,unifacCompNist,path,&mixData->unifNistData);
-
 }
 
 //Write a mixture data to a file. Adds ".md" extension
@@ -2220,7 +2102,7 @@ void CALLCONV FF_MixVfromTPSAFT(const enum FF_MixingRule *rule,const double *T,c
             resultG[2]=Z;
             if (*state=='l'){
                 if (fabs((resultL[0]-resultG[0])/resultL[0])>0.001) *state='b';
-                else state='u';
+                else *state='u';
             }
             else *state='g';
             //printf("hola\n");
@@ -2274,7 +2156,7 @@ void CALLCONV FF_MixPfromTVeos(const FF_MixData *mix,const double *T,const doubl
         //    break;
         case FF_SAFTtype:
             //*( FF_SaftEOSdata*) data;
-            FF_MixArrZfromTVSAFT(mix->mixRule,T,V,mix->numSubs,mix->saftData,mix->intParam,x,&Arr,&Z);
+            FF_MixArrZfromTVSAFT(&mix->mixRule,T,V,&mix->numSubs,mix->saftData,mix->intParam,x,&Arr,&Z);
             //printf("T:%f V:%f Z:%f\n",*T,*V,Z);
             *P=Z*R* *T/ *V;
             break;

@@ -34,7 +34,7 @@
 #include "FFeosPure.h"
 //#include "FFeosPure.c"
 //Calculates the result of the given equation
-void CALLCONV FF_CorrelationResult(int eq,double coef[],int nPoints,double x[],double y[]){//x contains the in variable, and y the out variable
+void CALLCONV FF_CorrelationResult(int eq,const double coef[],int nPoints,double x[],double y[]){//x contains the in variable, and y the out variable
     int i,j;
     double Tm;
     switch (eq)
@@ -412,7 +412,7 @@ EXP_IMP void CALLCONV FF_PhysPropCorr(int cor,const double coef[],double MW,int 
 
 //Calculates the result of the given equation
 //Same as previous, but now without an array of values
-void CALLCONV FF_CorrelationResultM(int eq,double coef[],double x,double *y){//x contains the in variable, and y the out variable
+void CALLCONV FF_CorrelationResultM(int eq,const double coef[],double x,double *y){//x contains the in variable, and y the out variable
     int j;
     double Tm;
     switch (eq)
@@ -559,7 +559,7 @@ void CALLCONV FF_CorrelationResultM(int eq,double coef[],double x,double *y){//x
 
 //Calculates physical property, with input and output in SI units(kgr, not moles), using the given correlation, that may or not be in SI units
 //Same as previous, but now without an array of values
-EXP_IMP void CALLCONV FF_PhysPropCorrM(int cor,double coef[],double MW,double x,double *y){
+EXP_IMP void CALLCONV FF_PhysPropCorrM(int cor,const double coef[],double MW,double x,double *y){
     //printf("%i %f %f %f %f %f %f %f %f\n",cor,MW,coef[0],coef[1],coef[2],coef[3],coef[4],coef[5],x);
     int eq;
     //First we convert the input variable if necessary
@@ -1399,24 +1399,38 @@ void CALLCONV FF_MixLiqViscGrunberg(FF_MixData *mix,double T,double P,double x[]
     }
     for(i=0;i<mix->numSubs;i++){
         *visc=*visc+x[i]*log(sVisc[i]);
-        for(j=0;j<mix->numSubs;j++) *visc=*visc+0.5*x[i]*x[j];//Necessary to add BIPs
+        for(j=0;j<mix->numSubs;j++) if (i<j){
+            if(mix->viscIntParam[i][j][0]==0) *visc=*visc+2*x[i]*x[j];
+            else *visc=*visc+2*(mix->viscIntParam[i][j][0]+mix->viscIntParam[i][j][1]/T)*x[i]*x[j];
+        }
     }
+    *visc=exp(*visc);
 }
 
 //Teja-Rice method for mixture liquid viscosity
 //BIP is missing
 void CALLCONV FF_MixLiqViscTeja(FF_MixData *mix,double *T,double *P,double x[],double *visc){
     //printf("T:%f P:%f x[0]:%f x[1]:%f\n",*T,*P,x[0],x[1]);
-    int i,j,first,second,nPoints=1;
+    int i,j,first,second;
     double Vcij[mix->numSubs][mix->numSubs],TVcij[mix->numSubs][mix->numSubs],Vcm=0,Tcm=0,MWm=0,wm=0,em,e1,e2,mu1,mu2,T1,T2,satVisc,vp;
     *visc=0;
     for(i=0;i<mix->numSubs;i++){
         for(j=0;j<mix->numSubs;j++){
-            Vcij[i][j]=pow(mix->baseProp[i].Vc,0.33333)+pow(mix->baseProp[j].Vc,0.33333);
-            Vcij[i][j]=Vcij[i][j]*Vcij[i][j]*Vcij[i][j]/8;
-            //TVcij[i][j]=psi[i][j]*pow((mix->baseProp[i].Tc*mix->baseProp[i].Vc*mix->baseProp[j].Tc*mix->baseProp[j].Vc),0.5);//To use with BIPs
-            TVcij[i][j]=(mix->baseProp[i].Tc*mix->baseProp[i].Vc+mix->baseProp[j].Tc*mix->baseProp[j].Vc)/2;//Better equation if no BIPs (psi) are used
+            if (i<j){
+                Vcij[i][j]=pow(mix->baseProp[i].Vc,0.33333)+pow(mix->baseProp[j].Vc,0.33333);
+                Vcij[i][j]=Vcij[i][j]*Vcij[i][j]*Vcij[i][j]/8;
+                Vcij[j][i]=Vcij[i][j];
+                if(!(mix->viscIntParam[i][j][0]==0))
+                    TVcij[i][j]=(mix->viscIntParam[i][j][0]+mix->viscIntParam[i][j][1]/ *T)*pow((mix->baseProp[i].Tc*mix->baseProp[i].Vc*mix->baseProp[j].Tc*mix->baseProp[j].Vc),0.5);//To use with BIPs
+                else TVcij[i][j]=(mix->baseProp[i].Tc*mix->baseProp[i].Vc+mix->baseProp[j].Tc*mix->baseProp[j].Vc)/2;//Better equation if no BIPs (psi) are used
+                TVcij[j][i]=TVcij[i][j];
+            }
+            else if(i==j){
+                Vcij[i][j]=mix->baseProp[i].Vc;
+                TVcij[i][j]=mix->baseProp[i].Tc*mix->baseProp[i].Vc;
+            }
         }
+
     }
     for(i=0;i<mix->numSubs;i++){
         MWm=MWm+x[i]*mix->baseProp[i].MW;
@@ -1473,6 +1487,38 @@ void CALLCONV FF_MixLiqViscTeja(FF_MixData *mix,double *T,double *P,double x[],d
     else return;
     //printf("mu1:%f mu2:%f\n",mu1,mu2);
     *visc=exp(log(e1*mu1)+(log(e2*mu2)-log(e1*mu1))*(wm-mix->baseProp[first].w)/(mix->baseProp[second].w-mix->baseProp[first].w))/em;
+}
+
+//Andrade method for mixture liquid viscosity
+void CALLCONV FF_MixLiqViscAndrade(FF_MixData *mix,double T,double P,double x[],double *visc){
+    double satVisc,vp,sVisc[mix->numSubs],k,l;
+    int i,j;
+    *visc=0;
+    for(i=0;i<mix->numSubs;i++){
+        if(mix->lViscCorr[i].form>0){
+            FF_PhysPropCorrM(mix->lViscCorr[i].form,mix->lViscCorr[i].coef,mix->baseProp[i].MW,T,&satVisc);
+            if((mix->vpCorr[i].form>0)&&(P>10e5)){
+                FF_PhysPropCorrM(mix->vpCorr[i].form,mix->vpCorr[i].coef,mix->baseProp[i].MW,T,&vp);
+                FF_LiqViscPcorLucas(T,P,vp,&mix->baseProp[i],satVisc,&sVisc[i]);
+            }
+            else sVisc[i]=satVisc;
+        }
+        else return;
+    }
+    for(i=0;i<mix->numSubs;i++){
+        *visc=*visc+x[i]*log(sVisc[i]);
+        for(j=0;j<mix->numSubs;j++){
+            if(i<j){
+                if(mix->viscIntParam[i][j][0]==0) *visc=*visc+2*x[i]*x[j];
+                else{
+                    k=mix->viscIntParam[i][j][0]+mix->viscIntParam[i][j][1]/T;
+                    l=mix->viscIntParam[i][j][2]+mix->viscIntParam[i][j][3]/T;
+                    *visc=*visc+2*(k+l*x[i]*x[j])*x[i]*x[j];
+                }
+            }
+        }
+    }
+    *visc=exp(*visc);
 }
 
 //Thermal conductivity of liquids. Latini method

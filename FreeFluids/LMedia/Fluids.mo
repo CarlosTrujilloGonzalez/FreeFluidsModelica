@@ -45,7 +45,7 @@ within FreeFluids.LMedia;
     end Ethanol;
 
     package EthyleneGlycol
-      extends FreeFluids.LMedia.LMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EG});
+      extends FreeFluids.LMedia.LMedium(final mediumName = "Ethylene glycol", final singleState = false, p_default = 3.0e5, T_default = 423.15, fluidConstants = {FreeFluids.MediaCommon.MediaDataAL.EthyleneGlycol});
     end EthyleneGlycol;
 
     package Heptane_n

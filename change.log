@@ -1,3 +1,7 @@
+Version 4.5.0
+- The C code is now compatible with Clang compilers, so the default compilers can be used with OpenModelica.
+- The ExternalMixMedium can now use BIPs for liquid viscosity calculation.
+
 Version 4.4.0
 - The p,T flash has been changed in order to avoid the use of bubble and dew states. It is not the final version but the result is faster and more reliable.
 - p,h and p,s flashes has been also changed for the same reason, but the new version is working correctly only with cubic EOS, so the old version (aided by bubble and dew states) has been retained for PCSAFT EOS.

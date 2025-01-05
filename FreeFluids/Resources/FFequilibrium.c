@@ -3488,7 +3488,7 @@ void CALLCONV FF_TwoPhasesFlashPH(FF_FeedData *data, FF_PhaseThermoProp phase[2]
 
     for(j=0;j<10;j++){//Regula falsi loops to bracket the T solution
         phase[0].T=Tlow+(data->H-Hlow)*(Thigh-Tlow)/(Hhigh-Hlow);
-        FF_MixVfromTPeos(data->mix,&phase[0].T,&data->P,data->z,&option,answerL,answerG,state);
+        FF_MixVfromTPeos(data->mix,&phase[0].T,&data->P,data->z,&option,answerL,answerG,&state);
         if((state=='L')||(state=='l')||(state=='U')||(state=='u')){
             phase[0].V=answerL[0];
         }
@@ -3508,7 +3508,7 @@ void CALLCONV FF_TwoPhasesFlashPH(FF_FeedData *data, FF_PhaseThermoProp phase[2]
 
     for(j=0;j<10;j++){
         FF_TwoPhasesFlashPT(data->mix,&phase[0].T,&data->P,data->z,phase[1].c,phase[0].c,phase[1].subsPhi,phase[0].subsPhi,&phase[0].fraction);
-        FF_MixVfromTPeos(data->mix,&phase[0].T,&data->P,phase[0].c,&option,answerL,answerG,state);
+        FF_MixVfromTPeos(data->mix,&phase[0].T,&data->P,phase[0].c,&option,answerL,answerG,&state);
         if((state=='L')||(state=='l')||(state=='U')||(state=='u')){
             phase[0].V=answerL[0];
         }
