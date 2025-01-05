@@ -98,7 +98,7 @@ EXP_IMP void CALLCONV FF_ArrDerSAFT0T(double T,double V,const  FF_SaftEOSdata *d
 EXP_IMP void CALLCONV FF_PfromTVSAFT(double T,double V,const  FF_SaftEOSdata *data,double *P);
 //V,Arr and Z calculation for a pure substance, given T and P, according to FF_PCSAFT EOS
 //Volume solver from T and P using a SAFT or SW EOS. Regula Falsi solver, Anderson-Bjork modification.
-EXP_IMP double CALLCONV FF_VsolverRegula(void (*f)(double, double, void *, double *), void *data, double T, double P, double a, double b);
+EXP_IMP double CALLCONV FF_VsolverRegula(void *data, double T, double P, double a, double b);
 EXP_IMP void CALLCONV FF_VfromTPsaft(double T,double P,const  FF_SaftEOSdata *data,char option,double resultL[3],double resultG[3],char *state);
 
 

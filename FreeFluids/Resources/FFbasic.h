@@ -67,7 +67,8 @@ enum FF_EOS{FF_IdealGas,FF_PR76,FF_PR78,FF_PRSV1,FF_PRBM,FF_PRMELHEM,FF_PRSOF,FF
             FF_PPCSAFT1A_GV,FF_PPCSAFT2B_GV,FF_PPCSAFT2B_JC,FF_PPCSAFT3B_GV,FF_PPCSAFT4C_GV,FF_PCSAFTPOL1,
             FF_SAFTVRMie,FF_SAFTVRMie1A,FF_SAFTVRMie2B,FF_SAFTVRMie4C,FF_PSAFTVRMie_GV,FF_PSAFTVRMie_JC,FF_SAFTVRMie2B_GV,FF_SAFTVRMie4C_GV,
             FF_SW,FF_IAPWS95,IF97};
-enum FF_MixingRule{FF_NoMixRul,FF_VdW,FF_PR,FF_MKP,FF_HV,FF_MHV1,FF_PSRK,FF_HVOS,FF_LCVM,FF_MHV2,FF_UMR,FF_OPTgE,FF_PSRKnew,FF_VTPR,FF_VdWnoInt,FF_BL,FF_IndAssoc};
+enum FF_MixingRule{FF_NoMixRul,FF_VdW,FF_PR,FF_MKP,FF_HV,FF_MHV1,FF_PSRK,FF_HVOS,FF_LCVM,FF_MHV2,FF_UMR,FF_OPTgE,
+                   FF_PSRKnew,FF_VTPR,FF_VdWnoInt,FF_BL,FF_IndAssoc,FF_Teja,FF_Grunberg,FF_Andrade,FF_McAllister3,FF_McAllister4};
 enum FF_CorrEquation{FF_DIPPR100,FF_Polynomial,FF_Polynomial2,FF_DIPPR100Ld,FF_expDIPPR100,FF_DIPPR101,FF_DIPPR101Vp,FF_DIPPR101Lv,FF_logDIPPR101,
                   FF_DIPPR102,FF_DIPPR103,FF_DIPPR104,FF_DIPPR105,FF_DIPPR106,FF_DIPPR106Hv,FF_DIPPR106Ld,FF_DIPPR106SurfT,FF_DIPPR107,
                   FF_DIPPR107Cp,FF_DIPPR114,FF_DIPPR115,FF_DIPPR116,FF_DIPPR116Ld,FF_Wilhoit,FF_Cooper,FF_Jaechske,FF_ChemSep16,FF_Antoine1,
@@ -132,8 +133,8 @@ typedef struct{int numSubs,thModelActEos,actModel,refVpEos,eosType,mixRule;}FF_T
 //Data for a mixture. Includes as arrays(fixed to 15 substances) the substances data, plus definition of the thermo model to use. BIP ar not included
 //as they would change depending on the model choosen for calculations(activity/eos) and the EOS selected
 //thModelActEos: 0(gamma-phi), 1(phi-phi), 2(gamma-gamma). If an  activity model is used for the liquid phase the BIP will be for this activity model.
-typedef struct {char name[30],description[150],subsName[15][30],CAS[15][22];int model,numSubs,thModelActEos,actModel,refVpEos,eosType,mixRule,intForm,id[15];
-                double refT,refP,intParam[15][15][6];FF_BaseProp baseProp[15];FF_UnifacData unifStdData,
+typedef struct {char name[30],description[150],subsName[15][30],CAS[15][22];int model,numSubs,thModelActEos,actModel,refVpEos,eosType,mixRule,intForm,viscMixRule,id[15];
+                double refT,refP,intParam[15][15][6],viscIntParam[15][15][6];FF_BaseProp baseProp[15];FF_UnifacData unifStdData,
                 unifPSRKData,unifDortData,unifNistData;FF_SinglePointData RI[15],cp0[15],vp[15],hVsat[15],lCp[15],lDens[15],lVisc[15],lThC[15],lSurfT[15],
                 gVisc[15],gThC[15],sDens[15],sCp[15];FF_CubicEOSdata cubicData[15];FF_SaftEOSdata saftData[15];
                 FF_Correlation cp0Corr[15],vpCorr[15],btCorr[15],hVsatCorr[15],lCpCorr[15],lDensCorr[15],lViscCorr[15],lThCCorr[15],lSurfTCorr[15],

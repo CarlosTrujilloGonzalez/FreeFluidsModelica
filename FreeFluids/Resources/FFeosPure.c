@@ -915,7 +915,7 @@ EXP_IMP void CALLCONV FF_PfromTVSAFT(double T,double V,const  FF_SaftEOSdata *da
 
 
 //Volume solver from T and P using a SAFT or SW EOS. Regula Falsi solver, Anderson-Bjork modification.
-double CALLCONV FF_VsolverRegula(void (*f)(double, double, void *, double *), void *data, double T, double P, double a, double b){//a and b define the interval
+double CALLCONV FF_VsolverRegula(void *data, double T, double P, double a, double b){//a and b define the interval
     double ftol=1.0e-5;
     int niter=15;
     double fx,fa,fb;
@@ -923,9 +923,9 @@ double CALLCONV FF_VsolverRegula(void (*f)(double, double, void *, double *), vo
     int n=0;
     int side=0;
     double ex,ea,eb;//errors at x, a and b points
-    (*f)(T,a,data,&fa);
+    FF_PfromTVsw(T,a,data,&fa);
     ea=fa-P;
-    (*f)(T,b,data,&fb);
+    FF_PfromTVsw(T,b,data,&fb);
     eb=fb-P;
     if (ea*eb>0) return x;//if both functions have the same sign, it is not sure that a root exists
     if ((ea/P<ftol)&&(ea/P>(-ftol))) x=a;//if one of the given value was already the solution
@@ -933,13 +933,13 @@ double CALLCONV FF_VsolverRegula(void (*f)(double, double, void *, double *), vo
     else{
         while (n<niter){
             x=a+(b-a)*ea/(ea-eb);
-            (*f)(T,x,data,&fx);
+            FF_PfromTVsw(T,x,data,&fx);
             n++;
             ex=fx-P;
             //printf("n:%i P:%f a:%f ea:%f b:%f eb:%f x:%e fx:%e ex:%f\n",n+1,P,a,ea,b,eb,x,fx,ex);
             if (((ex/ea)>0.8)||((ex/eb)>0.8)){
                 x=(a+b)/2;
-                (*f)(T,x,data,&fx);
+                FF_PfromTVsw(T,x,data,&fx);
                 ex=fx-P;
                 if ((eb*ex)>0){
                     b=x;
@@ -1652,7 +1652,7 @@ void CALLCONV FF_VfromTPswS(double T,double P,const  FF_SubstanceData *data,char
 
     //Zone where Newton method is slow
     if((T>=Tc)&&(T<Tc+2)&&(P>0.95*Pc)&&(P<1.05*Pc)){
-        resultG[0]=FF_VsolverRegula(FF_PfromTVsw,&data->swData,T,P,0.6*rCubicG[0],1.2*rCubicG[0]);
+        resultG[0]=FF_VsolverRegula(&data->swData,T,P,0.6*rCubicG[0],1.2*rCubicG[0]);
         FF_ArrZfromTVsw(T,resultG[0],&data->swData,&resultG[1],&resultG[2]);//We need to fill Arr and Z
         *state='G';
         return;

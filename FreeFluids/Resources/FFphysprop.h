@@ -50,18 +50,18 @@ extern "C"
 //Single substance, physical properties correlations
 //--------------------------------------------------
 //Calculates the result of the given equation
-EXP_IMP void CALLCONV FF_CorrelationResult(int eq,double coef[],int nPoints,double x[],double y[]);
+EXP_IMP void CALLCONV FF_CorrelationResult(int eq,const double coef[],int nPoints,double x[],double y[]);
 
 //Calculates physical property, with input and output in SI units(kgr, not moles), using the given correlation, that may or not be in SI units
 EXP_IMP void CALLCONV FF_PhysPropCorr(int cor,const double coef[],double MW,int nPoints,double x[],double y[]);
 
 //Calculates the result of the given equation
 //Same as previous, but now without an array of values
-EXP_IMP void CALLCONV FF_CorrelationResultM(int eq,double coef[],double x,double *y);
+EXP_IMP void CALLCONV FF_CorrelationResultM(int eq,const double coef[],double x,double *y);
 
 //Calculates physical property, with input and output in SI units(kgr, not moles), using the given correlation, that may or not be in SI units
 //Same as previous, but now without an array of values
-EXP_IMP void CALLCONV FF_PhysPropCorrM(int cor,double coef[],double MW,double x,double *y);
+EXP_IMP void CALLCONV FF_PhysPropCorrM(int cor,const double coef[],double MW,double x,double *y);
 
 //Finds independent variable of a physical property correlation
 EXP_IMP int CALLCONV FF_CorrelationSolver(double y, FF_Correlation *corr, double MW, double *x, double *yFound);
@@ -126,6 +126,9 @@ EXP_IMP void CALLCONV FF_MixLiqViscGrunberg(FF_MixData *mix,double T,double P,do
 //Teja-Rice method for mixture liquid viscosity
 //BIP is missing
 EXP_IMP void CALLCONV FF_MixLiqViscTeja(FF_MixData *mix,double *T,double *P,double x[],double *visc);
+
+//Andrade method for mixture liquid viscosity
+EXP_IMP void CALLCONV FF_MixLiqViscAndrade(FF_MixData *mix,double T,double P,double x[],double *visc);
 
 //Thermal conductivity of liquids. Latini method
 EXP_IMP void CALLCONV FF_LiquidThCondLatini(double T,FF_BaseProp *data,double *thCond);

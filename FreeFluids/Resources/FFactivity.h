@@ -63,7 +63,7 @@ void CALLCONV FF_UNIFACParams(int numData, const int data[][3], const char *resD
 EXP_IMP void CALLCONV FF_ActivityUNIFAC(FF_UnifacData *data, const double *T, const double x[],FF_SubsActivityData actData[]);
 
 //Calculates activity coefficents according any of the defined models
-EXP_IMP void CALLCONV FF_Activity(FF_MixData *mix,double *T,double x[],FF_SubsActivityData actData[]);
+EXP_IMP void CALLCONV FF_Activity(FF_MixData *mix,const double *T,double x[],FF_SubsActivityData actData[]);
 
 //Calculates fugacity and activity coefficients, at given T and composition, from an activity model
 EXP_IMP void CALLCONV FF_PhiAndActivity(FF_MixData *mix,const double *T,const double *P,const double x[],FF_SubsActivityData actData[],double phi[]);
@@ -75,7 +75,7 @@ void CALLCONV FF_PhiFromActivity(FF_MixData *mix,const double *T,const double *P
 EXP_IMP void CALLCONV FF_UNIFACDerivatives(FF_UnifacData *data, const double *T, const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData);
 
 //Calculates ln of activities and the derivatives of gE for act.coef. models
-EXP_IMP void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const int *form,
+EXP_IMP void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const enum FF_IntParamForm *form,
                                         const double *T,const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData);
 
 #ifdef __cplusplus

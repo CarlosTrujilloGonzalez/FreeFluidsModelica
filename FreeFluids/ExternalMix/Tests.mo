@@ -131,7 +131,7 @@ package Tests
   end EGWaterCubic;
 
   model EGWaterPCSAFT
-    extends EGWaterCubic(Medium(subsNames = "EthyleneGlycolSRK,WaterSRK", eosType="PCSAFT"));
+    extends EGWaterCubic(Medium(eosType="PCSAFT", mixRule="BL"));
   end EGWaterPCSAFT;
 
   model AcetoneChloroformCubic
@@ -163,7 +163,7 @@ package Tests
   end BenzeneHeptane_nCubic;
     
   model MethanolPentane_nCubic
-  extends TestModel2(Medium(subsNames = "Methanol,Pentane_n", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 397.7, finalT = 397.7, initialP = 14e5, finalP = 14e5, initialZ1=0.001, finalZ1=0.999);
+  extends TestModel2(Medium(subsNames = "Methanol,Pentane_n", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 397.7, finalT = 397.7, initialP = 14e5, finalP = 14e5, initialZ1=0.0001, finalZ1=0.9999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
   end MethanolPentane_nCubic;
@@ -218,6 +218,19 @@ package Tests
   extends AcrylicAceticAcidCubic(Medium(eosType = "PCSAFT", mixRule = "None", activityModel = "None"));
   end AcrylicAceticAcidPCSAFT;
 
+  model EthanolHeptaneCubic
+  extends TestModel2(Medium(subsNames = "Ethanol,Heptane_n", eosType = "PR", mixRule = "LCVM", activityModel = "UNIFACpsrk"), initialT = 293.15, finalT = 353.15, initialP = 1.0e5, finalP = 20.0e5, initialZ1=0.001, finalZ1=0.999);
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
+  end EthanolHeptaneCubic;
+  
+  model WaterDioxaneCubic
+  extends TestModel2(Medium(subsNames = "WaterRef,Dioxane_1_4", eosType = "PR", mixRule = "LCVM", activityModel = "UNIFACpsrk", viscMixRule="Teja"), initialT = 313.15, finalT = 313.15, initialP = 1.0e5, finalP = 1.0e5, initialZ1=0.001, finalZ1=0.999);
+    annotation(
+      experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));
+  end WaterDioxaneCubic;
+  
+
   model AcetoneEthanolWaterCubic
   extends TestModelBase(Medium(subsNames = "Acetone,Ethanol,WaterRef", eosType = "PR", mixRule = "VdWnoInt", activityModel = "UNIFACpsrk"), initialT = 300, finalT = 350, initialP = 1.9e5, finalP = 1.5e5, Z={0.5,0.25,0.25});
     annotation(
@@ -233,7 +246,7 @@ package Tests
   
 
   model TestLiquidStateCubic
-   package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort");
+   package Medium = FreeFluids.ExternalMix.ExternalMixMedium(mediumName = "Test", subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "MHV2", activityModel = "UNIFACdort", viscMixRule="Teja");
    parameter Real initialT = 273.15+10;   //93.33;
     //403
    parameter Real finalT = 273.15+10;//93.33;
@@ -255,6 +268,7 @@ package Tests
    Real SS;
    Medium.SpecificHeatCapacity Cp;
    Medium.DynamicViscosity Eta;
+   Medium.ThermalConductivity Lambda;
   algorithm
    MM := Medium.molarMasses();
    Z := Medium.massToMoleFractions(Zmass, MM);
@@ -264,6 +278,7 @@ package Tests
    SS := Medium.velocityOfSound(stateL);
    Cp := Medium.specificHeatCapacityCp(stateL);
    Eta := Medium.dynamicViscosity(stateL);
+   Lambda:=Medium.thermalConductivity(stateL);
    stateH:=Medium.setState_phX(p,H,Zmass);
   equation
    der(T) = finalT - initialT;

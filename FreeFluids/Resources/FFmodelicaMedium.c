@@ -462,7 +462,7 @@ void FF_surfaceTensionM(const char *name, const char *resDir, int thermoModel, i
 
 //Creates a static mixture array that is charged each time it is called
 //void *FF_createMixData(const char *name, int numSubs, const char subsNames[15][30], const char *resDir) {
-void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel) {
+void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const char *resDir, char *eosType, char *mixRule, char *activityModel, char*viscMixRule) {
     int i,j,k,count;
     static int n;//defined mixtures counter
     static char mixture[3][30];//stored mixture names
@@ -505,13 +505,23 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
         char path[FILENAME_MAX]="";
         strcat(path,resDir);
         strcat(path,"/Extra/");
-        FF_MixFillDataWithSubsData2(numSubs,subsData,path,&mixData[i]);
+        FF_MixFillDataWithSubsData(numSubs,subsData,path,&mixData[i]);
         mixData[i].numSubs=numSubs;
         mixData[i].thModelActEos=1;
         mixData[i].refVpEos=1;
         mixData[i].refT=0.0;
         mixData[i].refP=101325.0;
         mixData[i].eosType=FF_CubicPRtype;//EOS type by default
+
+        //Configuration of thermodynamic and transport models
+        //---------------------------------------------------
+        char path2[FILENAME_MAX]="";
+        strcat(path2,resDir);
+        char path3[FILENAME_MAX]="";
+        strcat(path3,resDir);
+        char cas1[22],cas2[22],form[20];
+        float a,b,c,d,e,f,ai,bi,ci,di,ei,fi;
+
         if (strcmp(eosType,"SRK")==0) mixData[i].eosType=FF_CubicSRKtype;
         else if(strcmp(eosType,"PCSAFT")==0) mixData[i].eosType=FF_SAFTtype;
 
@@ -524,24 +534,41 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             else if(strcmp(activityModel,"NRTL")==0) mixData[i].actModel=FF_NRTL;
 
             mixData[i].mixRule=FF_LCVM;//default mixing rule
-            if(strcmp(cubicMixRule,"VdWnoInt")==0) mixData[i].mixRule=FF_VdWnoInt;
-            else if(strcmp(cubicMixRule,"VdW")==0) mixData[i].mixRule=FF_VdW;
-            else if (strcmp(cubicMixRule,"HV")==0) mixData[i].mixRule=FF_HV;
-            else if (strcmp(cubicMixRule,"MHV1")==0) mixData[i].mixRule=FF_MHV1;
-            else if (strcmp(cubicMixRule,"MHV2")==0) mixData[i].mixRule=FF_MHV2;
-            else if (strcmp(cubicMixRule,"UMR")==0) mixData[i].mixRule=FF_UMR;
-            else if (strcmp(cubicMixRule,"PSRK")==0) mixData[i].mixRule=FF_PSRK;
+            if(strcmp(mixRule,"VdWnoInt")==0) mixData[i].mixRule=FF_VdWnoInt;
+            else if(strcmp(mixRule,"VdW")==0) mixData[i].mixRule=FF_VdW;
+            else if (strcmp(mixRule,"HV")==0) mixData[i].mixRule=FF_HV;
+            else if (strcmp(mixRule,"MHV1")==0) mixData[i].mixRule=FF_MHV1;
+            else if (strcmp(mixRule,"MHV2")==0) mixData[i].mixRule=FF_MHV2;
+            else if (strcmp(mixRule,"UMR")==0) mixData[i].mixRule=FF_UMR;
+            else if (strcmp(mixRule,"PSRK")==0) mixData[i].mixRule=FF_PSRK;
         }
         else {
-            if(strcmp(cubicMixRule,"IndAssoc")==0) mixData[i].mixRule=FF_IndAssoc;
+            if(strcmp(mixRule,"IndAssoc")==0) mixData[i].mixRule=FF_IndAssoc;
+            else mixData[i].mixRule=FF_BL;
             //printf("mixrule:%i \n",mixData[i].mixRule);
         }
+        if (strcmp(viscMixRule,"McAllister4")==0){
+            mixData[i].viscMixRule=FF_McAllister4;
+            strcat(path3,"/Interactions/McAllister4.txt");
+        }
+        else if (strcmp(viscMixRule,"McAllister3")==0){
+            mixData[i].viscMixRule=FF_McAllister3;
+            strcat(path3,"/Interactions/McAllister3.txt");
+        }
+        else if (strcmp(viscMixRule,"Andrade")==0){
+            mixData[i].viscMixRule=FF_Andrade;
+            strcat(path3,"/Interactions/Andrade.txt");
+        }
+        else if (strcmp(viscMixRule,"Grunberg")==0){
+            mixData[i].viscMixRule=FF_Grunberg;
+            strcat(path3,"/Interactions/Grunberg.txt");
+        }
+        else{
+            mixData[i].viscMixRule=FF_Teja;
+            strcat(path3,"/Interactions/Teja.txt");
+        }
 
-        //load of interaction parameters
-        char path2[FILENAME_MAX]="";
-        char cas1[22],cas2[22],form[20];
-        float a,b,c,d,e,f,ai,bi,ci,di,ei,fi;
-        strcat(path2,resDir);
+        //load of interaction parameters for EOS or activity calculation
         if (mixData[i].eosType==FF_SAFTtype){
             strcat(path2,"/Interactions/PCSAFT.txt");
             FILE * file= fopen(path2, "rb");
@@ -671,6 +698,31 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             else printf("unable to charge the interaction parameters\n");
         }
 
+        //load of interaction parameters for liquid viscosity calculation
+        FILE * file= fopen(path3, "rb");
+        if (file != NULL) {
+          count=0;
+          while (fscanf(file,"%s %s %f %f %f %f %f %f",cas1,cas2,&a,&b,&c,&d,&e,&f)==8){
+              for (j=0;j<numSubs;j++){
+                  for (k=0;k<numSubs;k++){
+                      if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                          count++;
+                          mixData[i].viscIntParam[j][k][0]=mixData[i].viscIntParam[k][j][0]=a;
+                          mixData[i].viscIntParam[j][k][1]=mixData[i].viscIntParam[k][j][1]=b;
+                          mixData[i].viscIntParam[j][k][2]=mixData[i].viscIntParam[k][j][2]=c;
+                          mixData[i].viscIntParam[j][k][3]=mixData[i].viscIntParam[k][j][3]=d;
+                          mixData[i].viscIntParam[j][k][4]=mixData[i].viscIntParam[k][j][4]=e;
+                          mixData[i].viscIntParam[j][k][5]=mixData[i].viscIntParam[k][j][5]=f;
+                      }
+                  }
+
+              }
+              //if (count==(numSubs*(numSubs-1)/2)) break;//problematic if there are duplicate values
+          }
+          //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+          fclose(file);
+        }
+        else printf("unable to charge the interaction parameters\n");
 
 
     }
@@ -678,8 +730,8 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
 }
 
 //molar masses of components
-void FF_molarMassesM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double molarMass[15]){
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+void FF_molarMassesM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double molarMass[15]){
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   for(int i=0;i<numSubs;i++){
       molarMass[i]=0.001*mix->baseProp[i].MW;
       //printf("%f %f\n",mix->baseProp[i].MW),molarMass[i];
@@ -687,9 +739,9 @@ void FF_molarMassesM(const char *name, int numSubs, char *subsNames, const char 
 }
 
 //Pressure from T,D,X by EOS.
-void FF_pressure_dTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double D, double T, double zMass[15], double *p, double *MW){
+void FF_pressure_dTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double D, double T, double zMass[15], double *p, double *MW){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   *MW=0;
   double z[numSubs];
@@ -710,9 +762,9 @@ void FF_pressure_dTXM(const char *name, int numSubs, char *subsNames, const char
 }
 
 //Density from T,P,X by EOS.
-void FF_density_pTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, char *var, double P, double T, double zMass[15], double *ld, double *gd, double *MW){
+void FF_density_pTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, char *var, double P, double T, double zMass[15], double *ld, double *gd, double *MW){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   double nMols=0;//number of moles in 1 gr
   *MW=0;
@@ -741,9 +793,9 @@ void FF_density_pTXM(const char *name, int numSubs, char *subsNames, const char 
 }
 
 //Thermodynamic properties from T,D,X by EOS.
-void FF_thermo_dTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel,
+void FF_thermo_dTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule,
                     double D, double T, double zMass[15], double *p, double *h, double *s, double *Cv, double *Cp, double *Dvp, double *DvT){
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   FF_PhaseThermoProp th;
   double nMols=0;
@@ -772,9 +824,9 @@ void FF_thermo_dTXM(const char *name, int numSubs, char *subsNames, const char *
   //printf("D:%f T:%f Cp:%f J/mol MW:%f kg/mol Cp:%f J/kg\n",D,T,th.Cp,MW,*Cp);
 }
 
-void FF_activity_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel,
+void FF_activity_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule,
                      double T, double xMass[15], double gamma[15], double*gE){
-   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
    double nMols=0;
    double x[numSubs];
    FF_SubsActivityData actData[numSubs];
@@ -794,12 +846,11 @@ void FF_activity_TXM(const char *name, int numSubs, char *subsNames, const char 
 
 }
 
-void FF_fugacity_pTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel,
+void FF_fugacity_pTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule,
                      double p, double T, double xMass[15], double phiL[15], double phiG[15], double kWilson[15]){
-   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+   FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
    double nMols=0;
    double x[numSubs];
-   FF_SubsActivityData actData[numSubs];
    for(int i=0;i<numSubs;i++){
        nMols=nMols+xMass[i]/mix->baseProp[i].MW;
    }
@@ -817,9 +868,9 @@ void FF_fugacity_pTXM(const char *name, int numSubs, char *subsNames, const char
 
 
 //bubble pressure and composition from T,X by EOS.
-void FF_bubble_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double T, double xMass[15], double *p, double yMass[15]){
+void FF_bubble_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double T, double xMass[15], double *p, double yMass[15]){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   double nMols=0;
   double MW=0;
@@ -843,9 +894,9 @@ void FF_bubble_TXM(const char *name, int numSubs, char *subsNames, const char *r
 }
 
 //bubble temperature and composition from p,X by EOS.
-void FF_bubble_pXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double xMass[15], double *T, double yMass[15]){
+void FF_bubble_pXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double xMass[15], double *T, double yMass[15]){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   double nMols=0;
   double MW=0;
@@ -868,9 +919,9 @@ void FF_bubble_pXM(const char *name, int numSubs, char *subsNames, const char *r
 }
 
 //dew pressure and composition from T,y by EOS.
-void FF_dew_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double T, double yMass[15], double *p, double xMass[15]){
+void FF_dew_TXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double T, double yMass[15], double *p, double xMass[15]){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   double nMols=0;
   double MW=0;
@@ -893,9 +944,9 @@ void FF_dew_TXM(const char *name, int numSubs, char *subsNames, const char *resD
 }
 
 //dew temperature and composition from p,y by EOS.
-void FF_dew_pXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double yMass[15], double *T, double xMass[15]){
+void FF_dew_pXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double yMass[15], double *T, double xMass[15]){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
   double nMols=0;
   double MW=0;
@@ -918,9 +969,9 @@ void FF_dew_pXM(const char *name, int numSubs, char *subsNames, const char *resD
 }
 
 //VL flash calculation, given T, P, feed composition, eos and mixing rule.
-void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double zMass[],
+void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double zMass[],
                            double xMass[],double yMass[],double *gfMass){
-    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
     double nMols=0;
     double lMW=0,gMW=0;
@@ -967,9 +1018,9 @@ void FF_TwoPhasesFlashPTXM(const char *name, int numSubs, char *subsNames, const
 }
 
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
-void FF_TwoPhasesFlashPTM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double zMass[],
+void FF_TwoPhasesFlashPTM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double zMass[],
                            double xMass[],double yMass[],double *gfMass){
-    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
 
     double nMols=0;
@@ -996,14 +1047,14 @@ void FF_TwoPhasesFlashPTM(const char *name, int numSubs, char *subsNames, const 
 }
 
 //VL flash calculation, given H or S, P, feed composition, eos and mixing rule
-void FF_TwoPhasesFlashP_HS_XM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, char *election, double p, double e, double *T, double zMass[],
+void FF_TwoPhasesFlashP_HS_XM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, char *election, double p, double e, double *T, double zMass[],
                            double xMass[],double yMass[],double *gfMass){
-    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
     double nMols=0;//number of moles in 1 gr
     double lMW=0,gMW=0;
     double gf=0.33;//gas molar fraction
-    double z[numSubs],x[numSubs],y[numSubs],phiL[numSubs],phiG[numSubs];
+    double z[numSubs],x[numSubs],y[numSubs];
     int i;
     double eMolar;
     for(int i=0;i<numSubs;i++){
@@ -1048,9 +1099,9 @@ void FF_TwoPhasesFlashP_HS_XM(const char *name, int numSubs, char *subsNames, co
 }
 
 //VL flash calculation, given gas fraction, P, feed composition, eos and mixing rule
-void FF_TwoPhasesFlashPThetaXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, char *opt, double p, double Theta, double *T, double zMass[],
+void FF_TwoPhasesFlashPThetaXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, char *opt, double p, double Theta, double *T, double zMass[],
                            double xMass[],double yMass[]){
-    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
     double nMols=0;//number of moles in 1 gr
     double lMW=0,gMW=0;
@@ -1080,9 +1131,9 @@ void FF_TwoPhasesFlashPThetaXM(const char *name, int numSubs, char *subsNames, c
 
 
 //VL flash calculation, given T, P, feed composition, eos and mixing rule
-void FF_RachfordRiceSolverPTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double zMass[],
+void FF_RachfordRiceSolverPTXM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double zMass[],
                            double kInit[], double xMass[],double yMass[],double *gfMass){
-    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+    FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
 
 
     double nMols=0;
@@ -1110,9 +1161,9 @@ void FF_RachfordRiceSolverPTXM(const char *name, int numSubs, char *subsNames, c
 }
 
 //Liquid mix viscosity from p,T,X by Teja-Rice method
-void FF_mixLiquidViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double xMass[], double *eta){
+void FF_mixLiquidViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double xMass[], double *eta){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   double x[numSubs]; //liquid molar fractions
   for(int i=0;i<numSubs;i++){
@@ -1122,13 +1173,15 @@ void FF_mixLiquidViscosityM(const char *name, int numSubs, char *subsNames, cons
       x[i]=xMass[i]/(mix->baseProp[i].MW*nMols);
   }
 
-  FF_MixLiqViscTeja(mix,&T,&p,x,eta);
+  if(mix->viscMixRule==FF_Grunberg) FF_MixLiqViscGrunberg(mix,T,p,x,eta);
+  else if(mix->viscMixRule==FF_Andrade) FF_MixLiqViscAndrade(mix,T,p,x,eta);
+  else FF_MixLiqViscTeja(mix,&T,&p,x,eta);
 }
 
 //Gas mix viscosity from p,T,X by Lucas method
-void FF_mixGasViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double yMass[], double *eta){
+void FF_mixGasViscosityM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double yMass[], double *eta){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   double y[numSubs]; //liquid molar fractions
   for(int i=0;i<numSubs;i++){
@@ -1142,9 +1195,9 @@ void FF_mixGasViscosityM(const char *name, int numSubs, char *subsNames, const c
 }
 
 //Liquid mix thermal conductivity from p,T,X by Latini method
-void FF_mixLiquidThCondM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double xMass[], double *lambda){
+void FF_mixLiquidThCondM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double xMass[], double *lambda){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   double x[numSubs]; //liquid molar fractions
   for(int i=0;i<numSubs;i++){
@@ -1158,9 +1211,9 @@ void FF_mixLiquidThCondM(const char *name, int numSubs, char *subsNames, const c
 }
 
 //Gas mix thermal conductivity from p,T,X by Mason method
-void FF_mixGasThCondM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double yMass[], double *lambda){
+void FF_mixGasThCondM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double yMass[], double *lambda){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   double y[numSubs]; //liquid molar fractions
   for(int i=0;i<numSubs;i++){
@@ -1173,9 +1226,9 @@ void FF_mixGasThCondM(const char *name, int numSubs, char *subsNames, const char
 }
 
 //Liquid mix thermal conductivity from p,T,X by Latini method
-void FF_mixSurfaceTensionM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *cubicMixRule, char *activityModel, double p, double T, double xMass[], double *sigma){
+void FF_mixSurfaceTensionM(const char *name, int numSubs, char *subsNames, const char *resDir, char *eosType, char *mixRule, char *activityModel, char *viscMixRule, double p, double T, double xMass[], double *sigma){
 
-  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,cubicMixRule,activityModel);
+  FF_MixData* mix = FF_createMixData(name,numSubs,subsNames,resDir,eosType,mixRule,activityModel,viscMixRule);
   double nMols=0;
   double x[numSubs]; //liquid molar fractions
   for(int i=0;i<numSubs;i++){

@@ -62,13 +62,8 @@ EXP_IMP FF_MixData * CALLCONV FF_MixDataFromFile(const char *name);
 //Create mixture data structure from an array of substance data structures
 EXP_IMP FF_MixData * CALLCONV FF_MixDataFromSubsData(int numSubs,const FF_SubstanceData *subsData[]);
 
-
 //Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData2(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData);
-
-
-//Fill a Mixture data structure from an array of substance data structures
-EXP_IMP void CALLCONV FF_MixFillDataWithSubsData(int *numSubs,FF_SubstanceData *subsData[],FF_MixData *mixData);
+EXP_IMP void CALLCONV FF_MixFillDataWithSubsData(int numSubs,FF_SubstanceData subsData[], const char *path, FF_MixData *mixData);
 
 //Write a mixture data to a file. Adds ".md" extension
 EXP_IMP void CALLCONV FF_MixDataToFile(const char *name,FF_MixData *mix);
