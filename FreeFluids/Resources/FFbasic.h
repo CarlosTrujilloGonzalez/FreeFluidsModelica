@@ -68,7 +68,7 @@ enum FF_EOS{FF_IdealGas,FF_PR76,FF_PR78,FF_PRSV1,FF_PRBM,FF_PRMELHEM,FF_PRSOF,FF
             FF_SAFTVRMie,FF_SAFTVRMie1A,FF_SAFTVRMie2B,FF_SAFTVRMie4C,FF_PSAFTVRMie_GV,FF_PSAFTVRMie_JC,FF_SAFTVRMie2B_GV,FF_SAFTVRMie4C_GV,
             FF_SW,FF_IAPWS95,IF97};
 enum FF_MixingRule{FF_NoMixRul,FF_VdW,FF_PR,FF_MKP,FF_HV,FF_MHV1,FF_PSRK,FF_HVOS,FF_LCVM,FF_MHV2,FF_UMR,FF_OPTgE,
-                   FF_PSRKnew,FF_VTPR,FF_VdWnoInt,FF_BL,FF_IndAssoc,FF_Teja,FF_Grunberg,FF_Andrade,FF_McAllister3,FF_McAllister4};
+                   FF_PSRKnew,FF_VTPR,FF_VdWnoInt,FF_BL,FF_IndAssoc,FF_Teja,FF_Grunberg,FF_Andrade,FF_AspenMod,FF_McAllister3,FF_McAllister4};
 enum FF_CorrEquation{FF_DIPPR100,FF_Polynomial,FF_Polynomial2,FF_DIPPR100Ld,FF_expDIPPR100,FF_DIPPR101,FF_DIPPR101Vp,FF_DIPPR101Lv,FF_logDIPPR101,
                   FF_DIPPR102,FF_DIPPR103,FF_DIPPR104,FF_DIPPR105,FF_DIPPR106,FF_DIPPR106Hv,FF_DIPPR106Ld,FF_DIPPR106SurfT,FF_DIPPR107,
                   FF_DIPPR107Cp,FF_DIPPR114,FF_DIPPR115,FF_DIPPR116,FF_DIPPR116Ld,FF_Wilhoit,FF_Cooper,FF_Jaechske,FF_ChemSep16,FF_Antoine1,
@@ -154,6 +154,7 @@ typedef struct{int eosType;FF_SaftEOSdata *eos;double xp,ldensFilter,zcFilter,er
                unsigned nPoints,nVpPoints,nLdPoints;double vpPoints[30][2],ldPoints[30][3];}FF_SAFTFitData;
 typedef struct{int eosType;FF_CubicEOSdata *eos;double ldensFilter,zcFilter,error,vpError,ldensError,zcError;
                unsigned nPoints;double points[40][3];}FF_CubicFitData;
+typedef struct{FF_MixData *mix;unsigned nPoints;double points[40][4],error;}FF_IntParamFitData;
 #ifdef __cplusplus
 }
 #endif

@@ -131,11 +131,11 @@ package Tests
   end EGWaterCubic;
 
   model EGWaterPCSAFT
-    extends EGWaterCubic(Medium(eosType="PCSAFT", mixRule="BL"));
+    extends EGWaterCubic(Medium(eosType="PCSAFT", mixRule="BL", viscMixRule="Teja"));
   end EGWaterPCSAFT;
 
   model AcetoneChloroformCubic
-    extends TestModel2(Medium(subsNames="Acetone,Chloroform",eosType="PR",mixRule="MHV2", activityModel = "UNIFACdort"),initialT=328.15,finalT=328.15,initialP=1.01325e5,finalP=1.01325e5);
+    extends TestModel2(Medium(subsNames="Acetone,Chloroform",eosType="PR",mixRule="VdW", activityModel = "UNIFACdort"),initialT=313.15,finalT=313.15,initialP=1.01325e5,finalP=1.01325e5);
   end AcetoneChloroformCubic;
 
   model AcetoneChloroformPCSAFT

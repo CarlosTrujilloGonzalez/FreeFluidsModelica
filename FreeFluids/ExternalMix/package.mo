@@ -25,7 +25,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     constant Integer subsNum = Modelica.Utilities.Strings.count(subsNames,",")+1;
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant String eosType = "PR" "alternatives are SRK and PCSAFT";
-    constant String mixRule = "LCVM" "alternatives are VdW VdWnoInt HV MHV1 MHV2 UMR PSRK IndAssoc";
+    constant String mixRule = "LCVM" "alternatives are VdW, VdWnoInt, Reid, HV, MHV1, MHV2, UMR, PSRK, BL, IndAssoc";
     constant String activityModel = "UNIFACdort" "alternatives are: None, UNIFACstd, UNIFACpsrk, UNIQUAC, NRTL";
     constant String viscMixRule="Teja" "alternatives are: Grunberg, Andrade, McAllister3, McAllister4";
   

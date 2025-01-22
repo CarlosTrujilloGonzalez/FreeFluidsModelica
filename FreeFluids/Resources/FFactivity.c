@@ -983,7 +983,7 @@ void CALLCONV FF_UNIFACDerivatives(FF_UnifacData *data, const double *T, const d
 
 
 //Calculates ln of activities and the derivatives of gE
-void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const enum FF_IntParamForm *form,
+void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const int *form,
                                         const double *T,const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData){
     int i,j;
     excData->gEC=0;excData->gESG=0;excData->gER=0;//Excess data for reduced G
