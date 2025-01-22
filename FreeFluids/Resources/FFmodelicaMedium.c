@@ -536,6 +536,7 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             mixData[i].mixRule=FF_LCVM;//default mixing rule
             if(strcmp(mixRule,"VdWnoInt")==0) mixData[i].mixRule=FF_VdWnoInt;
             else if(strcmp(mixRule,"VdW")==0) mixData[i].mixRule=FF_VdW;
+            else if(strcmp(mixRule,"Reid")==0) mixData[i].mixRule=FF_PR;
             else if (strcmp(mixRule,"HV")==0) mixData[i].mixRule=FF_HV;
             else if (strcmp(mixRule,"MHV1")==0) mixData[i].mixRule=FF_MHV1;
             else if (strcmp(mixRule,"MHV2")==0) mixData[i].mixRule=FF_MHV2;
@@ -547,11 +548,14 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             else mixData[i].mixRule=FF_BL;
             //printf("mixrule:%i \n",mixData[i].mixRule);
         }
+
         if (strcmp(viscMixRule,"McAllister4")==0){
+            if(numSubs>2) printf("McAllister models are valid only for binary mixtures\n");
             mixData[i].viscMixRule=FF_McAllister4;
             strcat(path3,"/Interactions/McAllister4.txt");
         }
         else if (strcmp(viscMixRule,"McAllister3")==0){
+            if(numSubs>2) printf("McAllister models are valid only for binary mixtures\n");
             mixData[i].viscMixRule=FF_McAllister3;
             strcat(path3,"/Interactions/McAllister3.txt");
         }
@@ -570,7 +574,8 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
 
         //load of interaction parameters for EOS or activity calculation
         if (mixData[i].eosType==FF_SAFTtype){
-            strcat(path2,"/Interactions/PCSAFT.txt");
+            if(mixData[i].mixRule==FF_IndAssoc) strcat(path2,"/Interactions/IndAssoc.txt");
+            else strcat(path2,"/Interactions/PCSAFT.txt");
             FILE * file= fopen(path2, "rb");
             if (file != NULL) {
               count=0;
@@ -609,6 +614,34 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
                               mixData[i].intParam[j][k][1]=mixData[i].intParam[k][j][1]=b;
                               mixData[i].intParam[j][k][2]=mixData[i].intParam[k][j][2]=c;
                               mixData[i].intParam[j][k][3]=mixData[i].intParam[k][j][3]=d;
+                          }
+                      }
+
+                  }
+              }
+              //printf("cas1:%s cas2:%s a:%f d:%f intParam[0][1][0]:%f intParam[0][1][3]:%f\n",cas1,cas2,a,d,mixData[i].intParam[0][1][0],mixData[i].intParam[0][1][3]);
+              fclose(file);
+            }
+            else printf("unable to charge the interaction parameters\n");
+        }
+        else if((mixData[i].mixRule==FF_PR)){
+            if (mixData[i].eosType==FF_CubicPRtype) strcat(path2,"/Interactions/ReidPR.txt");
+            if (mixData[i].eosType==FF_CubicSRKtype) strcat(path2,"/Interactions/ReidSRK.txt");
+            FILE * file= fopen(path2, "rb");
+            if (file != NULL) {
+              count=0;
+              while (fscanf(file,"%s %s %f %f %f %f %f %f %f",cas1,cas2,&a,&b,&c,&ai,&bi,&ci,&d)==9){
+                  for (j=0;j<numSubs;j++){
+                      for (k=0;k<numSubs;k++){
+                          if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
+                              count++;
+                              mixData[i].intParam[j][k][0]=a;
+                              mixData[i].intParam[j][k][1]=b;
+                              mixData[i].intParam[j][k][2]=c;
+                              mixData[i].intParam[j][k][3]=mixData[i].intParam[k][j][3]=d;
+                              mixData[i].intParam[k][j][0]=ai;
+                              mixData[i].intParam[k][j][1]=bi;
+                              mixData[i].intParam[k][j][2]=ci;
                           }
                       }
 
@@ -707,12 +740,29 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
                   for (k=0;k<numSubs;k++){
                       if((strcmp(cas1,mixData[i].CAS[j])==0)&&(strcmp(cas2,mixData[i].CAS[k])==0)){
                           count++;
-                          mixData[i].viscIntParam[j][k][0]=mixData[i].viscIntParam[k][j][0]=a;
-                          mixData[i].viscIntParam[j][k][1]=mixData[i].viscIntParam[k][j][1]=b;
-                          mixData[i].viscIntParam[j][k][2]=mixData[i].viscIntParam[k][j][2]=c;
-                          mixData[i].viscIntParam[j][k][3]=mixData[i].viscIntParam[k][j][3]=d;
-                          mixData[i].viscIntParam[j][k][4]=mixData[i].viscIntParam[k][j][4]=e;
-                          mixData[i].viscIntParam[j][k][5]=mixData[i].viscIntParam[k][j][5]=f;
+                          if(mixData[i].viscMixRule==FF_McAllister3){
+                              mixData[i].viscIntParam[j][k][0]=mixData[i].viscIntParam[k][j][2]=a;
+                              mixData[i].viscIntParam[j][k][1]=mixData[i].viscIntParam[k][j][3]=b;
+                              mixData[i].viscIntParam[j][k][2]=mixData[i].viscIntParam[k][j][0]=c;
+                              mixData[i].viscIntParam[j][k][3]=mixData[i].viscIntParam[k][j][1]=d;
+                          }
+                          else if(mixData[i].viscMixRule==FF_McAllister4){
+                              mixData[i].viscIntParam[j][k][0]=mixData[i].viscIntParam[k][j][4]=a;
+                              mixData[i].viscIntParam[j][k][1]=mixData[i].viscIntParam[k][j][5]=b;
+                              mixData[i].viscIntParam[j][k][2]=mixData[i].viscIntParam[k][j][2]=c;
+                              mixData[i].viscIntParam[j][k][3]=mixData[i].viscIntParam[k][j][3]=d;
+                              mixData[i].viscIntParam[j][k][4]=mixData[i].viscIntParam[k][j][0]=e;
+                              mixData[i].viscIntParam[j][k][5]=mixData[i].viscIntParam[k][j][1]=f;
+                          }
+                          else{
+                              mixData[i].viscIntParam[j][k][0]=mixData[i].viscIntParam[k][j][0]=a;
+                              mixData[i].viscIntParam[j][k][1]=mixData[i].viscIntParam[k][j][1]=b;
+                              mixData[i].viscIntParam[j][k][2]=mixData[i].viscIntParam[k][j][2]=c;
+                              mixData[i].viscIntParam[j][k][3]=mixData[i].viscIntParam[k][j][3]=d;
+                              mixData[i].viscIntParam[j][k][4]=mixData[i].viscIntParam[k][j][4]=e;
+                              mixData[i].viscIntParam[j][k][5]=mixData[i].viscIntParam[k][j][5]=f;
+                          }
+
                       }
                   }
 
@@ -1175,6 +1225,8 @@ void FF_mixLiquidViscosityM(const char *name, int numSubs, char *subsNames, cons
 
   if(mix->viscMixRule==FF_Grunberg) FF_MixLiqViscGrunberg(mix,T,p,x,eta);
   else if(mix->viscMixRule==FF_Andrade) FF_MixLiqViscAndrade(mix,T,p,x,eta);
+  else if(mix->viscMixRule==FF_McAllister3) FF_MixLiqViscMcAllister3(mix,T,p,x,eta);
+  else if(mix->viscMixRule==FF_McAllister4) FF_MixLiqViscMcAllister4(mix,T,p,x,eta);
   else FF_MixLiqViscTeja(mix,&T,&p,x,eta);
 }
 

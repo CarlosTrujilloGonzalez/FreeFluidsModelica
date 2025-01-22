@@ -1,3 +1,9 @@
+Version 4.6.0
+- The ExternalMixMedium can use binary interaction parameters for cubic and PCSAFT EOS. And also for activity models: NRTL and UNIQUAC.
+- There is a major update of the companion program FreeFluidsGuiExe, located in the Resources/Extra folder. It allows the regression of binary interaction parameters for EOS (Cubics and PCSAFT), activity models (NRTL and UNIQUAC) and viscosity.
+- The BIPs for PCSAFT EOS(located at Resources/Interactions) have been splitted in two files: PCSAFT.txt for Lorentz-Berthelot mixing rule without inductive association, and IndAssoc.txt for inductive association.
+- The Panagiotopoulos-Reid mixing rule for cubic EOS has been added to the ExternalMixMedium. 
+
 Version 4.5.0
 - The C code is now compatible with Clang compilers, so the default compilers can be used with OpenModelica.
 - The ExternalMixMedium can now use BIPs for liquid viscosity calculation.

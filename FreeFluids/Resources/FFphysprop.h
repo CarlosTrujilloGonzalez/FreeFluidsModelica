@@ -130,6 +130,15 @@ EXP_IMP void CALLCONV FF_MixLiqViscTeja(FF_MixData *mix,double *T,double *P,doub
 //Andrade method for mixture liquid viscosity
 EXP_IMP void CALLCONV FF_MixLiqViscAndrade(FF_MixData *mix,double T,double P,double x[],double *visc);
 
+//Aspen method for mixture liquid viscosity modified in order to simplify temperature dependence
+EXP_IMP void CALLCONV FF_MixLiqViscAspenMod(FF_MixData *mix,double T,double P,double x[],double *visc);
+
+//McAllister 3 body method for binary mixture liquid viscosity
+EXP_IMP void CALLCONV FF_MixLiqViscMcAllister3(FF_MixData *mix,double T,double P,double x[],double *visc);
+
+//McAllister 4 body method for binary mixture liquid viscosity
+EXP_IMP void CALLCONV FF_MixLiqViscMcAllister4(FF_MixData *mix,double T,double P,double x[],double *visc);
+
 //Thermal conductivity of liquids. Latini method
 EXP_IMP void CALLCONV FF_LiquidThCondLatini(double T,FF_BaseProp *data,double *thCond);
 

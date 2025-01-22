@@ -1521,6 +1521,102 @@ void CALLCONV FF_MixLiqViscAndrade(FF_MixData *mix,double T,double P,double x[],
     *visc=exp(*visc);
 }
 
+//Aspen method for mixture liquid viscosity modified in order to simplify temperature dependence
+void CALLCONV FF_MixLiqViscAspenMod(FF_MixData *mix,double T,double P,double x[],double *visc){
+    double satVisc,vp,sVisc[mix->numSubs],k,l;
+    int i,j;
+    double ln[mix->numSubs],lnij,sigmaj1,sigmaj2;
+    *visc=0;
+    for(i=0;i<mix->numSubs;i++){
+        if(mix->lViscCorr[i].form>0){
+            FF_PhysPropCorrM(mix->lViscCorr[i].form,mix->lViscCorr[i].coef,mix->baseProp[i].MW,T,&satVisc);
+            if((mix->vpCorr[i].form>0)&&(P>10e5)){
+                FF_PhysPropCorrM(mix->vpCorr[i].form,mix->vpCorr[i].coef,mix->baseProp[i].MW,T,&vp);
+                FF_LiqViscPcorLucas(T,P,vp,&mix->baseProp[i],satVisc,&sVisc[i]);
+            }
+            else sVisc[i]=satVisc;
+            ln[i]=log(sVisc[i]);
+        }
+        else return;
+    }
+    for(i=0;i<mix->numSubs;i++){
+        *visc=*visc+x[i]*ln[i];
+        sigmaj1=sigmaj2=0;
+        for(j=0;j<mix->numSubs;j++){
+            if(!(i==j)){
+                l=mix->viscIntParam[i][j][3]+mix->viscIntParam[i][j][4]/T+mix->viscIntParam[i][j][5]*T;
+                lnij=fabs(ln[i]-ln[j])/2;
+                sigmaj2=sigmaj2+x[j]*pow(l*lnij,0.33333);
+                if(i<j){
+                  k=mix->viscIntParam[i][j][0]+mix->viscIntParam[i][j][1]/T+mix->viscIntParam[i][j][2]*T;
+                  sigmaj1=sigmaj1+x[j]*lnij;
+                }
+            }
+        }
+        *visc=*visc+x[i]*(sigmaj1+sigmaj2*sigmaj2*sigmaj2);
+    }
+    *visc=exp(*visc);
+}
+
+//McAllister 3 body method for binary mixture liquid viscosity
+void CALLCONV FF_MixLiqViscMcAllister3(FF_MixData *mix,double T,double P,double x[],double *visc){
+    double satVisc,vp,sVisc[2],k,l,x02,x12,MWratio;
+    int i;
+    *visc=0;
+    for(i=0;i<2;i++){
+        if(mix->lViscCorr[i].form>0){
+            FF_PhysPropCorrM(mix->lViscCorr[i].form,mix->lViscCorr[i].coef,mix->baseProp[i].MW,T,&satVisc);
+            if((mix->vpCorr[i].form>0)&&(P>10e5)){
+                FF_PhysPropCorrM(mix->vpCorr[i].form,mix->vpCorr[i].coef,mix->baseProp[i].MW,T,&vp);
+                FF_LiqViscPcorLucas(T,P,vp,&mix->baseProp[i],satVisc,&sVisc[i]);
+            }
+            else sVisc[i]=satVisc;
+        }
+        else return;
+    }
+    x02=x[0]*x[0];
+    x12=x[1]*x[1];
+    MWratio=mix->baseProp[1].MW/mix->baseProp[0].MW;
+    k=mix->viscIntParam[0][1][0]+mix->viscIntParam[0][1][1]/T;
+    l=mix->viscIntParam[0][1][2]+mix->viscIntParam[0][1][3]/T;
+    //printf("ratio:%f k:%f l:%f\n",MWratio,k,l);
+
+    *visc=x[0]*x02*log(sVisc[0])+3*x02*x[1]*log(k)+3*x[0]*x12*log(l)+x[1]*x12*log(sVisc[1]);
+    *visc=*visc-log(x[0]+x[1]*MWratio)+3*x02*x[1]*log((2+MWratio)/3)+3*x[0]*x12*log((1+2*MWratio)/3)+x[1]*x12*log(MWratio);
+
+    *visc=exp(*visc);
+}
+
+//McAllister 4 body method for binary mixture liquid viscosity
+void CALLCONV FF_MixLiqViscMcAllister4(FF_MixData *mix,double T,double P,double x[],double *visc){
+    double satVisc,vp,sVisc[2],k,l,m,x02,x12,MWratio;
+    int i;
+    *visc=0;
+    for(i=0;i<2;i++){
+        if(mix->lViscCorr[i].form>0){
+            FF_PhysPropCorrM(mix->lViscCorr[i].form,mix->lViscCorr[i].coef,mix->baseProp[i].MW,T,&satVisc);
+            if((mix->vpCorr[i].form>0)&&(P>10e5)){
+                FF_PhysPropCorrM(mix->vpCorr[i].form,mix->vpCorr[i].coef,mix->baseProp[i].MW,T,&vp);
+                FF_LiqViscPcorLucas(T,P,vp,&mix->baseProp[i],satVisc,&sVisc[i]);
+            }
+            else sVisc[i]=satVisc;
+        }
+        else return;
+    }
+    x02=x[0]*x[0];
+    x12=x[1]*x[1];
+    MWratio=mix->baseProp[1].MW/mix->baseProp[0].MW;
+    k=mix->viscIntParam[0][1][0]+mix->viscIntParam[0][1][1]/T;
+    l=mix->viscIntParam[0][1][2]+mix->viscIntParam[0][1][3]/T;
+    m=mix->viscIntParam[0][1][4]+mix->viscIntParam[0][1][5]/T;
+    //printf("ratio:%f k:%f l:%f m%f\n",MWratio,k,l,m);
+
+    *visc=x02*x02*log(sVisc[0])+4*x02*x[0]*x[1]*log(k)+6*x02*x12*log(l)+4*x[0]*x12*x[1]*log(m)+x12*x12*log(sVisc[1]);
+    *visc=*visc-log(x[0]+x[1]*MWratio)+4*x02*x[0]*x[1]*log((3+MWratio)/4)+6*x02*x12*log((1+MWratio)/2)+4*x[0]*x12*x[1]*log((1+3*MWratio)/4)+x12*x12*log(MWratio);
+
+    *visc=exp(*visc);
+}
+
 //Thermal conductivity of liquids. Latini method
 void CALLCONV FF_LiquidThCondLatini(double T,FF_BaseProp *data,double *thCond){
     double Tr,A,alpha,beta,gamma;

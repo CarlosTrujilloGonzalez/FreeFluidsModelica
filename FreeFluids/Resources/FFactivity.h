@@ -75,7 +75,7 @@ void CALLCONV FF_PhiFromActivity(FF_MixData *mix,const double *T,const double *P
 EXP_IMP void CALLCONV FF_UNIFACDerivatives(FF_UnifacData *data, const double *T, const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData);
 
 //Calculates ln of activities and the derivatives of gE for act.coef. models
-EXP_IMP void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const enum FF_IntParamForm *form,
+EXP_IMP void CALLCONV FF_ActivityDerivatives(const int *actModel,const int *numSubs,const  FF_BaseProp baseProp[],const double pintParam[15][15][6],const int *form,
                                         const double *T,const double x[],FF_SubsActivityData actData[],FF_ExcessData *excData);
 
 #ifdef __cplusplus
