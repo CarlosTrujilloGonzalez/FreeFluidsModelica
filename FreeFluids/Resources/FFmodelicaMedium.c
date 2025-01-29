@@ -537,6 +537,7 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             if(strcmp(mixRule,"VdWnoInt")==0) mixData[i].mixRule=FF_VdWnoInt;
             else if(strcmp(mixRule,"VdW")==0) mixData[i].mixRule=FF_VdW;
             else if(strcmp(mixRule,"Reid")==0) mixData[i].mixRule=FF_PR;
+            else if(strcmp(mixRule,"MKP")==0) mixData[i].mixRule=FF_MKP;
             else if (strcmp(mixRule,"HV")==0) mixData[i].mixRule=FF_HV;
             else if (strcmp(mixRule,"MHV1")==0) mixData[i].mixRule=FF_MHV1;
             else if (strcmp(mixRule,"MHV2")==0) mixData[i].mixRule=FF_MHV2;
@@ -624,7 +625,7 @@ void *FF_createMixData(const char *name, int numSubs, char *subsNamesOr, const c
             }
             else printf("unable to charge the interaction parameters\n");
         }
-        else if((mixData[i].mixRule==FF_PR)){
+        else if((mixData[i].mixRule==FF_PR)||(mixData[i].mixRule==FF_MKP)){
             if (mixData[i].eosType==FF_CubicPRtype) strcat(path2,"/Interactions/ReidPR.txt");
             if (mixData[i].eosType==FF_CubicSRKtype) strcat(path2,"/Interactions/ReidSRK.txt");
             FILE * file= fopen(path2, "rb");

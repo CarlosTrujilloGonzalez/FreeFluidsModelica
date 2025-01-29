@@ -1960,7 +1960,7 @@ void CALLCONV FF_MixGasViscTPcpWilke(FF_MixData *mix,double T,double P,double y[
     lpVisc=0;
     *gVisc=0;
     for(i=0;i<mix->numSubs;i++){
-        if(mix->gViscCorr[i].form>0){
+        if((mix->gViscCorr[i].form>0)&&(mix->gViscCorr[i].form!=112)){
             FF_PhysPropCorrM(mix->gViscCorr[i].form,mix->gViscCorr[i].coef,mix->baseProp[i].MW,T,&lpVisc);
         }
         FF_GasViscTPcpLucas(T,P,&mix->baseProp[i],&lpVisc,&sGvisc[i]);//Individual viscosities P corrected
@@ -2106,11 +2106,11 @@ void CALLCONV FF_MixLpGasThCondTpMason(FF_MixData *mix,double T,double y[],doubl
     double sGthCond[mix->numSubs],Cp0,Gamma[mix->numSubs],ratio,Tr[mix->numSubs],A[mix->numSubs][mix->numSubs],sigma;
     *gThCond=0;
     for(i=0;i<mix->numSubs;i++){
-        if(mix->gThCCorr[i].form>0){
+        if((mix->gThCCorr[i].form>0)&&(mix->gThCCorr[i].form!=122)){
             FF_PhysPropCorrM(mix->gThCCorr[i].form,mix->gThCCorr[i].coef,mix->baseProp[i].MW,T,&sGthCond[i]);
         }
         else{
-            if(mix->gThCCorr[i].form>0){
+            if(mix->cp0Corr[i].form>0){
                 FF_PhysPropCorrM(mix->cp0Corr[i].form,mix->cp0Corr[i].coef,mix->baseProp[i].MW,T,&Cp0);
                 FF_GasLpThCondTCpChung(T,Cp0,&mix->baseProp[i],&sGthCond[i]);
             }
