@@ -25,7 +25,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     constant Integer subsNum = Modelica.Utilities.Strings.count(subsNames,",")+1;
     constant String resDir = Modelica.Utilities.Files.loadResource("modelica://FreeFluids/Resources") "resources directory";
     constant String eosType = "PR" "alternatives are SRK and PCSAFT";
-    constant String mixRule = "LCVM" "alternatives are VdW, VdWnoInt, Reid, HV, MHV1, MHV2, UMR, PSRK, BL, IndAssoc";
+    constant String mixRule = "LCVM" "alternatives are VdW, VdWnoInt, Reid, MKP, HV, MHV1, MHV2, UMR, PSRK, BL, IndAssoc";
     constant String activityModel = "UNIFACdort" "alternatives are: None, UNIFACstd, UNIFACpsrk, UNIQUAC, NRTL";
     constant String viscMixRule="Teja" "alternatives are: Grunberg, Andrade, McAllister3, McAllister4";
   
@@ -265,12 +265,12 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       Real nMoles;
     algorithm
       nMoles:=0;
-  //for i in 1:size(X, 1) loop
+//for i in 1:size(X, 1) loop
       for i in 1:subsNum loop
         invMMX[i] := 1/MMX[i];
         nMoles:=nMoles+X[i]/MMX[i];
       end for;
-  //Mmix := 1/(X*invMMX);
+//Mmix := 1/(X*invMMX);
       if (nMoles>0)then
         Mmix:=1/nMoles;
         for i in 1:size(X, 1) loop
@@ -372,15 +372,15 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.z := X;
       state.x := X;
       (state.p, state.y) := bubble_TX(T, X);
-      p := state.p;
+      //p := state.p;
       (state.ld, dg, state.lMW) := density_pTX(state.p, T, X, "l");
       state.d := state.ld;
       state.MW := state.lMW;
-      (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+      (p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
       state.h := state.lh;
       state.s := state.ls;
       (dl, state.gd, state.gMW) := density_pTX(state.p, T, state.y, "g");
-      (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+      (p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
     end setBubbleState_TX;
   
     function setBubbleState_pX "Return bubble state ThermodynamicState record as function of T and composition X"
@@ -389,7 +389,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       input MassFraction X[nX] "liquid phase Mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
-      Real dl, dg;
+      Real p2, dl, dg;
     algorithm
       state.phase := 1 "there is just 1 liquid phase";
       state.gf := 0;
@@ -400,11 +400,11 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       (state.ld, dg, state.lMW) := density_pTX(p, state.T, X, "l");
       state.d := state.ld;
       state.MW := state.lMW;
-      (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+      (p2, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
       state.h := state.lh;
       state.s := state.ls;
       (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
-      (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+      (p2, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
       state.p := p;
     end setBubbleState_pX;
   
@@ -422,13 +422,13 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.z := y;
       state.y := y;
       (state.p, state.x) := dew_TX(T, y);
-      p := state.p;
-      (state.ld, dg, state.lMW) := density_pTX(p, T, state.x, "l");
-      (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+      //p := state.p;
+      (state.ld, dg, state.lMW) := density_pTX(state.p, T, state.x, "l");
+      (p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
       (dl, state.gd, state.gMW) := density_pTX(p, T, state.y, "g");
       state.d := state.gd;
       state.MW := state.gMW;
-      (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+      (p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
       state.h := state.gh;
       state.s := state.gs;
     end setDewState_TX;
@@ -439,7 +439,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       input MassFraction y[nX] "gas mass fractions";
       output ThermodynamicState state "Thermodynamic state record";
     protected
-      Real dl, dg;
+      Real p2,dl, dg;
     algorithm
       state.phase := 1 "there is just 1 gas phase";
       state.gf := 1;
@@ -448,11 +448,11 @@ package ExternalMix "ExternalMix by Carlos Trujillo
       state.y := y;
       (state.T, state.x) := dew_pX(p, y);
       (state.ld, dg, state.lMW) := density_pTX(p, state.T, state.x, "l");
-      (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
+      (p2, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
       (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
       state.d := state.gd;
       state.MW := state.gMW;
-      (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
+      (p2, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
       state.h := state.gh;
       state.s := state.gs;
       state.p := p;
@@ -508,7 +508,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
@@ -534,7 +534,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.lMW;
           state.gMW := 0;
           (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
-  //state.h := state.lh;
+//state.h := state.lh;
           state.gh := 0;
           state.s := state.ls;
           state.gs := 0;
@@ -550,7 +550,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.gMW;
           state.lMW := 0;
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
-  //state.h := state.gh;
+//state.h := state.gh;
           state.lh := 0;
           state.s := state.gs;
           state.ls := 0;
@@ -565,7 +565,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
@@ -591,7 +591,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.lMW;
           state.gMW := 0;
           (state.p, state.lh, state.ls, state.lCv, state.lCp, state.lDvp, state.lDvT) := thermo_dTX(state.ld, state.T, state.x);
-  //state.h := state.lh;
+//state.h := state.lh;
           state.gs := 0;
           state.h := state.lh;
           state.gh := 0;
@@ -607,7 +607,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           state.MW := state.gMW;
           state.lMW := 0;
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
-  //state.h := state.gh;
+//state.h := state.gh;
           state.ls := 0;
           state.h := state.gh;
           state.lh := 0;
@@ -622,7 +622,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
@@ -652,7 +652,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
           (dl, state.gd, state.gMW) := density_pTX(p, state.T, state.y, "g");
           (state.p, state.gh, state.gs, state.gCv, state.gCp, state.gDvp, state.gDvT) := thermo_dTX(state.gd, state.T, state.y);
           state.MW:=1/((1-state.gf)/state.lMW+state.gf/state.gMW);
-  //state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
+//state.MW := state.lMW*(1 - state.gf) + state.gMW*state.gf;
           state.d := state.ld*(1 - state.gf) + state.gd*state.gf;
           state.h := state.lh*(1 - state.gf) + state.gh*state.gf;
           state.s := state.ls*(1 - state.gf) + state.gs*state.gf;
@@ -832,5 +832,5 @@ package ExternalMix "ExternalMix by Carlos Trujillo
   end ExternalMixMedium;
   
       annotation(
-    Documentation(info = "<html><head></head><body><div><b>Introduction</b></div>The medium is designed for substance mixtures in liquid, gas or biphasic (VL) state. It uses external C functions for the calculations, and it follows, when possible, the masterlines of Modelica. Media.Interfaces.PartialTwoPhaseMedium.<div>The implementation is based in a static object created in the C code, as it has been impossible to make it work, at least in OpenModelica, using the Modelica external object feature.</div><div>The data for the pure, or pseudo pure, substances are in the Resources/Fluids directory.</div><div>At the moment the implementation is still in development and few testing has been done, nevertheless bubble and dew calculations and the pTX, phX and psX flashes are already working.</div><div>For the thermodynamic models, you can use cubic (Peng-Robinson or SRK) &nbsp;or PCSAFT EOS. For PCSAFT the Wolbach and Sandler mixing rule is always used, but you can choose to use induced association by selecting induced association as mixrule. For cubics you can choose between Van der Waals, HV, MHV1, MHV2, LCVM, UMR and PSRK mixing rules. &nbsp;When using gE mixing rules you can choose between UNIFAC (standard, PSRK, or Dortmund, implementations), UNIQUAC, and NRTL, for the activity model.</div><div><br></div><div><b>Media configuration</b></div><div>It is very easy. You extend the the ExternalMixMedium package and reconfigure it as follows:</div><div>mediumName: A string containing the medium name. In a simulation with more than one mediums you can't repeat the name.</div><div>subsNames: Is a string containing the names of the substances in the mix separated by ,. These names must match the name of files in the Resources/Fluids folder, but without the .sd extension. For the creation of these files, with the aid of the FreeFluidsGui program, look at the ExternalPure package information.</div><div>eosType: A string. You can use PR, SRK or PCSAFT.</div><div>mixRule: A string. If a cubic EOS has been selected, you can use VdW, VdWnoInt, HV, MHV1, MHV2, LCVM, UMR, PSRK. Where VdWnoInt means Van der Waals without using BIPs. If PCSAFT is selected as EOS, the mixing rule used will be always that of Berthelot-Lorentz modified by Wolbach and Sandler, but by selecting IndAssoc as mixing rule you will allow the use of induced association for not self associating polar molecules.</div><div>activityModel: A string. If a gE mixing rule is used, you can use UNIFACstd, UNIFACpsrk UNIFACdort, NRTL or UNIQUAC</div><div>viscMixRule: A string where you can use: Teja, Grunberg or Andrade</div><div><br></div><div><b>EOS</b></div><div>Only Peng--Robinson and Soave-Redlich-Kwong cubic EOS are supported, but with many different alpha term calculations. You can use Van der Waals mixing rule, or gE ones, using an activity model.</div><div>For SAFT only PCSAFT is supported. Association and polar terms are implemented, the last one according to Gross and Vrabeck &nbsp;model. The Berthelot-Lorentz, as modified by Wolbach and Sandler, mixing rule is used. By making mixRue=\"IndAssoc\" you will allow the use of induced association between self associating and polar molecules, according to the methodology of Kleiner et alt.</div><div><br></div><div><b>Binary interaction parameters for EOS or activity</b></div><div>BIPs are read from text files (space delimited) placed in the Resources/Interactions folder. A lot of BIPs are supplied. Those for NRTL and UNIQUAC come mainly from the PychemQt open source program. For Van der Waals mixing rule, there are separate files for Peng-Robinson and SRK.</div><div>It is recommended that you create your own BIP files, containing only the needed parameters, because if a big file is used you loose speed and, as the program search all the file, you can finish using undesired BIPs. You can rename the supplied files and create new ones containing just the needed BIPs.</div><div>CAS numbers are used in order to seek the needed line inside the files.</div><div>For Van der Waals mixing rule there are 4 parameters, the first 3 are for the calculation of Kij in the form Kij=a+b*T+c/T. the last one is for Lij. As Kij=Kji and Lij=Lji just one entry for a substances pair is needed.</div><div>For PCSAFT we have the same situation, just without the Lij parameter. For this EOS it is very important to check that the BIPs are for the variation of the EOS used. They are not the same for a non-associating EOS that for a associating one, or a polar one.</div><div>For NRTL and UNIQUAC, prior to the BIPs there is the information of the equation that will be used with these parameters. The alternatives are Pol1K, Pol1J, Pol1C, Pol2K, Pol2J, Pol2C, Pol3K, Pol3J, Pol3K. &nbsp;the last letter identifies the units of energy used (K, J/mol or cal/mol). Pol1 will use the equation a+b*T+c*T^2, Pol2 a+b*T+c/T^2, and Pol3 a+b/T+c*T. As the BIPs are not simetrical the line contains both ij and ji parameters. In NRTL the fith BIP is for alphaij. There is a limitation in the type of BIPs used for activity models: all the BIPs used in a mixture must use the same equation. I hope to achive more freedom in the future.</div><div>&nbsp;</div><div><b>Transport properties</b></div><div>&nbsp;At the momment only viscosity and thermal conductivity calculations are supported. No BIPs are used except for liquid viscosity.</div><div>For liquid viscosity you can choose between Grunberg-Nissan, Teja-Rice and Andrade methods. BIPs are read from the corresponding file in the Resources/Interactions folder. If no BIPs are found in the file a less acurate value will be calculated.&nbsp;</div><div>Grunberg-Nissan and Teja-Rice use just one BIP, that is calculated according to a+b/T, being a and b the two first numbers following the CAS numbers of the substances in the row. Nevertheless you must fill with 0 the following four numbers.</div><div>Andrade use two BIPs, calculated as a+b/T and c+d/T, being c and d the next numbers in the row.</div><div>I expect to implement in the future McAllister 3 and 4 body method. This is the reason for the need of 6 numbers in each row.</div><div>For gas viscosity the Lucas method is used.</div><div>For liquid thermal conductivity the Li method.</div><div>For gas thermal conductivity that of Mason and Saxena</div><div><br></div><div><br></div><div><br></div></body></html>"));
+    Documentation(info = "<html><head></head><body><div><b>Introduction</b></div>The medium is designed for substance mixtures in liquid, gas or biphasic (VL) state. It uses external C functions for the calculations, and it follows, when possible, the masterlines of Modelica. Media.Interfaces.PartialTwoPhaseMedium.<div>The implementation is based in a static object created in the C code, as it has been impossible to make it work, at least in OpenModelica, using the Modelica external object feature.</div><div>The data for the pure, or pseudo pure, substances are in the Resources/Fluids directory.</div><div>At the moment the implementation is still in development and few testing has been done, nevertheless bubble and dew calculations and the pTX, phX and psX flashes are already working.</div><div>For the thermodynamic models, you can use cubic (Peng-Robinson or SRK) &nbsp;or PCSAFT EOS. For PCSAFT the Wolbach and Sandler mixing rule is always used, but you can choose to use induced association by selecting induced association as mixrule. For cubics you can choose between Van der Waals, Panagiotopoulos-Reid, Mathias-Klotz-Prausnitz, HV, MHV1, MHV2, LCVM, UMR and PSRK mixing rules. &nbsp;When using gE mixing rules you can choose between UNIFAC (standard, PSRK, or Dortmund, implementations), UNIQUAC, and NRTL, for the activity model.</div><div><br></div><div><b>Media configuration</b></div><div>It is very easy. You extend the the ExternalMixMedium package and reconfigure it as follows:</div><div>mediumName: A string containing the medium name. In a simulation with more than one mediums you can't repeat the name.</div><div>subsNames: Is a string containing the names of the substances in the mix separated by ,. These names must match the name of files in the Resources/Fluids folder, but without the .sd extension. For the creation of these files with the aid of the FreeFluidsGui program, look at the ExternalPure package information.</div><div>eosType: A string. You can use \"PR\", \"SRK\" or \"PCSAFT\".</div><div>mixRule: A string. If a cubic EOS has been selected, you can use \"VdW\", \"VdWnoInt\", \"Reid\", \"MKP\", \"HV\", \"MHV1\", \"MHV2\", \"LCVM\", \"UMR\", \"PSRK\". Where VdWnoInt means Van der Waals without using BIPs. If PCSAFT is selected as EOS, the mixing rule used will be always that of Berthelot-Lorentz modified by Wolbach and Sandler, but by selecting \"IndAssoc\" as mixing rule you will allow the use of induced association for not self associating polar molecules.</div><div>activityModel: A string. If a gE mixing rule is used, you can use \"UNIFACstd\", \"UNIFACpsrk\" \"UNIFACdort\", \"NRTL\" or \"UNIQUAC\"</div><div>viscMixRule: A string where you can use: \"Teja\", \"Grunberg, \"Andrade\", \"McAllister3\" and \"McAllister4\"</div><div><br></div><div><b>EOS</b></div><div>Only Peng--Robinson and Soave-Redlich-Kwong cubic EOS are supported, but with many different alpha term calculations. You can use Van der Waals mixing rule, or gE ones, using an activity model.</div><div>For SAFT only PCSAFT is supported. Association and polar terms are implemented, the last one according to Gross and Vrabeck &nbsp;model. The Berthelot-Lorentz, as modified by Wolbach and Sandler, mixing rule is used. By making mixRue=\"IndAssoc\" you will allow the use of induced association between self associating and polar molecules, according to the methodology of Kleiner et alt.</div><div><br></div><div><b>Binary interaction parameters for EOS or activity</b></div><div>BIPs are read from text files (space delimited) placed in the Resources/Interactions folder. A lot of BIPs are supplied. Those for NRTL and UNIQUAC come mainly from the PychemQt open source program. For Van der Waals mixing rule, there are separate files for Peng-Robinson and SRK.</div><div>It is recommended that you create your own BIP files, containing only the needed parameters, because if a big file is used you loose speed and, as the program search all the file, you can finish using undesired BIPs. You can rename the supplied files and create new ones containing just the needed BIPs.</div><div>CAS numbers are used in order to seek the needed line inside the files.</div><div>For Van der Waals mixing rule there are 4 parameters, the first 3 are for the calculation of Kij in the form Kij=a+b*T+c/T. the last one is for Lij. As Kij=Kji and Lij=Lji just one entry for a substances pair is needed.</div><div>For PCSAFT we have the same situation, just without the Lij parameter. For this EOS it is very important to check that the BIPs are for the variation of the EOS used. They are not the same for a non-associating EOS than for a associating one, or a polar one.</div><div>For NRTL and UNIQUAC, prior to the BIPs there is the information of the equation that will be used with these parameters. The alternatives are Pol1K, Pol1J, Pol1C, Pol2K, Pol2J, Pol2C, Pol3K, Pol3J, Pol3K. &nbsp;the last letter identifies the units of energy used (K, J/mol or cal/mol). Pol1 will use the equation a+b*T+c*T^2, Pol2 a+b*T+c/T^2, and Pol3 a+b/T+c*T. As the BIPs are not simetrical the line contains both ij and ji parameters. In NRTL the fith BIP is for alphaij. There is a limitation in the type of BIPs used for activity models: all the BIPs used in a mixture must use the same equation. I hope to achive more freedom in the future.</div><div>&nbsp;</div><div><b>Transport properties</b></div><div>&nbsp;At the momment only viscosity and thermal conductivity calculations are supported. No BIPs are used except for liquid viscosity.</div><div>For liquid viscosity you can choose between Grunberg-Nissan, Teja-Rice, Andrade, McAllister 3 body and McAllister 4 body methods. But take into account that McAllister models are only for binary mixtures. BIPs are read from the corresponding file in the Resources/Interactions folder. If no BIPs are found in the file a less acurate value will be calculated.&nbsp;</div><div>Grunberg-Nissan and Teja-Rice use just one BIP, that is calculated according to a+b/T, being a and b the two first numbers following the CAS numbers of the substances in the row. Nevertheless you must fill with 0 the following four numbers.</div><div>Andrade and McAllister3 use two BIPs, calculated as a+b/T and c+d/T, being c and d the next numbers in the row.</div><div>McAllister4 uses a+b/T, c+d/T and e+f/T</div><div>For gas viscosity the Lucas method is used.</div><div>For liquid thermal conductivity the Li method.</div><div>For gas thermal conductivity that of Mason and Saxena</div><div><br></div><div><br></div><div><br></div></body></html>"));
 end ExternalMix;

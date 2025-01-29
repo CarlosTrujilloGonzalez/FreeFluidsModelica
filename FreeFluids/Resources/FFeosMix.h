@@ -76,7 +76,7 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
         const double pintParam[15][15][6],const double x[], FF_CubicParam *param,double dTheta_dXi[],double db_dXi[],double dc_dXi[]);
 
 //Calculates Theta,b,delta and epsilon for a mixture, given a cubic EOS,a mixing rule, composition, and pure substance parameters
-EXP_IMP void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const double *T,const int *numSubs,const  FF_CubicEOSdata data[],
+EXP_IMP void CALLCONV FF_MixParamTderCubicEOS(const int *rule,const double *T,const int *numSubs,const  FF_CubicEOSdata data[],
                                      const double pintParam[15][15][6],const double x[], FF_CubicParam *param);
 
 //Calculates Theta,b,dTheta/dT, d2Theta/dT2, dTheta/dX[i] and db/dX[i] for a mixture, given a cubic EOS,a mixing rule, composition, and pure substance parameters

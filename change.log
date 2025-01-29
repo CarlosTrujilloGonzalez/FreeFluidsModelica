@@ -1,3 +1,11 @@
+Version 4.7.0
+- The cubic EOS mixing rule of Mathias-Klotz-Prausnitz(MKP) has been added to ExternalMixMedium.
+- A bug in the second derivative of Theta regarding T has been solved for the MHV2 mixing rule.
+- Some interaction parameters for the Panagiotopoulos-Reid (that are used also with the MKP) mixing rule have been added. And also for Van der Waals mixing rule with SRK EOS.
+- Trans-2-butene, and n-Heptane with SRK, have been added.
+- The program FreeFluidsGui.exe has been largely improved.
+- Some small problems with the Modelica code of ExternalMixmedium have been solved.
+
 Version 4.6.0
 - The ExternalMixMedium can use binary interaction parameters for cubic and PCSAFT EOS. And also for activity models: NRTL and UNIQUAC.
 - There is a major update of the companion program FreeFluidsGuiExe, located in the Resources/Extra folder. It allows the regression of binary interaction parameters for EOS (Cubics and PCSAFT), activity models (NRTL and UNIQUAC) and viscosity.

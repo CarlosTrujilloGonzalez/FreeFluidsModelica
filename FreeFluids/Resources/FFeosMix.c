@@ -323,7 +323,7 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
         const double pintParam[15][15][6],const double x[], FF_CubicParam *param,double dTheta_dXi[],double db_dXi[],double dc_dXi[]){
     int ver=0;
     int i,j;
-    double k,kInv,l,a,aInv,b,Co;
+    double k,kInv,l,a,aInv,b,Co0,Co;
     FF_CubicParam sParam[*numSubs];
     for (i=0;i< *numSubs;i++)//First we get the parameters of the individual substances
     {
@@ -399,7 +399,7 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
         break;
     case FF_MKP://In MKP th 3 first parameters are for k, forth and fith for lambda and the sixth for l (covolumen correction)
         {
-        double lambda;
+        double kij,kji,lambda;
         double a2[*numSubs][*numSubs];//It is the secon part of combined Theta[i,j] calculation in MKP rule
         double a3[*numSubs];//Is the summatory of second part of Theta calculation for each substance, and it derivative regarding T
         /**/
@@ -415,20 +415,29 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
                 Co=fabs(pow(sParam[i].Theta*sParam[j].Theta,0.5));
                 //printf("i,j k: %i %i %f\n",i,j,pintParam[i][j][0]);
                 //Three values are used for the calculation of the mixture parameter k[i,j]=k[j,i], the forth for l[i,j]=l[j,i], used in the calculation of b[i,j]
-                k=pintParam[i][j][0] + pintParam[i][j][1]* *T+pintParam[i][j][2]/ *T ;
+                if(i!=j){
+                    kij=pintParam[i][j][0] + pintParam[i][j][1]* *T+pintParam[i][j][2]/ *T ;//using same coef than Panagiotopoulos-Reid
+                    kji=pintParam[j][i][0] + pintParam[j][i][1]* *T+pintParam[j][i][2]/ *T ;
+                }
+                else kij=kji=0;
+                k=0.5*(kij+kji);
+                //k=pintParam[i][j][0] + pintParam[i][j][1]* *T+pintParam[i][j][2]/ *T ;
                 //printf("i,j k,dk,d2k: %i %i %f %f %f\n",i,j,k,dk,d2k);
                 a=Co*(1-k);
                 param->Theta=param->Theta+x[i]*x[j]*a;
                 dTheta_dXi[i]=dTheta_dXi[i]+x[j]*2*a;//This is the 1st part composition derivative (VdW) of Theta regarding x[i].
+                //and taking into account that when calculate the term [j][i] we duplicate Theta and its derivatives
                 //printf("a,da,d2a[i][j]: %i %i %f %f %f\n",i,j,a*1e3,da*1e3,d2a*1e3);
-                b=(sParam[i].b+sParam[j].b)/2;
+                l=pintParam[i][j][3];
+                b=(1-l)*(sParam[i].b+sParam[j].b)/2;
                 param->b=param->b+x[i]*x[j]*b;
                 db_dXi[i]=db_dXi[i]+x[j]*2*b;
 
                 //Now the additional part of Theta
                 if(i!=j){
-                    lambda=pintParam[j][i][3] + pintParam[j][i][4]* *T + pintParam[j][i][5]/ *T ;
-                    a2[i][j]= x[j]*pow(fabs(Co*lambda),0.333333);
+                    lambda=kji-kij;
+                    //lambda=pintParam[j][i][3] + pintParam[j][i][4]* *T + pintParam[j][i][5]/ *T ;
+                    a2[i][j]= x[j]*pow(fabs(Co*lambda),0.3333333);
                     if (lambda<0) a2[i][j]=-a2[i][j];
                 }
                 else{
@@ -440,13 +449,13 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
             }
             param->Theta=param->Theta+x[i]*pow(a3[i],3);//We increase Theta and its derivatives in the part special for MKP
         }
-        for (i=0;i<*numSubs;i++)//And now dTheta/dX[i]
+        for (i=0;i<*numSubs;i++)//And now is necessary to finish dTheta/dX[i]
         {
             for (j=0;j<*numSubs;j++)
             {
-                dTheta_dXi[j]=dTheta_dXi[j]+3*x[i]*a3[i]*a3[i]*a2[i][j]/x[j];//This is the derivative for the second part for the second component of the pair
+                dTheta_dXi[i]=dTheta_dXi[i]+3*x[j]*a3[j]*a3[j]*a2[j][i];//This is the derivative of the second part for the second component of the pair
             }
-            dTheta_dXi[i]=dTheta_dXi[i]+pow(a3[i],3);//this is the derivative for the second part for the first component of the pair
+            dTheta_dXi[i]=dTheta_dXi[i]+pow(a3[i],3);//this is the derivative of the second part for the first component of the pair
         }
 
         break;
@@ -457,7 +466,7 @@ void CALLCONV FF_MixParamXderCubicEOS(const int *rule,const double *T,const int 
 
 //Calculates Theta,b,dTheta/dT, d2Theta/dT2, dTheta/dX[i], db/dX[i], dTheta_dXi for a mixture, given a cubic EOS,a mixing rule, composition, and pure substance parameters
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------
-void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const double *T,const int *numSubs,const  FF_CubicEOSdata data[],
+void CALLCONV FF_MixParamTderCubicEOS(const int *rule,const double *T,const int *numSubs,const  FF_CubicEOSdata data[],
         const double pintParam[15][15][6],const double x[], FF_CubicParam *param)
 {
     int i,j;
@@ -577,7 +586,7 @@ void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const doubl
 
         case FF_MKP://Mathias, Klotz and Prausnitz composition dependent mixing rule
         {
-            double lambda,dLambda,d2Lambda;
+            double kij,kji,lambda,dLambda,d2Lambda;
             double a2[*numSubs][*numSubs];//It is the secon part of combined Theta[i,j] calculation in MKP rule
             double da2[*numSubs][*numSubs];//Its derivative
             double d2a2[*numSubs][*numSubs];//Its 2nd derivative
@@ -586,6 +595,7 @@ void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const doubl
             double d2a3[*numSubs];
 
             /**/
+            param->dTheta=0;
             for (i=0;i<*numSubs;i++)//We calculate b, theta, dTheta/dT, and d2Theta/dT for the mix
             {
                 a3[i]=0;
@@ -603,9 +613,12 @@ void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const doubl
                     d2Co=-0.25*pow(Pr,-1.5)*dPr*dPr+0.5*pow(Pr,-0.5)*d2Pr;
                     //printf("i,j k: %i %i %f\n",i,j,pintParam[i][j][0]);
                     //Three values are used for the calculation of the mixture parameter k[i,j]=k[j,i], the forth for l[i,j]=l[j,i], used in the calculation of b[i,j]
-                    k=pintParam[i][j][0] + pintParam[i][j][1]* *T + pintParam[i][j][2]/ *T ;
-                    dk=pintParam[i][j][1]-pintParam[i][j][2]/(*T * *T);
-                    d2k=2* pintParam[i][j][2]/(*T * *T * *T);
+                    kij=pintParam[i][j][0] + pintParam[i][j][1]* *T+pintParam[i][j][2]/ *T ;//using same coef than Panagiotopoulos-Reid
+                    kji=pintParam[j][i][0] + pintParam[j][i][1]* *T+pintParam[j][i][2]/ *T ;
+                    k=0.5*(kij+kji);
+                    //k=pintParam[i][j][0] + pintParam[i][j][1]* *T + pintParam[i][j][2]/ *T ;
+                    dk=0.5*(pintParam[i][j][1]+pintParam[j][i][1]-(pintParam[i][j][2]+pintParam[j][i][2])/(*T * *T));
+                    d2k=(pintParam[i][j][2]+pintParam[i][j][2])/(*T * *T * *T);
                     //printf("i,j k,dk,d2k: %i %i %f %f %f\n",i,j,k,dk,d2k);
                     a=Co*(1-k);
                     da=dCo*(1-k)-Co*dk;
@@ -614,21 +627,27 @@ void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const doubl
                     param->dTheta=param->dTheta+x[i]*x[j]*da;
                     param->d2Theta=param->d2Theta+x[i]*x[j]*d2a;
                     //printf("a,da,d2a[i][j]: %i %i %f %f %f\n",i,j,a*1e3,da*1e3,d2a*1e3);
-                    b=(sParam[i].b+sParam[j].b)/2;
+                    l=pintParam[i][j][3];
+                    b=(1-l)*(sParam[i].b+sParam[j].b)/2;
                     param->b=param->b+x[i]*x[j]*b;
 
                     //Now the additional part
                     if(i!=j){
-                        lambda=pintParam[j][i][3] + pintParam[j][i][4]* *T + pintParam[j][i][5]/ *T ;
-                        dLambda=pintParam[j][i][4] -pintParam[j][i][5]/(*T * *T);
-                        d2Lambda=2* pintParam[j][i][5]/(*T * *T * *T);
-                        a2[i][j]= x[j]*pow(fabs(Co*lambda),0.333333);
+                        lambda=kji-kij;
+                        dLambda=pintParam[j][i][1]-pintParam[i][j][1]+(pintParam[i][j][2]-pintParam[j][i][2])/(*T * *T);
+                        d2Lambda=2*(pintParam[j][i][2]-pintParam[i][j][2])/(*T * *T * *T);
+                        //lambda=pintParam[j][i][3] + pintParam[j][i][4]* *T + pintParam[j][i][5]/ *T ;
+                        //dLambda=pintParam[j][i][4] -pintParam[j][i][5]/(*T * *T);
+                        //d2Lambda=2* pintParam[j][i][5]/(*T * *T * *T);
+                        a2[i][j]= x[j]*pow(fabs(Co*lambda),(1.0/3.0));
+                        //da2[i][j]=x[j]*(dCo*lambda+Co*dLambda)/(pow(fabs(Co*lambda),0.6666667)*3);
+                        da2[i][j]=x[j]*pow(fabs(Co*lambda),(-2.0/3.0))*(dCo*lambda+Co*dLambda)/3;
+                        d2a2[i][j]=-2*da2[i][j]*da2[i][j]/a2[i][j]+a2[i][j]*(d2Co*lambda+2*dCo*dLambda+Co*d2Lambda)/(3*Co*lambda);
                         if (lambda<0){
                             a2[i][j]=-a2[i][j];
+                            //da2[i][j]=-da2[i][j];
                             //d2a2[i][j]=-d2a2[i][j];
                         }
-                        da2[i][j]=x[j]*(dCo*lambda+Co*dLambda)/(pow(fabs(Co*lambda),0.6666667)*3);
-                        d2a2[i][j]=-2*da2[i][j]*da2[i][j]/a2[i][j]+a2[i][j]*(d2Co*lambda+2*dCo*dLambda+Co*d2Lambda)/(3*Co*lambda);
                     }
                     else{
                         a2[i][j]=0;
@@ -644,9 +663,11 @@ void CALLCONV FF_MixParamTderCubicEOS(const enum FF_MixingRule *rule,const doubl
                     d2a3[i]=d2a3[i]+d2a2[i][j];
 
                 }
+
                 param->Theta=param->Theta+x[i]*pow(a3[i],3);//We increase Theta and its derivatives in the part special for MKP
                 param->dTheta=param->dTheta+x[i]*3*pow(a3[i],2)*da3[i];
                 param->d2Theta=param->d2Theta+x[i]*3*(2*a3[i]*da3[i]*da3[i]+a3[i]*a3[i]*d2a3[i]);
+                //printf("a3:%f da3:%f d2a3:%f Theta:%f dTheta_dT:%f d2Theta_dT2:%f\n",a3[i],da3[i],d2a3[i],param->Theta,param->dTheta,param->d2Theta);
             }
             break;
         }
@@ -1415,6 +1436,264 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
                     param->b=param->b+x[i]*sParam[i].b;
                 }
                 for (i=0;i<mix->numSubs;i++){
+                    alphai=sParam[i].Theta/(sParam[i].b*RT);
+                    dalphai=sParam[i].dTheta/(sParam[i].b*RT)-alphai/ *T;
+                    //d2alphai=sParam[i].d2Theta/(sParam[i].b*RT)-dalphai/ *T-(dalphai* *T-alphai)/(*T * *T);
+                    d2alphai=sParam[i].d2Theta/(sParam[i].b*RT)-2*sParam[i].dTheta/(sParam[i].b*RT* *T)+2*sParam[i].Theta/(sParam[i].b*RT* *T * *T);
+                    sPartB=sPartB+x[i]*(log(param->b/sParam[i].b)+q1*alphai+q2*pow(alphai,2));
+                    dsPartB=dsPartB+x[i]*(q1*dalphai+2*q2*alphai*dalphai);
+                    d2sPartB=d2sPartB+x[i]*(q1*d2alphai+2*q2*(dalphai*dalphai+alphai*d2alphai));
+
+                }
+                double aux=q1*q1+4*q2*(sPartB+excData.gE);
+                double daux=4*q2*(dsPartB+dgE);
+                param->Theta=param->b*RT*(-q1-pow(aux,0.5))/(2*q2);
+                //printf("gE:%f Theta:%f\n",excData.gE,param->Theta);
+                param->dTheta=param->Theta/ *T-param->b*RT*pow(aux,-0.5)*(dsPartB+dgE);
+                //printf("dTheta:%f\n",param->dTheta);
+                param->d2Theta=(param->dTheta* *T-param->Theta)/(*T * *T)-param->b*R*(pow(aux,-0.5)*(dsPartB+dgE)+
+                               *T*(-0.5*pow(aux,-1.5)*daux*(dsPartB+dgE)+pow(aux,-0.5)*(d2sPartB+d2gE)));
+            }
+            break;
+        case FF_UMR:
+            if (mix->eosType==FF_CubicPRtype) q1=-0.53;
+            else if (mix->eosType==FF_CubicSRKtype) q1=-0.593;
+            if (!(q1==0)){
+                for(i=0;i<mix->numSubs;i++){
+                    for(j=0;j<mix->numSubs;j++){
+                        bij=pow((pow(sParam[i].b,0.5)+pow(sParam[j].b,0.5))/2,2);
+                        param->b=param->b+x[i]*x[j]*bij;
+                    }
+                }
+                for (i=0;i<mix->numSubs;i++){
+                    sPartB=sPartB+x[i]*(sParam[i].Theta/sParam[i].b);
+                    dsPartB=dsPartB+x[i]*(sParam[i].dTheta/sParam[i].b);
+                    d2sPartB=d2sPartB+x[i]*(sParam[i].d2Theta/sParam[i].b);
+                }
+                param->Theta=param->b*(RT*(excData.gER)/q1+sPartB);
+                param->dTheta=param->b*(R*(excData.gER)/q1+RT*(dgER)/q1+dsPartB);
+                param->d2Theta=param->b*(2*R*dgER/q1+RT*d2gE/q1+d2sPartB);
+            }
+            break;
+        default:
+            param->c=0;
+            param->b=0;
+            param->Theta=0;
+            param->dTheta=0;
+            param->d2Theta=0;
+            break;
+        }
+    if (ver==1) printf("Theta:%f dTheta:%f d2Theta:%f b:%f c:%f\n",param->Theta,param->dTheta, param->d2Theta, param->b,param->c);
+}
+
+
+//Calculates Theta,b,c and their temperature derivatives, given a cubic EOS,excess G, composition, and pure substance parameters
+//------------------------------------------------------------------------------------------------------------------------------
+void CALLCONV FF_MixParamTderCubicEOSgE2(const FF_MixData *mix,const double *T,const double x[], FF_CubicParam *param){
+    int ver=0;
+    int i,j;
+    double dT=0.01;
+    double Tplus,Tminus,ThetaPlus,ThetaMinus;//Temperature variation to obtain numeric temperature derivative of theta
+    Tplus=*T + dT;
+    Tminus=*T-dT;
+    FF_SubsActivityData actData[mix->numSubs],actDataPlus[mix->numSubs],actDataMinus[mix->numSubs];
+    //FF_SubsActivityData actDataPlus[mix->numSubs];
+    FF_ExcessData excData={0,0,0,0},excDataPlus={0,0,0,0},excDataMinus={0,0,0,0};
+    //FF_ExcessData excDataPlus={0,0,0,0};
+    FF_CubicParam sParam[mix->numSubs],sParamPlus[mix->numSubs],sParamMinus[mix->numSubs];
+    double RT=R* *T;//to speed up
+    double bij;//used to calculate the combined b for substances i,j
+    double dgEC,dgESG,dgER,dgE;//derivatives og gE regarding T
+    double d2gEC,d2gESG,d2gER,d2gE;//second derivatives og gE regarding T
+    //First we need to get activity. The data needed is inside the mix structure
+    //printf("Act model: %i\n",mix->actModel);
+    switch(mix->actModel){
+    case FF_UNIFACStd:
+        FF_ActivityUNIFAC(&mix->unifStdData,T,x,actData);
+        FF_ActivityUNIFAC(&mix->unifStdData,&Tplus,x,actDataPlus);
+        FF_ActivityUNIFAC(&mix->unifStdData,&Tminus,x,actDataMinus);
+        break;
+    case FF_UNIFACPSRK:
+        FF_ActivityUNIFAC(&mix->unifPSRKData,T,x,actData);
+        FF_ActivityUNIFAC(&mix->unifPSRKData,&Tplus,x,actDataPlus);
+        FF_ActivityUNIFAC(&mix->unifPSRKData,&Tminus,x,actDataMinus);
+        break;
+    case FF_UNIFACDort:
+        FF_ActivityUNIFAC(&mix->unifDortData,T,x,actData);
+        FF_ActivityUNIFAC(&mix->unifDortData,&Tplus,x,actDataPlus);
+        FF_ActivityUNIFAC(&mix->unifDortData,&Tminus,x,actDataMinus);
+        break;
+    case FF_UNIFACNist:
+        FF_ActivityUNIFAC(&mix->unifNistData,T,x,actData);
+        FF_ActivityUNIFAC(&mix->unifNistData,&Tplus,x,actDataPlus);
+        FF_ActivityUNIFAC(&mix->unifNistData,&Tminus,x,actDataMinus);
+        break;
+    default:
+        FF_Activity(mix,T,x,actData);
+        FF_Activity(mix,&Tplus,x,actDataPlus);
+        FF_Activity(mix,&Tminus,x,actDataMinus);
+        break;
+    }
+        //Now we obtain excess gE
+        for(i=0;i<mix->numSubs;i++){
+            excData.gEC=excData.gEC+x[i]*actData[i].lnGammaC;
+            excData.gESG=excData.gESG+x[i]*actData[i].lnGammaSG;
+            excData.gER=excData.gER+x[i]*actData[i].lnGammaR;
+            excDataPlus.gEC=excDataPlus.gEC+x[i]*actDataPlus[i].lnGammaC;
+            excDataPlus.gESG=excDataPlus.gESG+x[i]*actDataPlus[i].lnGammaSG;
+            excDataPlus.gER=excDataPlus.gER+x[i]*actDataPlus[i].lnGammaR;
+            excDataMinus.gEC=excDataMinus.gEC+x[i]*actDataMinus[i].lnGammaC;
+            excDataMinus.gESG=excDataMinus.gESG+x[i]*actDataMinus[i].lnGammaSG;
+            excDataMinus.gER=excDataMinus.gER+x[i]*actDataMinus[i].lnGammaR;
+        }
+        excData.gE=excData.gEC+excData.gESG+excData.gER;
+        excDataPlus.gE=excDataPlus.gEC+excDataPlus.gESG+excDataPlus.gER;
+        excDataMinus.gE=excDataMinus.gEC+excDataMinus.gESG+excDataMinus.gER;
+        /*dgEC=(excDataPlus.gEC-excData.gEC)/dT;
+        d2gEC=(dgEC-((excData.gEC-excDataMinus.gEC)/dT))/dT;
+        dgESG=(excDataPlus.gESG-excData.gESG)/dT;
+        d2gESG=(dgESG-((excData.gESG-excDataMinus.gESG)/dT))/dT;
+        dgER=(excDataPlus.gER-excData.gER)/dT;
+        d2gER=(dgER-((excData.gER-excDataMinus.gER)/dT))/dT;
+        dgE=dgEC+dgESG+dgER;
+        d2gE=d2gEC+d2gESG+d2gER;
+        if (ver==1) printf("gE: %f %f %f %f\n",excData.gEC,excData.gESG,excData.gER,excData.gE);*/
+
+        //Next we get the parameters of the individual substances
+        for (i=0;i< mix->numSubs;i++)//First we get the parameters of the individual substances
+        {
+            FF_FixedParamCubic(&mix->cubicData[i],&sParam[i]);
+            FF_ThetaDerivCubic(T,&mix->cubicData[i],&sParam[i]);
+            FF_ThetaDerivCubic(&Tplus,&mix->cubicData[i],&sParamPlus[i]);
+            FF_ThetaDerivCubic(&Tminus,&mix->cubicData[i],&sParamMinus[i]);
+            if (ver==1) printf("i a,b,Theta,dTheta,d2Theta: %i %f %f %f %f %f\n",i,sParam[i].a,sParam[i].b,sParam[i].Theta*1e3,sParam[i].dTheta*1e3,sParam[i].d2Theta*1e3);
+        }
+        param->Theta=0;
+        param->b=0;
+        param->c=0;
+        param->u=sParam[0].u;
+        param->w=sParam[0].w;
+        for (i=0;i< mix->numSubs;i++){
+            if (!((sParam[i].u==param->u)&&(sParam[i].w==param->w))){
+                printf("Cubic EOS are of different types\n");
+                return;//We check that all cubic eos are of the same type
+            }
+            if (sParam[i].c>0) param->c=param->c+x[i]*sParam[i].c;//Calculation of mix volume translation
+        }
+        double sPartA=0,sPartB=0,sPartBplus=0,sPartBminus=0;//sum of individual substances contribution
+        double dsPartB=0,d2sPartB=0;//Its derivatives regarding T
+        double q1=0,q2=0,lambda=0;//Parameters for  alpha (and Theta) calculation, lambda is for LCVM mixing rule
+
+        switch (mix->mixRule)
+        {
+        case FF_HV:
+            if (mix->eosType==FF_CubicPRtype) q1=-0.623;
+            else if (mix->eosType==FF_CubicSRKtype) q1=-0.693;
+            if (!(q1==0)){
+                for (i=0;i<mix->numSubs;i++){
+                    param->b=param->b+x[i]*sParam[i].b;
+                    sPartB=sPartB+x[i]*(sParam[i].Theta/sParam[i].b);
+                    dsPartB=dsPartB+x[i]*(sParam[i].dTheta/sParam[i].b);
+                    d2sPartB=d2sPartB+x[i]*(sParam[i].d2Theta/sParam[i].b);
+                }
+                param->Theta=param->b*(RT*(excData.gESG+excData.gER)/q1+sPartB);
+                param->dTheta=param->b*(R*(excData.gESG+excData.gER)/q1+RT*(dgESG+dgER)/q1+dsPartB);
+                param->d2Theta=param->b*(2*R*(dgESG+dgER)/q1+RT*(d2gESG+d2gER)/q1+d2sPartB);
+            }
+            break;
+        case FF_MHV1:
+            if (mix->eosType==FF_CubicPRtype) q1=-0.53;
+            else if (mix->eosType==FF_CubicSRKtype) q1=-0.593;
+            if (!(q1==0)){
+                for (i=0;i<mix->numSubs;i++){
+                    param->b=param->b+x[i]*sParam[i].b;
+                }
+                for (i=0;i<mix->numSubs;i++){
+                    sPartA=sPartA+x[i]*log(param->b/sParam[i].b);
+                    sPartB=sPartB+x[i]*(sParam[i].Theta/sParam[i].b);
+                    sPartBplus=sPartBplus+x[i]*(sParamPlus[i].Theta/sParam[i].b);
+                    sPartBminus=sPartBminus+x[i]*(sParamMinus[i].Theta/sParam[i].b);
+                    //dsPartB=dsPartB+x[i]*(sParam[i].dTheta/sParam[i].b);
+                    //d2sPartB=d2sPartB+x[i]*(sParam[i].d2Theta/sParam[i].b);
+                }
+                param->Theta=param->b*(RT*(excData.gE+sPartA)/q1+sPartB);
+                ThetaPlus=param->b*(R*Tplus*(excDataPlus.gE+sPartA)/q1+sPartBplus);
+                ThetaMinus=param->b*(R*Tminus*(excDataMinus.gE+sPartA)/q1+sPartBminus);
+                //printf("gE:%f Theta:%f\n",excData.gE,param->Theta);
+                param->dTheta=(ThetaPlus-param->Theta)/dT;
+                param->d2Theta=(ThetaPlus-2*param->Theta+ThetaMinus)/(dT*dT);
+                //param->dTheta=param->b*(R*(excData.gE+sPartA)/q1+RT*(dgE)/q1+dsPartB);
+                //printf("dTheta:%f\n",param->dTheta);
+                //param->d2Theta=param->b*(2*R*dgE/q1+RT*d2gE/q1+d2sPartB);
+            }
+            break;
+        case FF_PSRK:
+            if (mix->eosType==FF_CubicSRKtype){
+                q1=-0.64663;
+                for (i=0;i<mix->numSubs;i++){
+                    param->b=param->b+x[i]*sParam[i].b;
+                }
+                for (i=0;i<mix->numSubs;i++){
+                    sPartA=sPartA+x[i]*log(param->b/sParam[i].b);
+                    sPartB=sPartB+x[i]*(sParam[i].Theta/sParam[i].b);
+                    sPartBplus=sPartBplus+x[i]*(sParamPlus[i].Theta/sParam[i].b);
+                    sPartBminus=sPartBminus+x[i]*(sParamMinus[i].Theta/sParam[i].b);
+                    //dsPartB=dsPartB+x[i]*(sParam[i].dTheta/sParam[i].b);
+                    //d2sPartB=d2sPartB+x[i]*(sParam[i].d2Theta/sParam[i].b);
+                }
+                param->Theta=param->b*(RT*(excData.gE+sPartA)/q1+sPartB);
+                ThetaPlus=param->b*(R*Tplus*(excDataPlus.gE+sPartA)/q1+sPartBplus);
+                ThetaMinus=param->b*(R*Tminus*(excDataMinus.gE+sPartA)/q1+sPartBminus);
+                param->dTheta=param->b*(R*(excData.gE+sPartA)/q1+RT*(dgE)/q1+dsPartB);
+                param->d2Theta=param->b*(2*R*dgE/q1+RT*d2gE/q1+d2sPartB);
+            }
+            break;
+        case FF_LCVM:
+            if (mix->eosType==FF_CubicPRtype)
+            {
+                q1=-0.52;//Am. Michelsen(zero pressure) part coefficient
+                q2=-0.623;//Av. Huron-Vidal(infinite pressure) part coefficient
+            }
+            if (mix->eosType==FF_CubicSRKtype)
+            {
+                q1=-0.593;//Am. Michelsen(zero pressure) part coefficient
+                q2=-0.693;//Av. Huron-Vidal(infinite pressure) part coefficient
+            }
+            if ((mix->actModel==FF_UNIFACStd)||(mix->actModel==FF_UNIFACPSRK)) lambda=0.36;
+            else if ((mix->actModel==FF_UNIFACDort)||(mix->actModel==FF_UNIFACNist)) lambda=0.65;
+            if (!(q1==0)){
+                for (i=0;i<mix->numSubs;i++){
+                    param->b=param->b+x[i]*sParam[i].b;
+                }
+                for (i=0;i<mix->numSubs;i++){
+                    sPartA=sPartA+x[i]*log(param->b/sParam[i].b);
+                    sPartB=sPartB+x[i]*(sParam[i].Theta/sParam[i].b);
+                    dsPartB=dsPartB+x[i]*(sParam[i].dTheta/sParam[i].b);
+                    d2sPartB=d2sPartB+x[i]*(sParam[i].d2Theta/sParam[i].b);
+                }
+                //param->Theta=param->b*(lambda*(RT*excData.gER/q2+sPartB)+(1-lambda)*(RT*(excData.gE+sPartA)/q1+sPartB));
+                param->Theta=param->b*(lambda*(RT*excData.gER/q2)+(1-lambda)*(RT*(excData.gE+sPartA)/q1)+sPartB);
+                param->dTheta=param->b*(lambda*(R*excData.gER+RT*dgER)/q2+(1-lambda)*(R*(excData.gE+sPartA)+RT*dgE)/q1+dsPartB);
+                param->d2Theta=param->b*(lambda*(2*R*dgER+RT*d2gER)/q2+(1-lambda)*(2*R*dgE+RT*d2gE)/q1+d2sPartB);
+            }
+            break;
+        case FF_MHV2:
+            if (mix->eosType==FF_CubicPRtype)
+            {
+                q1=-0.4347;
+                q2=-0.003654;
+            }
+            if (mix->eosType==FF_CubicSRKtype)
+            {
+                q1=-0.4783;
+                q2=-0.0047;
+            }
+            if (!(q2==0)){
+                double alphai,dalphai,d2alphai;
+                for (i=0;i<mix->numSubs;i++){
+                    param->b=param->b+x[i]*sParam[i].b;
+                }
+                for (i=0;i<mix->numSubs;i++){
                     alphai=sParam[i].Theta/sParam[i].b/RT;
                     dalphai=sParam[i].dTheta/sParam[i].b/RT-alphai/ *T;
                     d2alphai=sParam[i].d2Theta/sParam[i].b/RT-dalphai/ *T-(dalphai-alphai)/(*T * *T);
@@ -1463,7 +1742,6 @@ void CALLCONV FF_MixParamTderCubicEOSgE(const FF_MixData *mix,const double *T,co
         }
     if (ver==1) printf("Theta:%f dTheta:%f d2Theta:%f b:%f c:%f\n",param->Theta,param->dTheta, param->d2Theta, param->b,param->c);
 }
-
 
 //Mixture SAFT EOS calculations
 //==============================
@@ -2336,7 +2614,7 @@ EXP_IMP void CALLCONV FF_MixPhiEOScubic(const FF_MixData *mix,FF_CubicParam *par
     double V,Arr,Z,resultL[3],resultG[3],dArr_dXi[mix->numSubs],sumdArr_dXi=0;
     double B=*P*param->b/(R* *T);
     if ((mix->mixRule==FF_VdW)||(mix->mixRule==FF_VdWnoInt)||(mix->mixRule==FF_PR)||(mix->mixRule==FF_MKP)){
-        FF_VfromTPcubic(*T,*P,&param,*option,resultL,resultG,&state);
+        FF_VfromTPcubic(*T,*P,param,*option,resultL,resultG,&state);
         if(*option=='l'){
             V=resultL[0];
             Arr=resultL[1];
