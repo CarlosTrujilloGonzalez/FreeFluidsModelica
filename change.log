@@ -1,3 +1,6 @@
+Versio0n 4.7.1
+- I have gone back to the previous version of FreeFluidsGui.exe, as the last one is not working as standalone, although it works in QtCreator.
+
 Version 4.7.0
 - The cubic EOS mixing rule of Mathias-Klotz-Prausnitz(MKP) has been added to ExternalMixMedium.
 - A bug in the second derivative of Theta regarding T has been solved for the MHV2 mixing rule.
