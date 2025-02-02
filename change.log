@@ -1,4 +1,8 @@
-Versio0n 4.7.1
+Version 4.7.2
+- Updated version of FreeFluidsGui.exe.
+- Some new BIPs added.
+
+Version 4.7.1
 - I have gone back to the previous version of FreeFluidsGui.exe, as the last one is not working as standalone, although it works in QtCreator.
 
 Version 4.7.0
@@ -7,7 +11,7 @@ Version 4.7.0
 - Some interaction parameters for the Panagiotopoulos-Reid (that are used also with the MKP) mixing rule have been added. And also for Van der Waals mixing rule with SRK EOS.
 - Trans-2-butene, and n-Heptane with SRK, have been added.
 - The program FreeFluidsGui.exe has been largely improved.
-- Some small problems with the Modelica code of ExternalMixmedium have been solved.
+- Some small problems with the Modelica code of ExternalMixMedium have been solved.
 
 Version 4.6.0
 - The ExternalMixMedium can use binary interaction parameters for cubic and PCSAFT EOS. And also for activity models: NRTL and UNIQUAC.

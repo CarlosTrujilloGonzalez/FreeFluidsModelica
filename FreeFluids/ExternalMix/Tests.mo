@@ -130,7 +130,7 @@ package Tests
   end AcetoneHeptane2;
 
   model EGWaterCubic
-  extends TestModel2(Medium(subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "LCVM", activityModel = "NRTL"), initialT = 440, finalT = 440, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
+  extends TestModel2(Medium(subsNames = "EthyleneGlycol,WaterRef", eosType = "PR", mixRule = "VdW", activityModel = "NRTL"), initialT = 440, finalT = 440, initialP = 1.01325e5, finalP = 1.01325e5, initialZ1 = 0.001, finalZ1 = 0.999);
     annotation(
       experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.01));  
   end EGWaterCubic;
