@@ -52,7 +52,7 @@ package ExternalPure "ExternalPure.mo by Carlos Trujillo
         extends Modelica.Icons.Record;
         //Real nMols "number of moles in a kg";
         AbsolutePressure p(displayUnit = "bar") "Pressure in Pa";
-        Temperature T(displayUnit = "degC") "Kelvin temperature of medium";
+        Temperature T(displayUnit = "K") "Kelvin temperature of medium";
         SpecificEnthalpy h "Overall specific enthalpy";
         SpecificEntropy s "Overall specific entropy";
         Density d(displayUnit = "kg/m3") "Overall density in kgr/m3";

@@ -32,7 +32,7 @@ package ExternalMix "ExternalMix by Carlos Trujillo
     redeclare record extends ThermodynamicState
         extends Modelica.Icons.Record;
         AbsolutePressure p(displayUnit = "bar") "Pressure in Pa";
-        Temperature T(displayUnit = "degC") "Kelvin temperature of medium";
+        Temperature T(displayUnit = "K") "Kelvin temperature of medium";
         SpecificEnthalpy h "Overall specific enthalpy";
         SpecificEntropy s "Overall specific entropy";
         Density d(displayUnit = "kg/m3") "Overall density in kgr/m3";
